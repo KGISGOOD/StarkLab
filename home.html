@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>實驗室首頁</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            padding: 20px;
+            background-color: #4CAF50;
+            color: white;
+            margin: 0;
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: #333;
+        }
+
+        nav a {
+            display: block;
+            padding: 14px 20px;
+            text-decoration: none;
+            color: white;
+        }
+
+        nav a:hover {
+            background-color: #4CAF50;
+        }
+
+        .container {
+            padding: 20px;
+            width: 80%;
+            margin: 20px auto;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .intro {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .features {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+
+        .feature {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            margin: 10px;
+            flex: 1 1 calc(30% - 20px);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        .feature h2 {
+            margin-top: 0;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #333;
+            color: white;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>實驗室首頁</h1>
+
+    <nav>
+        <a href="#about">關於我們</a>
+        <a href="#services">服務</a>
+        <a href="#contact">聯絡我們</a>
+    </nav>
+
+    <div class="container">
+        <div class="intro" id="about">
+            <h2>關於我們</h2>
+            <p>歡迎來到我們的實驗室網站。我們致力於研究和創新，並且擁有一支優秀的研究團隊。</p>
+        </div>
+
+        <div class="features" id="services">
+            <div class="feature">
+                <h2>研究領域</h2>
+                <p>我們的研究涵蓋多個領域，包括生物技術、材料科學和環境科學。</p>
+            </div>
+            <div class="feature">
+                <h2>專業設備</h2>
+                <p>我們擁有先進的實驗設備，確保實驗的精確性和可靠性。</p>
+            </div>
+            <div class="feature">
+                <h2>合作機會</h2>
+                <p>我們歡迎來自學術界和工業界的合作，共同推動科技進步。</p>
+            </div>
+        </div>
+
+        <div class="contact" id="contact">
+            <h2>聯絡我們</h2>
+            <p>如果您有任何問題或合作意向，請隨時聯絡我們。</p>
+            <p>Email: info@lab.com | 電話: 123-456-7890</p>
+        </div>
+    </div>
+
+    <div class="footer">
+        &copy; 2024 實驗室。保留所有權利。
+    </div>
+
+</body>
+
+</html>
