@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>更新資料</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>更新資料</h1>
+    <p>id:{{ update.stockid }}</p>
+    <h2>修改內容</h2>
+    <form method="post" action="/do_update/">
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td>簡稱:</td>
+                <td><input type="text" name="abbreviation" value="{{ update.abbreviation }}"></td>
+            </tr>
+            <tr>
+                <td>網址:</td>
+                <td><input type="text" name="url" value="{{ update.url }}"></td>
+            </tr>
+            <tr>
+                <td>名稱:</td>
+                <td><input type="text" name="industryname" value="{{ update.industryname }}"></td>
+            </tr>
+        </table>
+        <input type="hidden" name="stockid" value="{{ update.stockid }}">
+        <input type="submit" value="提交修改">
+        <a href="/company">返回清單</a>
+    </form>
+</body>
+</html>
