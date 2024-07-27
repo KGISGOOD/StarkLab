@@ -100,9 +100,15 @@ def query_report(request):
                 df_P = html_to_df(stock.P)
                 df_C = html_to_df(stock.C)
 
-                
-                
-                # 刪除不必要的欄位
+                # 刪除名為 'Unnamed: 0_level_3' 的欄位，如果存在
+                if 'Unnamed: 0_level_3' in df_B.columns:
+                    df_B = df_B.drop(columns=['Unnamed: 0_level_3'])
+                if 'Unnamed: 0_level_3' in df_P.columns:
+                    df_P = df_P.drop(columns=['Unnamed: 0_level_3'])
+                if 'Unnamed: 0_level_3' in df_C.columns:
+                    df_C = df_C.drop(columns=['Unnamed: 0_level_3'])
+
+                # 根據實際需要刪除其他不必要的欄位
                 df_B = df_B.iloc[:, :-2]  # 根據實際需要調整
                 df_P = df_P.iloc[:, :-1]  # 根據實際需要調整
                 df_C = df_C.iloc[:, :-4]  # 根據實際需要調整
@@ -118,6 +124,7 @@ def query_report(request):
             except Stock.DoesNotExist:
                 return render(request, 'query_report.html', {'error': '股票代碼不存在。'})
     return render(request, 'query_report.html')
+
 
 def update_reports(request):
     csv_file_path = os.path.join(os.path.dirname(__file__), 'csv', 'stock.csv')
