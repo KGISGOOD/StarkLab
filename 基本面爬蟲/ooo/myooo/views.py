@@ -1,93 +1,11 @@
-from django.shortcuts import render
-from myooo.models import Stock  
-
-from django.http import HttpResponse
-import requests
-import pandas as pd
-
-# 主頁
-def home(request):
-    stock = Stock.objects.all()
-    stockid = Stock._meta.get_field('stockid').column
-    PL = Stock._meta.get_field('PL').column
-    return render(request, 'home.html', locals())
-
-#search
-def k(url, stock_number, year, season):
-    form_data = {
-        'encodeURIComponent': 1,
-        'step': 1,
-        'firstin': 1,
-        'off': 1,
-        'co_id': stock_number,
-        'year': year,
-        'season': season,
-    }
-    r = requests.post(url, form_data)
-    html_df = pd.read_html(r.text)[1].fillna("")
-    return html_df
-
-
-def search(request):
-    url = 'https://mops.twse.com.tw/mops/web/ajax_t164sb04'
-    stock_number = ""
-    year = ""
-    season = ""
-    df = None
-
-    if request.method == "POST":
-        stock_number = request.POST.get('stock_number')
-        year = request.POST.get('year')
-        season = request.POST.get('season')
-        df = k(url, stock_number, year, season)
-        
-    return render(request, 'search.html', {
-        'stock_number': stock_number,
-        'year': year,
-        'season': season,
-        'df': df
-    })
-
-
-
-#stock
-def g(url, stock_number):
-    form_data = {
-        'encodeURIComponent': 1,
-        'step': 1,
-        'firstin': 1,
-        'off': 1,
-        'co_id': stock_number,
-        'TYPEK': 'all',
-        'isnew': 'true'
-    }
-    r = requests.post(url, data=form_data)
-    html_df = pd.read_html(r.text)[1].fillna("")
-    return html_df
-
-def stock(request):
-    url = 'https://mops.twse.com.tw/mops/web/ajax_t164sb04'
-    stock_number = ""
-    df = None
-
-    if request.method == "POST":
-        stock_number = request.POST.get('stock_number')
-        df = g(url, stock_number)
-        
-    return render(request, 'stock.html', {
-        'stock_number': stock_number,
-        'df': df
-    })
-
-
-#reports
 import os
-import pandas as pd
 import requests
-from io import StringIO
-import time
+from bs4 import BeautifulSoup
 from django.shortcuts import render
 from .models import Stock
+import time
+import pandas as pd
+from io import StringIO
 
 def fetch_reports(stock_code):
     urls = [
@@ -96,6 +14,7 @@ def fetch_reports(stock_code):
         'https://mops.twse.com.tw/mops/web/ajax_t164sb05'
     ]
     results = []
+
     for url in urls:
         form_data = {
             'encodeURIComponent': 1,
@@ -107,30 +26,35 @@ def fetch_reports(stock_code):
             'isnew': 'true'
         }
         try:
-            r = requests.post(url, data=form_data)
-            r.raise_for_status()  # 若響應碼為4xx或5xx，將引發HTTPError
-            html_io = StringIO(r.text)
-            tables = pd.read_html(html_io)
+            response = requests.post(url, data=form_data)
+            response.raise_for_status()
+            
+            # 使用 BeautifulSoup 解析 HTML
+            soup = BeautifulSoup(response.text, 'html.parser')
+            tables = soup.find_all('table')
+            
             if len(tables) > 1:
-                df = tables[1]
-
-                results.append(df)
-        except (requests.RequestException, ValueError) as e:
+                # 提取表格資料並轉換為 HTML
+                table_html = str(tables[1])
+                results.append(table_html)
+                
+        except requests.RequestException as e:
             print(f"Error fetching reports for stock code {stock_code}: {e}")
-            continue  # 繼續到下一個 URL 或股票代碼
+            continue
 
     return results
 
-def read_txt_and_update_db(stock_code, reports):
+def save_reports(stock_code, reports):
     if len(reports) >= 3:
         try:
             stock = Stock.objects.get(stock_code=stock_code)
         except Stock.DoesNotExist:
             stock = Stock(stock_code=stock_code)
-
-        stock.B = reports[0].to_csv(index=False, sep='\t')
-        stock.P = reports[1].to_csv(index=False, sep='\t')
-        stock.C = reports[2].to_csv(index=False, sep='\t')
+        
+        # 直接將報告內容儲存為 HTML 格式
+        stock.B = reports[0]
+        stock.P = reports[1]
+        stock.C = reports[2]
         stock.save()
 
 def validate_and_save_reports_from_csv(csv_file_path, batch_size=10):
@@ -150,7 +74,7 @@ def validate_and_save_reports_from_csv(csv_file_path, batch_size=10):
             while attempts < max_attempts:
                 reports = fetch_reports(stock_code)
                 if reports:
-                    read_txt_and_update_db(stock_code, reports)
+                    save_reports(stock_code, reports)
                     print(f"Reports for {stock_code} saved and updated successfully.")
                     break
                 else:
@@ -168,26 +92,26 @@ def query_report(request):
             try:
                 stock = Stock.objects.get(stock_code=stock_code)
                 
-                # 轉換報告內容為 DataFrame
-                df_B = pd.read_csv(StringIO(stock.B), sep='\t')
-                df_P = pd.read_csv(StringIO(stock.P), sep='\t')
-                df_C = pd.read_csv(StringIO(stock.C), sep='\t')
+                # 轉換 HTML 內容為 DataFrame
+                def html_to_df(html):
+                    return pd.read_html(StringIO(html))[0]
                 
-                # 刪除最後兩個欄位
-                df_B = df_B.iloc[:, :-2]
-                df_P = df_P.iloc[:, :-1]
-                df_C = df_C.iloc[:, :-4]
+                df_B = html_to_df(stock.B)
+                df_P = html_to_df(stock.P)
+                df_C = html_to_df(stock.C)
+
                 
-                # 將 NaN 值替換為空白字符串
-                df_B = df_B.fillna('')
-                df_P = df_P.fillna('')
-                df_C = df_C.fillna('')
                 
-                # 生成 HTML 表格
+                # 刪除不必要的欄位
+                df_B = df_B.iloc[:, :-2]  # 根據實際需要調整
+                df_P = df_P.iloc[:, :-1]  # 根據實際需要調整
+                df_C = df_C.iloc[:, :-4]  # 根據實際需要調整
+                
+                # 生成 HTML 表格，不填充任何值
                 reports = [
-                    {'report_type': '資產負債表', 'content': df_B.to_html(index=False)},
-                    {'report_type': '綜合損益表', 'content': df_P.to_html(index=False)},
-                    {'report_type': '現金流量表', 'content': df_C.to_html(index=False)},
+                    {'report_type': '資產負債表', 'content': df_B.to_html(index=False, na_rep='', classes='report-table')},
+                    {'report_type': '綜合損益表', 'content': df_P.to_html(index=False, na_rep='', classes='report-table')},
+                    {'report_type': '現金流量表', 'content': df_C.to_html(index=False, na_rep='', classes='report-table')},
                 ]
                 
                 return render(request, 'display_reports.html', {'reports': reports})

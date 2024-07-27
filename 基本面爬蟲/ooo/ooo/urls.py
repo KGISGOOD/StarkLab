@@ -20,9 +20,7 @@ from myooo import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('home/', views.home),
-    path('search/', views.search),
-    path('stock/', views.stock),
+
     path('query/', views.query_report, name='query_report'),  # 添加 name
     path('update_reports/', views.update_reports, name='update_reports')  # 添加 name
 ]
