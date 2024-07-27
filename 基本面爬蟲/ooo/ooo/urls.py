@@ -15,12 +15,16 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, re_path
+from django.views.generic.base import RedirectView
 from myooo import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-
+    
+    # 设置根路径重定向到 query
+    path('', RedirectView.as_view(url='/query/', permanent=True)),
+    
     path('query/', views.query_report, name='query_report'),  # 添加 name
     path('update_reports/', views.update_reports, name='update_reports')  # 添加 name
 ]

@@ -94,7 +94,10 @@ def query_report(request):
                 
                 # 轉換 HTML 內容為 DataFrame
                 def html_to_df(html):
-                    return pd.read_html(StringIO(html))[0]
+                    try:
+                        return pd.read_html(StringIO(html))[0]
+                    except ValueError:
+                        return pd.DataFrame()  # 返回空的 DataFrame，表示找不到表格
                 
                 df_B = html_to_df(stock.B)
                 df_P = html_to_df(stock.P)
@@ -113,7 +116,11 @@ def query_report(request):
                 df_P = df_P.iloc[:, :-1]  # 根據實際需要調整
                 df_C = df_C.iloc[:, :-4]  # 根據實際需要調整
                 
-                # 生成 HTML 表格，不填充任何值
+                # 如果 DataFrame 是空的，顯示未找到報表的訊息
+                if df_B.empty and df_P.empty and df_C.empty:
+                    return render(request, 'query_report.html', {'error': '未找到報表'})
+                
+                # 生成 HTML 表格
                 reports = [
                     {'report_type': '資產負債表', 'content': df_B.to_html(index=False, na_rep='', classes='report-table')},
                     {'report_type': '綜合損益表', 'content': df_P.to_html(index=False, na_rep='', classes='report-table')},
@@ -124,6 +131,7 @@ def query_report(request):
             except Stock.DoesNotExist:
                 return render(request, 'query_report.html', {'error': '股票代碼不存在。'})
     return render(request, 'query_report.html')
+
 
 
 def update_reports(request):
