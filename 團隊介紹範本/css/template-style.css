@@ -2093,3 +2093,16 @@ video {
     padding: 0;
   }
 }    
+
+.team-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px; /* 可选：设置人物之间的间隙 */
+}
+
+.grid-item {
+  flex: 1;
+  min-width: 45%; /* 设置最小宽度以保证两个人物占据同一行 */
+  max-width: 48%; /* 设置最大宽度 */
+  box-sizing: border-box; /* 确保内外边距不影响总宽度 */
+}
