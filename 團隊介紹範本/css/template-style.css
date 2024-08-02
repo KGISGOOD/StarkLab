@@ -2096,13 +2096,38 @@ video {
 
 .team-row {
   display: flex;
-  flex-wrap: wrap;
-  gap: 20px; /* 可选：设置人物之间的间隙 */
+  flex-wrap: wrap; /* 在窄屏设备上自动换行 */
+  justify-content: space-around; /* 平均分配空白空间，增加项目之间的距离 */
 }
 
 .grid-item {
-  flex: 1;
-  min-width: 45%; /* 设置最小宽度以保证两个人物占据同一行 */
-  max-width: 48%; /* 设置最大宽度 */
-  box-sizing: border-box; /* 确保内外边距不影响总宽度 */
+  flex: 1 1 30%; /* 每个项目占据30%的宽度 */
+  box-sizing: border-box; /* 包括内边距和边框在内计算宽度 */
+  margin: 0 15px 20px; /* 增加左右间距（横向），并保持底部间距 */
 }
+
+.author-bio--stacked {
+  text-align: center; /* 使文本和图片居中 */
+}
+
+.author-bio--stacked img {
+  max-width: 100%; /* 确保图片不会超出容器宽度 */
+  height: auto; /* 保持图片比例 */
+  border-radius: 10px; /* 圆角效果 */
+}
+
+.social-links {
+  list-style: none; /* 移除列表样式 */
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.social-links li {
+  margin: 0 5px;
+}
+
+
+
+
