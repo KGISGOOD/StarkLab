@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>史塔克實驗室</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'myapp/styles.css' %}">
+</head>
+<body>
+    <header>
+        <h1>歡迎來到史塔克實驗室</h1>
+        <nav>
+            <ul>
+                <li><a href="{% url 'index' %}">主頁</a></li>
+                <li><a href="{% url 'achievements' %}">戰績</a></li>
+                <li><a href="{% url 'team' %}">人員</a></li>
+
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <h2>主內容區</h2>
+        <!-- 其他內容 -->
+    </main>
+    <footer>
+        <p>&copy; 2024 史塔克實驗室</p>
+    </footer>
+</body>
+</html>

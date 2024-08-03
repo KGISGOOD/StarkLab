@@ -1,0 +1,36 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>史塔克實驗室 - 戰績</title>
+    <link rel="stylesheet" href="{% static 'myapp/styles.css' %}">
+</head>
+<body>
+    <header>
+        <h1>史塔克實驗室 - 戰績</h1>
+        <nav>
+            <ul>
+                <li><a href="{% url 'index' %}">主頁</a></li>
+                <li><a href="{% url 'achievements' %}">戰績</a></li>
+                <li><a href="{% url 'team' %}">人員</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h2>我們的戰績</h2>
+        <p>我們的實驗室在多個領域取得了顯著的成果，包括：</p>
+        <ul>
+            <li>人工智慧算法的突破性進展</li>
+            <li>機器學習模型的精確度提升</li>
+            <li>與多家企業的合作成功案例</li>
+        </ul>
+    </div>
+
+    <footer>
+        <p>© 2024 史塔克實驗室</p>
+    </footer>
+</body>
+</html>
