@@ -204,7 +204,7 @@ td {border-right:1px solid #fff;}
 .background-primary-hightlight .aside-nav > ul > li.active-item > a:link, .background-primary-hightlight .aside-nav > ul > li.active-item > a:visited,
 .primary-color-primary .background-primary-hightlight .top-nav .active-item > a, .primary-color-primary .background-primary-hightlight .top-nav li a:hover, .primary-color-primary .background-primary-hightlight .aside-nav li a:hover, 
 .primary-color-primary .background-primary-hightlight .aside-nav > ul > li.active-item > a:link, .primary-color-primary .background-primary-hightlight .aside-nav > ul > li.active-item > a:visited {
-  background: #C81010 none repeat scroll 0 0;
+  background: #000000 none repeat scroll 0 0;
   color: #fff;
 }
 .background-dark-hightlight .top-nav .active-item > a, .background-dark-hightlight .top-nav li a:hover, .background-dark-hightlight .aside-nav li a:hover, 
@@ -302,7 +302,7 @@ hr.break-small.break-double.background-white:before, hr.break-small.break-double
 }
 hr.break-small.break-double.background-primary:before, hr.break-small.break-double.background-primary:after,
 .primary-color-primary hr.break-small.break-double.background-primary:before, .primary-color-primary hr.break-small.break-double.background-primary:after {
-  background: #C81010;
+  background: #0d6fb7;
 }
 
 
@@ -420,7 +420,7 @@ aside.aside-left {
 
 .aside-nav.background-primary-hightlight > ul > li > a:hover, .aside-nav.background-primary-hightlight > ul > li.active-item > a:link, .aside-nav.background-primary-hightlight > ul > li.active-item > a:visited,
 .primary-color-primary .aside-nav.background-primary-hightlight > ul > li > a:hover, .primary-color-primary .aside-nav.background-primary-hightlight > ul > li.active-item > a:link, .primary-color-primary .aside-nav.background-primary-hightlight > ul > li.active-item > a:visited {
-  border-color: #C81010;
+  border-color: #0d6fb7;
 }  
 .aside-nav.background-dark-hightlight > ul > li > a:hover, .aside-nav.background-dark-hightlight > ul > li.active-item > a:link, .aside-nav.background-dark-hightlight > ul > li.active-item > a:visited,
 .primary-color-dark .aside-nav.background-primary-hightlight > ul > li > a:hover, .primary-color-dark .aside-nav.background-primary-hightlight > ul > li.active-item > a:link, .primary-color-dark .aside-nav.background-primary-hightlight > ul > li.active-item > a:visited {
@@ -433,7 +433,7 @@ aside.aside-left {
 } 
 .background-dark, .background-dark p, a.background-dark, a.background-dark:visited, a.background-dark:link, .background-dark a, .background-dark a:link, .background-dark a:visited, .background-dark a:hover, .background-dark a:active,
 .primary-color-dark .background-primary, .primary-color-dark .background-primary p, .primary-color-dark a.background-primary, .primary-color-dark a.background-primary:visited, .primary-color-dark a.background-primary:link, .primary-color-dark a.background-primary:visited, .primary-color-dark .background-primary a, .primary-color-dark .background-primary a:link, .primary-color-dark .background-primary a:visited, .primary-color-dark .background-primary a:hover, .primary-color-dark .background-primary a:active {
-  color: #7697A2;
+  color: #ffffff;
 }
 .background-white h1, .background-white h2, .background-white h3, .background-white h4, .background-white h5, .background-white h6,
 .background-white .h1, .background-white .h2, .background-white .h3, .background-white .h4, .background-white .h5, .background-white .h6, 
@@ -457,10 +457,10 @@ aside.aside-left {
   color: #fff;
 }
 .text-white, .text-white *, .primary-color-white .text-primary, .primary-color-white .text-primary * {
-  color: #fff !important;
+  color: #ffffff !important;
 }
 .text-primary, .text-primary *, .primary-color-primary .text-primary, .primary-color-primary .text-primary * {
-  color: #C81010 !important;
+  color: #0d6fb7 !important;
 }
 .text-dark, .text-dark *, .primary-color-dark .text-primary, .primary-color-dark .text-primary * {
   color: #002633 !important;
@@ -476,7 +476,7 @@ aside.aside-left {
   color: #fff !important;
 }
 .text-primary-hover:hover, .primary-color-primary .text-primary-hover:hover {
-  color: #C81010 !important;
+  color: #0d6fb7 !important;
 }
 .text-dark-hover:hover, .primary-color-dark .text-primary-hover:hover {
   color: #002633 !important;
@@ -487,10 +487,10 @@ aside.aside-left {
   background-color: #fff !important;
 }
 .background-primary, .primary-color-primary .background-primary {
-  background-color: #C81010 !important;
+  background-color: #0d6fb7 !important;
 }
 .background-dark, .primary-color-dark .background-primary {
-  background-color: #002633 !important; 
+  background-color: #0d6fb7!important; 
 }
 /* Background Opacity */
 .background-white.background-transparent, .primary-color-white .background-primary.background-transparent {
@@ -1176,7 +1176,7 @@ a.tab-label, a.tab-label:link, a.tab-label:visited, a.tab-label:hover,
 }
 .background-primary-hightlight a.tab-label.active-btn, .background-primary-hightlight a.tab-label:hover,
 .primary-color-primary .background-primary-hightlight a.tab-label.active-btn, .primary-color-primary .background-primary-hightlight a.tab-label:hover {
-  background: #C81010 none repeat scroll 0 0;
+  background: #0d6fb7 none repeat scroll 0 0;
   color: #fff;
 }
 .background-dark-hightlight a.tab-label.active-btn, .background-dark-hightlight a.tab-label:hover,
@@ -1197,7 +1197,7 @@ form.customform input:hover, form.customform textarea:hover, form.customform sel
   background: rgba(0, 0, 0, 0) none repeat scroll 0 0;
 }
 p.form-error {
-  background-color: #DD442C;
+  background-color: #0d6fb7;
   color: #fff;
   display: none;
   font-size: 0.8rem;
@@ -1214,7 +1214,7 @@ p.form-success {
   text-align: center;
 }
 .required {
-  border-left: 1px solid #dd442c !important;
+  border-left: 1px solid #0d6fb7 !important;
 }
 
 
@@ -2130,4 +2130,15 @@ video {
 
 
 
+.margin-m-bottom:nth-of-type(4) {
+  margin-top: 30px; /* 设置适当的数值来调整间距 */
+}
+
+.margin-m-bottom:nth-of-type(5) {
+  margin-top: 30px; /* 设置适当的数值来调整间距 */
+}
+
+.margin-m-bottom:nth-of-type(6) {
+  margin-top: 30px; /* 设置适当的数值来调整间距 */
+}
 

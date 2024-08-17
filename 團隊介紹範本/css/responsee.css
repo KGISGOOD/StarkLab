@@ -14,10 +14,10 @@ body {
   background:none repeat scroll 0 0 #eeeeee;
   font-size:16px;
   font-family:"Open Sans",Arial,sans-serif;
-  color:#444;
+  color:#ffffff;
 }
 h1,h2,h3,h4,h5,h6 {
-  color:#152732;
+  color:#ffffff;
   font-weight: normal;
   line-height: 1.3;
   margin:0.5rem 0;  
@@ -176,9 +176,9 @@ ul.chevron .submenu > a:after, ul.chevron .sub-submenu > a:after,ul.chevron .asi
   font-size:0.7rem;
   margin:0 0.625rem;
 }
-.top-nav .active-item a {background:#2b4c61;}
+.top-nav .active-item a {background:#ffffff;}
 .aside-nav > ul > li.active-item > a:link,.aside-nav > ul > li.active-item > a:visited {
-  background:#2b4c61;
+  background:#ffffff;
   color:#fff;
 }
 @media screen and (min-width:769px) {
@@ -663,7 +663,7 @@ nav.breadcrumb-nav ul li:last-child:after {content:"";}
     cursor:pointer;
     line-height:3;
   }
-  .top-nav li a {background:none repeat scroll 0 0 #1c3849;}
+  .top-nav li a {background:none repeat scroll 0 0 #ffffff;}
   .top-nav > ul {
     height:0;
     max-width:100%;
