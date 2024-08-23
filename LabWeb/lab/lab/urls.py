@@ -22,5 +22,14 @@ from mylab import views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("home/", views.home),
-
+    path("about/", views.about),
+    path("contact/", views.contact),
+    path("gallery/", views.gallery),
+    path("products/", views.products),
+    path("project1/", views.project1),
+    path("project2/", views.project2),
+    path("project3/", views.project3),
+    path("project4/", views.project4),
+    path("project5/", views.project5),
+    path("project6/", views.project6),
 ]

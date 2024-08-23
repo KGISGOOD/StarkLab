@@ -1,3 +1,5 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en-US">
 
@@ -5,23 +7,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>史塔克實驗室</title>
-  <link rel="stylesheet" href="css/components.css">
-  <link rel="stylesheet" href="css/icons.css">
-  <link rel="stylesheet" href="css/responsee.css">
-  <link rel="stylesheet" href="owl-carousel/owl.carousel.css">
-  <link rel="stylesheet" href="owl-carousel/owl.theme.css">
-  <link rel="stylesheet" href="css/template-style.css">
-  <link href='https://fonts.googleapis.com/css?family=Playfair+Display&subset=latin,latin-ext' rel='stylesheet'
-    type='text/css'>
-  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,700,800&subset=latin,latin-ext' rel='stylesheet'
-    type='text/css'>
-  <script type="text/javascript" src="js/jquery-1.8.3.min.js"></script>
-  <script type="text/javascript" src="js/jquery-ui.min.js"></script>
+
+  <!-- 引入 CSS 檔案 -->
+  <link rel="stylesheet" href="{% static 'css/components.css' %}">
+  <link rel="stylesheet" href="{% static 'css/icons.css' %}">
+  <link rel="stylesheet" href="{% static 'css/responsee.css' %}">
+  <link rel="stylesheet" href="{% static 'owl-carousel/owl.carousel.css' %}">
+  <link rel="stylesheet" href="{% static 'owl-carousel/owl.theme.css' %}">
+  <link rel="stylesheet" href="{% static 'css/template-style.css' %}">
+
+  <!-- 引入 Google Fonts -->
+  <link href='https://fonts.googleapis.com/css?family=Playfair+Display&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,700,800&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+
+  <!-- 引入 JS 檔案 -->
+  <script type="text/javascript" src="{% static 'js/jquery-1.8.3.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'js/jquery-ui.min.js' %}"></script>
 </head>
 
 
 <body class="size-1140">
-  
+
   <!-- HEADER -->
   <header role="banner" class="position-absolute">
     <!-- Top Navigation -->
@@ -29,9 +35,9 @@
       <div class="s-12 l-2">
         <a href="index.html" class="logo1">
           <!-- Logo White Version -->
-          <img class="logo-white" src="img/logo1.png" alt="">
+          <img class="logo-white" src="{% static 'img/logo1.png' %}" alt="">
           <!-- Logo Dark Version -->
-          <img class="logo-dark" src="img/logo3.png" alt="">
+          <img class="logo-dark" src="{% static 'img/logo3.png' %}" alt="">
         </a>
       </div>
       <div class="top-nav s-12 l-10">
@@ -39,7 +45,7 @@
         <ul class="right chevron">
           <li><a href="index.html">Home</a></li>
           <li><a href="products.html">研究</a></li>
-          
+
           <li><a href="about.html">關於我們</a></li>
           <li><a href="gallery.html">成員</a></li>
           <li><a href="contact.html">聯絡我們</a></li>
@@ -128,7 +134,10 @@
       <!-- Map -->
       <div class="s-12 m-12 l-6 margin-m-bottom-2x">
         <div class="s-12 grayscale center">
-          <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3614.859181430362!2d121.5073108748323!3d25.038852538097196!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3442a9a09f4fc9eb%3A0x9c2e6c02ad4bc7eb!2z5p2x5ZCz5aSn5a245Z-O5Lit5qCh5Y2A!5e0!3m2!1szh-TW!2stw!4v1722588184263!5m2!1szh-TW!2stw" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3614.859181430362!2d121.5073108748323!3d25.038852538097196!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3442a9a09f4fc9eb%3A0x9c2e6c02ad4bc7eb!2z5p2x5ZCz5aSn5a245Z-O5Lit5qCh5Y2A!5e0!3m2!1szh-TW!2stw!4v1722588184263!5m2!1szh-TW!2stw"
+            width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"></iframe>
         </div>
       </div>
 
@@ -143,7 +152,7 @@
               <h3 class="margin-bottom-0">Company Address</h3>
               <p>100台北市中正區貴陽街一段56號<br>
                 No. 56, Sec. 1, Guiyang St., Zhongzheng Dist., Taipei City
-              </p>               
+              </p>
             </div>
             <div class="float-left">
               <i class="icon-sli-envelope text-primary icon3x"></i>
@@ -151,7 +160,7 @@
             <div class="margin-left-70 margin-bottom-30">
               <h3 class="margin-bottom-0">E-mail</h3>
               <p>D04921004@ntu.edu.tw<br>
-                
+
               </p>
             </div>
             <div class="float-left">
@@ -173,7 +182,7 @@
     <!-- Bottom Footer -->
     <section class="padding background-dark full-width">
       <div class="s-12 l-6">
-        <p class="text-size-12">Copyright 2019, Vision Design - gr  aphic zoo</p>
+        <p class="text-size-12">Copyright 2019, Vision Design - gr aphic zoo</p>
         <p class="text-size-12">All images have been purchased from Bigstock. Do not use the images in your website.</p>
       </div>
       <div class="s-12 l-6">
