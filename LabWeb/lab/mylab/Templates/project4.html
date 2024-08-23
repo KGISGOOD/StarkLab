@@ -87,7 +87,7 @@
           <div class="line margin-top-30">
             <div class="margin">
               <div class="s-12 m-6 l-6">
-                <img src="img/img-01.jpg" alt="">
+                <img src="{% static 'img/img-01.jpg' %}" alt="">
                 <p class="margin-top-30">
                   Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat
                   facer possim assum. Typi non habent claritatem insitam;
@@ -101,7 +101,7 @@
                 </p>
               </div>
               <div class="s-12 m-6 l-6">
-                <img src="img/img-02.jpg" alt="">
+                <img src="{% static 'img/img-02.jpg' %}" alt="">
                 <p class="margin-top-30">
                   Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat
                   facer possim assum. Typi non habent claritatem insitam;
@@ -187,9 +187,10 @@
       </div>
     </section>
   </footer>
-  <script type="text/javascript" src="js/responsee.js"></script>
-  <script type="text/javascript" src="owl-carousel/owl.carousel.js"></script>
-  <script type="text/javascript" src="js/template-scripts.js"></script>
+  <script type="text/javascript" src="{% static 'js/responsee.js' %}"></script>
+  <script type="text/javascript" src="{% static 'owl-carousel/owl.carousel.js' %}"></script>
+  <script type="text/javascript" src="{% static 'js/template-scripts.js' %}"></script>
+  
 </body>
 
 </html>

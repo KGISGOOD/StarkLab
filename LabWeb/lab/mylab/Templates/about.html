@@ -43,12 +43,11 @@
       <div class="top-nav s-12 l-10">
         <p class="nav-text"></p>
         <ul class="right chevron">
-          <li><a href="index.html">Home</a></li>
-          <li><a href="products.html">研究</a></li>
-
-          <li><a href="about.html">關於我們</a></li>
-          <li><a href="gallery.html">成員</a></li>
-          <li><a href="contact.html">聯絡我們</a></li>
+          <li><a href="/home/">Home</a></li>
+          <li><a href="/products/">研究</a></li>
+          <li><a href="/about/">關於我們</a></li>
+          <li><a href="/gallery/">成員</a></li>
+          <li><a href="/contact/">聯絡我們</a></li>
         </ul>
       </div>
     </nav>
@@ -88,7 +87,7 @@
           <div class="line margin-top-30">
             <div class="margin">
               <div class="s-12 m-6 l-6">
-                <img src="img/img-01.jpg" alt="">
+                <img src="{% static 'img/img-01.jpg' %}" alt="">                
                 <p class="margin-top-30">
                   Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat
                   facer possim assum. Typi non habent claritatem insitam;
@@ -102,7 +101,7 @@
                 </p>
               </div>
               <div class="s-12 m-6 l-6">
-                <img src="img/img-02.jpg" alt="">
+                <img src="{% static 'img/img-02.jpg' %}" alt="">                
                 <p class="margin-top-30">
                   Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat
                   facer possim assum. Typi non habent claritatem insitam;
@@ -191,9 +190,9 @@
       </div>
     </section>
   </footer>
-  <script type="text/javascript" src="js/responsee.js"></script>
-  <script type="text/javascript" src="owl-carousel/owl.carousel.js"></script>
-  <script type="text/javascript" src="js/template-scripts.js"></script>
+  <script type="text/javascript" src="{% static 'js/responsee.js' %}"></script>
+  <script type="text/javascript" src="{% static 'owl-carousel/owl.carousel.js' %}"></script>
+  <script type="text/javascript" src="{% static 'js/template-scripts.js' %}"></script>
 </body>
 
 </html>
