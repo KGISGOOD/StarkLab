@@ -17,6 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from mylab import views
+from django.conf import settings
+from django.conf.urls.static import static
 
 
 urlpatterns = [
@@ -32,4 +34,4 @@ urlpatterns = [
     path("project4/", views.project4),
     path("project5/", views.project5),
     path("project6/", views.project6),
-]
+]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
