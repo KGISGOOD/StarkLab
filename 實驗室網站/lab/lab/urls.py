@@ -16,12 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from mylab import views
+from mylab import views , project2_views
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic.base import RedirectView
 
 
 urlpatterns = [
+    #實驗室
     path("admin/", admin.site.urls),
     path("", views.home, name="home"),
     path("about/", views.about),
@@ -34,4 +36,7 @@ urlpatterns = [
     path("project4/", views.project4),
     path("project5/", views.project5),
     path("project6/", views.project6),
+    #project2基本面爬蟲
+    path('query/', project2_views.query_report, name='query_report'),  
+    path('update_reports/', project2_views.update_reports, name='update_reports') ,
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
