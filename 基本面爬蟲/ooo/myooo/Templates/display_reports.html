@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>顯示報表</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            font-size: 14px;
+            background-color: #f5f5f5;
+            overflow-x: hidden;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #ffffff;
+            border-bottom: 2px solid #e0e0e0;
+            z-index: 100;
+            height: 60px;
+            padding: 0 20px;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 0;
+            color: #004d99;
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropbtn {
+            background-color: #004d99;
+            color: white;
+            padding: 8px 12px;
+            font-size: 0.9em;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .dropbtn:hover {
+            background-color: #003d80;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #ffffff;
+            min-width: 180px;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 101;
+            border-radius: 5px;
+            top: 100%;
+            left: 0;
+        }
+
+        .dropdown-content a {
+            color: #333;
+            padding: 10px 12px;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+            transition: background-color 0.3s ease;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f9f9f9;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1400px;
+            margin: 80px auto 20px;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .score-container {
+            margin: 80px auto 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .score {
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            background-color: #f9f9f9;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .score h2 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+            color: #333;
+        }
+
+        .score p {
+            margin: 0;
+            font-size: 18px;
+            color: #555;
+        }
+
+        h2 {
+            margin-top: 120px;
+            font-size: 1.8em;
+            border-bottom: 2px solid #004d99;
+            display: inline-block;
+            padding-bottom: 5px;
+            color: #004d99;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            background-color: #ffffff;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+            word-wrap: break-word;
+        }
+
+        th {
+            background-color: #004d99;
+            color: white;
+            text-transform: uppercase;
+        }
+
+        td:first-child {
+            white-space: nowrap;
+            min-width: 200px;
+            max-width: 500px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #e0e0e0;
+        }
+
+        .no-report {
+            text-align: center;
+            margin-top: 40px;
+            color: #6c757d;
+            font-size: 1.2em;
+        }
+
+        #topBtn {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 30px;
+            z-index: 101;
+            font-size: 18px;
+            border: none;
+            outline: none;
+            background-color: #004d99;
+            color: white;
+            cursor: pointer;
+            padding: 15px;
+            border-radius: 50%;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        #topBtn:hover {
+            background-color: #003d80;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn {
+            background-color: #004d99;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:hover {
+            background-color: #003d80;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .back-btn {
+            margin-right: 30px;; /* 使按鈕不那麼靠邊 */
+            margin-left: 10px; /* 調整與目錄按鈕的距離 */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="dropdown">
+            <button class="dropbtn">目錄</button>
+            <div class="dropdown-content">
+                {% for report in reports %}
+                <a href="#{{ report.report_type }}" onclick="scrollToSection(event, '{{ report.report_type }}')">{{ report.report_type }}</a>
+                {% endfor %}
+            </div>
+        </div>
+        <h1>基本面報表</h1>
+        <button class="btn back-btn" onclick="window.location.href='../query/'">返回查詢</button>
+    </div>
+
+    <div class="score-container">
+        {% if score_data.綜合損益表分數 %}
+        <div class="score">
+            <h2>資產負債表分數 : {{ score_data.資產負債表分數 }}</h2>
+            <br>
+            <h2>綜合損益表分數 : {{ score_data.綜合損益表分數 }}</h2>
+            <br>
+            <h2>現金流量表分數 : {{ score_data.現金流量表分數 }}</h2>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="container">
+        {% if reports %}
+        {% for report in reports %}
+        <h2 id="{{ report.report_type }}">{{ report.report_type }}</h2>
+        <div class="report-content">
+            {{ report.content|safe }}
+        </div>
+        {% endfor %}
+        {% else %}
+        <p class="no-report">未找到報告。</p>
+        {% endif %}
+    </div>
+
+    <button onclick="topFunction()" id="topBtn" title="回到頂部">Top</button>
+
+    <script>
+        function scrollToSection(event, id) {
+            event.preventDefault();
+            const targetElement = document.getElementById(id);
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 60, // 60px 是 header 高度
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        window.onscroll = function () { scrollFunction() };
+
+        function scrollFunction() {
+            if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                document.getElementById("topBtn").style.display = "block";
+            } else {
+                document.getElementById("topBtn").style.display = "none";
+            }
+        }
+
+        function topFunction() {
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0;
+        }
+    </script>
+</body>
+
+</html>
