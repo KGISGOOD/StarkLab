@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% load static %}
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>什麼是三大報表</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1,
+        h2 {
+            color: #333;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>什麼是三大報表</h1>
+
+    <div class="section">
+        <h2>現金流量表</h2>
+        <p>記錄企業在「一段特定時間」（通常為一季或一年）內，所有現金流入、流出的狀況，統計各種不同性質的現金流，最後彙編製成「現金流量表」。</p>
+
+        <div style="display: flex; align-items: flex-start;">
+            <ul style="flex: 1; margin-right: 20px; line-height: 1.8;">
+                <li>營業活動現金流量：「經營行為」產生的現金流。</li>
+                <li>投資活動現金流量：「投資行為」產生的現金流。</li>
+                <li>融資活動現金流量：「籌措或調度資金」產生的現金流。</li>
+            </ul>
+
+            <img src="{% static 'img/p15.png' %}" alt="現金流量表"
+                style="max-width: 40%; height: auto; margin-right: 200px;">
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>損益表</h2>
+        <p>主要是完整記載企業所有的「資產」與「負債」，最終計算、揭露出企業「當期的財務狀況」，並可以反映出企業擁有的資源之分布狀況。</p>
+        <ul>
+            <li>營業收入：指公司在日常業務過程中，通過銷售貨品或提供服務所取得的收入。</li>
+            <li>毛利：指營業收入減去銷售成本後的餘額。</li>
+            <li>稅後淨利：指從所得稅扣除前年所剩餘利潤。</li>
+            <li>EPS：公司每股能賺取多少錢。</li>
+            <li>ROE：指淨利潤占股東權益比率，衡量企業報酬能力。</li>
+            <li>營業利益：看出公司有沒有好好經營。</li>
+        </ul>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px;">
+            <img src="{% static 'img/p14.png' %}" alt="EPS" style="width: 100%; height: auto; display: block; margin: auto;">
+            <img src="{% static 'img/p13.png' %}" alt="ROE" style="width: 100%; height: auto; display: block; margin: auto;">
+            <img src="{% static 'img/p12.png' %}" alt="營業收入" style="width: 100%; height: auto; display: block; margin: auto;">
+            <img src="{% static 'img/p11.png' %}" alt="毛利" style="width: 100%; height: auto; display: block; margin: auto;">
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>資產負債表</h2>
+        <h3>資產</h3>
+        <p>流動資產 (Current Assets)：這些是能在一年內轉換為現金或用掉的資產。包括現金、應收帳款、存貨和預付費用等。</p>
+        <p>非流動資產 (Non-current Assets)：這些資產的使用期限通常超過一年。包括固定資產（如設備、機器、土地、建築物等）、無形資產（如專利、商標）和長期投資。</p>
+
+        <h3>負債</h3>
+        <p>流動負債 (Current Liabilities)：這些是企業需要在一年內償還的債務，如應付帳款、短期借款和應付費用等。</p>
+        <p>非流動負債 (Non-current Liabilities)：這些是償還期限超過一年的負債，例如長期借款、公司債。</p>
+
+        <h3>股東權益</h3>
+        <p>股東權益是公司資產中扣除所有負債後，屬於股東的部分。簡單來說，它是公司真正「擁有的東西」減去欠別人的錢後，剩下來的部分。這代表股東對公司擁有的價值。</p>
+        <p>股東權益 = 資產 - 負債。這個數字可以讓投資者知道公司是「淨賺」還是「虧損」。</p>
+    </div>
+</body>
+
+</html>
