@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -21,8 +21,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-42f9k^hu48o(_ww4b0_q8he*!sstr5(5s*z#^u_&rx0+5_ou&n"
-LINE_CHANNEL_ACCESS_TOKEN = 'VhyNi3n9ZMaAcWwAkabbGKvL4Cl+nY8uO9wVlZF5cRpF0tyfVfoYlt5QHouYjD8wZlnAyWiBqzb3cfmmxi6H/OU67cJpfF0zxiUsf4J3l8RxvJfFR8QF0EDVHUDVKPJOzgC2dXJyOXUL9m84vBvrOgdB04t89/1O/w1cDnyilFU='
-LINE_CHANNEL_SECRET = 'd14d0af4f789ebb2c7e962b34527fa73'
+LINE_CHANNEL_ACCESS_TOKEN = '6xNHe1IgbtC0TH56mfiIB03qRgmMY9GHTf7oM9NUzXdMOOrBceHUQF0+uvvOsN94ZlnAyWiBqzb3cfmmxi6H/OU67cJpfF0zxiUsf4J3l8T0ODCbWuYJUGW9U3jXLNjX0Y456Tjdw4gCfNJAa0+sUwdB04t89/1O/w1cDnyilFU='
+LINE_CHANNEL_SECRET ='4512eda21eea9355554a44a6f8c210e7'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -57,7 +57,7 @@ ROOT_URLCONF = "linebottest.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        'DIRS': [os.path.join(BASE_DIR,'templates')],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -106,9 +106,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
-
-TIME_ZONE = "UTC"
+LANGUAGE_CODE = 'zh-Hant'
+TIME_ZONE = 'Asia/Taiwan'
 
 USE_I18N = True
 
@@ -119,6 +118,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = "static/"
+STATICFILES_DIRS =[
+    os.path.join(BASE_DIR,'static')
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
