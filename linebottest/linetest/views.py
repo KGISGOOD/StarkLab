@@ -28,7 +28,14 @@ def callback(request):
 
         for event in events:
             if isinstance(event, MessageEvent):
-                line_bot_api.reply_message(event.reply_token, TextSendMessage(text=event.message.text))
+                line_bot_api.reply_message(
+                    event.reply_token,
+                    [
+                        TextSendMessage(text=event.message.text),
+                        TextSendMessage(text='你好'),
+          
+                    ]
+                )
 
         return HttpResponse()
     else:
