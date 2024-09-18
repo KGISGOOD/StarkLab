@@ -37,14 +37,23 @@ def callback(request):
 
         for event in events:
             if isinstance(event, MessageEvent):
-                line_bot_api.reply_message(
-                    event.reply_token,
-                    [
-                        TextSendMessage(text=event.message.text),
-                        TextSendMessage(text='你好'),
-          
-                    ]
-                )
+                user_message = event.message.text.strip()
+                
+                if user_message.startswith('查詢'):
+                    # 處理股票代號輸入
+                    stock_code = user_message[2:].strip()
+                    if stock_code.isdigit():
+                        response = get_stock_scores(stock_code)
+                    else:
+                        response = TextSendMessage(text='請在 "查詢" 後輸入有效的股票代號。')
+                elif user_message == '更新報表':
+                    # 處理更新報表請求
+                    response = update_reports_for_line()
+                else:
+                    # 默認回覆
+                    response = TextSendMessage(text='你好，我是股票查詢機器人。\n請輸入 "查詢 [股票代號]" 來查詢報表分數，或輸入 "更新報表" 來更新報表。')
+
+                line_bot_api.reply_message(event.reply_token, response)
 
         return HttpResponse()
     else:
