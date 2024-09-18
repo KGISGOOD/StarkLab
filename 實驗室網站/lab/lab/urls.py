@@ -25,7 +25,6 @@ from django.views.generic.base import RedirectView
 urlpatterns = [
     #實驗室
     path("admin/", admin.site.urls),
-    re_path(r'^callback/$', views.callback),
     path("", views.home, name="home"),
     path("about/", views.about),
     path("contact/", views.contact),
@@ -44,6 +43,7 @@ urlpatterns = [
     path('etf/', project1_views.etf, name='etf'),
     path('report/', project1_views.Report, name='report'),
     #project2基本面爬蟲
+    re_path(r'^callback/$', project2_views.callback),
     path('query/', project2_views.query_report, name='query_report'),  
     path('update_reports/', project2_views.update_reports, name='update_reports') ,
 ]
