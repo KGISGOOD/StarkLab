@@ -209,7 +209,7 @@ def fetch_news_data():
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
 
-    cursor.execute(f'SELECT title, link, content, source, date FROM {table_name}')
+    cursor.execute(f'SELECT id, title, link, content, source, date FROM {table_name}')
     news_data = cursor.fetchall()
 
     conn.close()
@@ -217,14 +217,16 @@ def fetch_news_data():
     news_list = []
     for row in news_data:
         news_list.append({
-            'title': row[0],
-            'link': row[1],
-            'content': row[2],
-            'source': row[3],
-            'date': row[4]
+            'id': row[0],  # 加入 id 欄位
+            'title': row[1],
+            'link': row[2],
+            'content': row[3],
+            'source': row[4],
+            'date': row[5]
         })
     
     return news_list
+
 
 def news_view(request):
     news_list = fetch_news_data()
