@@ -4,6 +4,8 @@ import os
 import sqlite3
 import requests
 from bs4 import BeautifulSoup
+import time
+
 import csv
 import re
 from selenium import webdriver
@@ -67,33 +69,46 @@ def extract_final_url(google_news_url):
         return match.group(1)
     return google_news_url
 
-def fetch_article_content(driver, source_name, url):
-    try:
-        driver.get(url)
-        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'p')))
+def fetch_article_content(driver, source_name, url, retries=3, timeout=30):
+    for attempt in range(retries):
+        try:
+            driver.set_page_load_timeout(timeout)
+            driver.get(url)
 
-        content = ''
-        if source_name == '經濟日報':
-            paragraphs = driver.find_elements(By.CSS_SELECTOR, 'section.article-body__editor p')
-            content = '\n'.join([p.text for p in paragraphs])
-        elif source_name == 'Yahoo奇摩新聞':
-            paragraphs = driver.find_elements(By.CSS_SELECTOR, 'div.caas-body p')
-            content = '\n'.join([p.text for p in paragraphs])
-        elif source_name == 'Newtalk新聞':
-            paragraphs = driver.find_elements(By.CSS_SELECTOR, 'div.articleBody.clearfix p')
-            content = '\n'.join([p.text for p in paragraphs])
-        elif source_name == '自由時報':
-            paragraphs = driver.find_elements(By.CSS_SELECTOR, 'p')
-            content = '\n'.join([p.text.strip() for p in paragraphs])
+            WebDriverWait(driver, timeout).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, 'p'))
+            )
 
-        if not content.strip():
-            content = '未找到內容'
+            content = ''
+            if source_name == '經濟日報':
+                paragraphs = driver.find_elements(By.CSS_SELECTOR, 'section.article-body__editor p')
+                content = '\n'.join([p.text for p in paragraphs])
+            elif source_name == 'Yahoo奇摩新聞':
+                paragraphs = driver.find_elements(By.CSS_SELECTOR, 'div.caas-body p')
+                content = '\n'.join([p.text for p in paragraphs])
+            elif source_name == 'Newtalk新聞':
+                paragraphs = driver.find_elements(By.CSS_SELECTOR, 'div.articleBody.clearfix p')
+                content = '\n'.join([p.text for p in paragraphs])
+            elif source_name == '自由時報':
+                paragraphs = driver.find_elements(By.CSS_SELECTOR, 'p')
+                content = '\n'.join([p.text.strip() for p in paragraphs])
 
-        return content
+            if not content.strip():
+                content = '未找到內容'
 
-    except Exception as e:
-        print(f"抓取內容時發生錯誤: {e}")
-        return '錯誤'
+            return content
+
+        except Exception as e:
+            print(f"第 {attempt + 1} 次嘗試抓取內容失敗: {e}")
+
+            if attempt < retries - 1:
+                print(f"嘗試重新爬取...（剩餘嘗試次數：{retries - attempt - 1}）")
+                time.sleep(2)
+            else:
+                print("多次嘗試後仍然失敗，停止嘗試。")
+                return '錯誤'
+
+    return '錯誤'
 
 def main():
     urls = [
