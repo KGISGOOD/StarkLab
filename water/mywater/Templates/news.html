@@ -4,9 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>新聞列表</title>
+    <script>
+        function updateNews() {
+            fetch('/update/')
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);  // 顯示更新完成的訊息
+                    location.reload();    // 重新加載頁面
+                })
+                .catch(error => {
+                    console.error('錯誤:', error);
+                    alert('更新失敗！');
+                });
+        }
+    </script>
 </head>
 <body>
     <h1>新聞列表</h1>
+    <button onclick="updateNews()">更新新聞</button>  <!-- 更新按鈕 -->
+
     <table border="1">
         <thead>
             <tr>
@@ -18,11 +34,11 @@
             </tr>
         </thead>
         <tbody>
-            {% for news in news_list %}
+            {% for news in news_list|slice:":5" %}
             <tr>
                 <td>{{ news.title }}</td>
                 <td><a href="{{ news.link }}" target="_blank">查看新聞</a></td>
-                <td>{{ news.content|truncatechars:100 }}</td>  <!-- 顯示前100個字符 -->
+                <td>{{ news.content|add_line_breaks:30|safe }}</td>  <!-- 每30個字換行 -->
                 <td>{{ news.source }}</td>
                 <td>{{ news.date }}</td>
             </tr>

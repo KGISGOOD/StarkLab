@@ -18,10 +18,10 @@ from django.contrib import admin
 from django.urls import path
 from mywater import views
 
-
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path('news/', views.news_view, name='news_view'),
-
+    path("news/", views.news_view, name='news_list'),  # 新增新聞列表視圖
+    path("update/", views.update_news, name='update_news'),  # 新增更新爬蟲的視圖
 ]
+
 

@@ -1,12 +1,10 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 import pandas as pd
 import os
 import sqlite3
-
 import requests
 from bs4 import BeautifulSoup
 import csv
-import pandas as pd
 import re
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -15,15 +13,12 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import time
-import os
-import sqlite3
 
 # 爬取新聞的函數
 def fetch_news(url):
     try:
         response = requests.get(url)
-        response.raise_for_status()  # 檢查請求是否成功
+        response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
 
         articles = soup.find_all('article', class_='IFHyqb')
@@ -58,7 +53,7 @@ def fetch_news(url):
 def save_to_csv(news_items, filename):
     headers = ['標題', '連結', '來源', '時間']
     if os.path.exists(filename):
-        os.remove(filename)  # 刪除舊的 CSV 文件
+        os.remove(filename)
     with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=headers)
         writer.writeheader()
@@ -68,7 +63,7 @@ def save_to_csv(news_items, filename):
 # 設置 Chrome 的選項
 def setup_chrome_driver():
     chrome_options = Options()
-    chrome_options.add_argument('--headless')  # 無頭模式
+    chrome_options.add_argument('--headless')
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument('--disable-gpu')
@@ -89,19 +84,15 @@ def fetch_article_content(driver, source_name, url):
         WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'p')))
 
         content = ''
-
         if source_name == '經濟日報':
             paragraphs = driver.find_elements(By.CSS_SELECTOR, 'section.article-body__editor p')
             content = '\n'.join([p.text for p in paragraphs])
-
         elif source_name == 'Yahoo奇摩新聞':
             paragraphs = driver.find_elements(By.CSS_SELECTOR, 'div.caas-body p')
             content = '\n'.join([p.text for p in paragraphs])
-
         elif source_name == 'Newtalk新聞':
             paragraphs = driver.find_elements(By.CSS_SELECTOR, 'div.articleBody.clearfix p')
             content = '\n'.join([p.text for p in paragraphs])
-
         elif source_name == '自由時報':
             paragraphs = driver.find_elements(By.CSS_SELECTOR, 'p')
             content = '\n'.join([p.text.strip() for p in paragraphs])
@@ -149,7 +140,7 @@ def main():
 
     output_file = 'w.csv'
     if os.path.exists(output_file):
-        os.remove(output_file)  # 刪除舊的爬取結果文件
+        os.remove(output_file)
 
     for _, row in filtered_df.iterrows():
         source_name = row['來源']
@@ -165,7 +156,6 @@ def main():
                 '內文': content,
                 '來源': source_name,
                 '時間': row['時間']
-                
             }
 
             output_df = pd.DataFrame([result])
@@ -185,14 +175,10 @@ def main():
     db_name = 'w.db'
     table_name = 'news'
 
-    # 讀取 CSV 文件
     df = pd.read_csv('w.csv')
-
-    # 連接到 SQLite 資料庫（如果文件不存在，則會創建該文件）
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
 
-    # 創建表格（如果不存在）
     cursor.execute(f'''
     CREATE TABLE IF NOT EXISTS {table_name} (
         title TEXT,
@@ -203,43 +189,31 @@ def main():
     )
     ''')
 
-    # 清空表格中的資料
     cursor.execute(f'DELETE FROM {table_name}')
 
-    # 插入資料到表格
     for _, row in df.iterrows():
         cursor.execute(f'''
         INSERT INTO {table_name} (title, link, content, source, date)
         VALUES (?, ?, ?, ?, ?)
         ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間']))
 
-    # 提交更改並關閉連接
     conn.commit()
     conn.close()
 
     print('CSV 資料已成功存儲到 SQLite 資料庫中')
 
-if __name__ == "__main__":
-    main()
-
-
-    
 def fetch_news_data():
     db_name = 'w.db'
     table_name = 'news'
 
-    # 連接到 SQLite 資料庫
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
 
-    # 從資料庫中讀取資料
     cursor.execute(f'SELECT title, link, content, source, date FROM {table_name}')
     news_data = cursor.fetchall()
 
-    # 關閉連接
     conn.close()
 
-    # 將資料轉換為字典列表
     news_list = []
     for row in news_data:
         news_list.append({
@@ -255,3 +229,7 @@ def fetch_news_data():
 def news_view(request):
     news_list = fetch_news_data()
     return render(request, 'news.html', {'news_list': news_list})
+
+def update_news(request):
+    main()  # 確保在這裡引用主函數
+    return redirect('news_list')  # 確保在這裡引用正確的路由名稱
