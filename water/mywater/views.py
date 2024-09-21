@@ -49,17 +49,6 @@ def fetch_news(url):
         print(f"抓取新聞時發生錯誤: {e}")
         return []
 
-# 保存到 CSV 文件的函數
-def save_to_csv(news_items, filename):
-    headers = ['標題', '連結', '來源', '時間']
-    if os.path.exists(filename):
-        os.remove(filename)
-    with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=headers)
-        writer.writeheader()
-        for item in news_items:
-            writer.writerow(item)
-
 # 設置 Chrome 的選項
 def setup_chrome_driver():
     chrome_options = Options()
@@ -128,38 +117,55 @@ def main():
         news_items = fetch_news(url)
         all_news_items.extend(news_items)
 
-    filename = '123all_news.csv'
-    save_to_csv(all_news_items, filename)
-    print(f"所有新聞已保存到 {filename}")
-
-    df = pd.read_csv(filename)
-    valid_sources = {'經濟日報', 'Yahoo奇摩新聞', 'Newtalk新聞', '自由時報'}
-    filtered_df = df[df['來源'].isin(valid_sources)]
-
     driver = setup_chrome_driver()
 
+    db_name = 'w.db'
+    table_name = 'news'
+
+    # 設置資料庫
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+    cursor.execute(f'''
+    CREATE TABLE IF NOT EXISTS {table_name} (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT,
+        link TEXT,
+        content TEXT,
+        source TEXT,
+        date TEXT
+    )
+    ''')
+    
     output_file = 'w.csv'
     if os.path.exists(output_file):
         os.remove(output_file)
 
-    for _, row in filtered_df.iterrows():
-        source_name = row['來源']
-        original_url = row['連結']
+    # 爬取新聞並同時儲存到 CSV 和資料庫
+    for item in all_news_items:
+        source_name = item['來源']
+        original_url = item['連結']
         final_url = extract_final_url(original_url)
 
         content = fetch_article_content(driver, source_name, final_url)
 
         if content != '未找到內容' and content != '錯誤':
             result = {
-                '標題': row['標題'],
+                '標題': item['標題'],
                 '連結': original_url,
                 '內文': content,
                 '來源': source_name,
-                '時間': row['時間']
+                '時間': item['時間']
             }
 
+            # 保存到 CSV
             output_df = pd.DataFrame([result])
             output_df.to_csv(output_file, mode='a', header=not os.path.exists(output_file), index=False, encoding='utf-8')
+
+            # 保存到資料庫
+            cursor.execute(f'''
+            INSERT INTO {table_name} (title, link, content, source, date)
+            VALUES (?, ?, ?, ?, ?)
+            ''', (result['標題'], result['連結'], result['內文'], result['來源'], result['時間']))
 
             print(f"標題: {result['標題']}")
             print(f"連結: {result['連結']}")
@@ -168,39 +174,11 @@ def main():
             print(f"時間: {result['時間']}")
             print('-' * 80)
 
-    print('爬取後的內容已輸出到控制台')
-
-    driver.quit()
-
-    db_name = 'w.db'
-    table_name = 'news'
-
-    df = pd.read_csv('w.csv')
-    conn = sqlite3.connect(db_name)
-    cursor = conn.cursor()
-
-    cursor.execute(f'''
-    CREATE TABLE IF NOT EXISTS {table_name} (
-        title TEXT,
-        link TEXT,
-        content TEXT,
-        source TEXT,
-        date TEXT
-    )
-    ''')
-
-    cursor.execute(f'DELETE FROM {table_name}')
-
-    for _, row in df.iterrows():
-        cursor.execute(f'''
-        INSERT INTO {table_name} (title, link, content, source, date)
-        VALUES (?, ?, ?, ?, ?)
-        ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間']))
-
     conn.commit()
     conn.close()
+    driver.quit()
 
-    print('CSV 資料已成功存儲到 SQLite 資料庫中')
+    print('爬取後的內容已成功儲存到 CSV 和 SQLite 資料庫中')
 
 def fetch_news_data():
     db_name = 'w.db'
@@ -217,7 +195,7 @@ def fetch_news_data():
     news_list = []
     for row in news_data:
         news_list.append({
-            'id': row[0],  # 加入 id 欄位
+            'id': row[0],
             'title': row[1],
             'link': row[2],
             'content': row[3],
@@ -227,11 +205,13 @@ def fetch_news_data():
     
     return news_list
 
-
 def news_view(request):
     news_list = fetch_news_data()
     return render(request, 'news.html', {'news_list': news_list})
 
+
+from django.http import JsonResponse
+
 def update_news(request):
-    main()  # 確保在這裡引用主函數
-    return redirect('news_list')  # 確保在這裡引用正確的路由名稱
+    main()  # 執行爬取新聞的函數
+    return JsonResponse({'message': '新聞更新成功！'})

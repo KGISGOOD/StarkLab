@@ -34,7 +34,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for news in news_list|slice:":5" %}
+            {% for news in news_list %}
             <tr>
                 <td>{{ news.title }}</td>
                 <td><a href="{{ news.link }}" target="_blank">查看新聞</a></td>
