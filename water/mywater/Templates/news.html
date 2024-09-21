@@ -38,7 +38,7 @@
             <tr>
                 <td>{{ news.title }}</td>
                 <td><a href="{{ news.link }}" target="_blank">查看新聞</a></td>
-                <td>{{ news.content|add_line_breaks:30|safe }}</td>  <!-- 每30個字換行 -->
+                <td>{{ news.content|linebreaks|safe }}</td>  <!-- 使用 linebreaks -->
                 <td>{{ news.source }}</td>
                 <td>{{ news.date }}</td>
             </tr>
