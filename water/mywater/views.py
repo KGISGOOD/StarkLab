@@ -172,7 +172,7 @@ def main():
 
     driver.quit()
 
-    db_name = 'db.sqlite3'
+    db_name = 'w.db'
     table_name = 'news'
 
     df = pd.read_csv('w.csv')
