@@ -16,7 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from mywater import views
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path('news/', views.news_view, name='news_view'),
+
 ]
+

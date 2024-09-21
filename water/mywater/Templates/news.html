@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新聞列表</title>
+</head>
+<body>
+    <h1>新聞列表</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>標題</th>
+                <th>連結</th>
+                <th>內容</th>
+                <th>來源</th>
+                <th>時間</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for news in news_list %}
+            <tr>
+                <td>{{ news.title }}</td>
+                <td><a href="{{ news.link }}" target="_blank">查看新聞</a></td>
+                <td>{{ news.content|truncatechars:100 }}</td>  <!-- 顯示前100個字符 -->
+                <td>{{ news.source }}</td>
+                <td>{{ news.date }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
