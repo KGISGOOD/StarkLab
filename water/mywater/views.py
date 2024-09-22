@@ -197,7 +197,7 @@ def main():
     end_time = time.time()
     elapsed_time = end_time - start_time
     print(f'爬取新聞並儲存資料共耗時 {elapsed_time:.2f} 秒')
-
+    print('新聞更新已完成！')
     print('爬取後的內容已成功儲存到 CSV 和 SQLite 資料庫中')
 
 def fetch_news_data():
