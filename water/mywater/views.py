@@ -235,3 +235,28 @@ from django.http import JsonResponse
 def update_news(request):
     main()  # 執行爬取新聞的函數
     return JsonResponse({'message': '新聞更新成功！'})
+
+
+# views.py
+from django.http import JsonResponse
+from .models import Music
+
+def music_list(request):
+    if request.method == 'GET':
+        # 查詢所有音樂記錄，並返回歌曲和歌手
+        music = Music.objects.all().values('song', 'singer', 'last_modify_date', 'created')
+        return JsonResponse(list(music), safe=False)
+    
+import json
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+
+@csrf_exempt
+def music_create(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        music = Music.objects.create(
+            song=data['song'],
+            singer=data['singer']
+        )
+        return JsonResponse({"message": "Music created", "music_id": music.id}, status=201)
