@@ -69,13 +69,12 @@ def extract_final_url(google_news_url):
         return match.group(1)
     return google_news_url
 
-def fetch_article_content(driver, source_name, url, retries=3, timeout=30):
+def fetch_article_content(driver, source_name, url, retries=3):
     for attempt in range(retries):
         try:
-            driver.set_page_load_timeout(timeout)
             driver.get(url)
 
-            WebDriverWait(driver, timeout).until(
+            WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, 'p'))
             )
 
@@ -110,7 +109,9 @@ def fetch_article_content(driver, source_name, url, retries=3, timeout=30):
 
     return '錯誤'
 
+
 def main():
+    start_time = time.time()
     urls = [
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際大雨 when:30d
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際豪雨 when:30d
@@ -161,7 +162,7 @@ def main():
         original_url = item['連結']
         final_url = extract_final_url(original_url)
 
-        content = fetch_article_content(driver, source_name, final_url)
+        content = fetch_article_content(driver, source_name, final_url, retries=3)
 
         if content != '未找到內容' and content != '錯誤':
             result = {
@@ -192,6 +193,10 @@ def main():
     conn.commit()
     conn.close()
     driver.quit()
+
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f'爬取新聞並儲存資料共耗時 {elapsed_time:.2f} 秒')
 
     print('爬取後的內容已成功儲存到 CSV 和 SQLite 資料庫中')
 
