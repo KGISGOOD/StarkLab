@@ -16,10 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from mywater import views
+from django.shortcuts import redirect
+from mywater import views  # 確保 import views 正確
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("", lambda request: redirect("/news/")),  # 根路徑導向 /news/
     path("news/", views.news_view, name='news_list'),  # 新增新聞列表視圖
     path("news/create/", views.news_create, name='news_create'),  # 新增新聞創建視圖 (POST)
     path("update/", views.update_news, name='update_news'),  # 新增更新爬蟲的視圖
