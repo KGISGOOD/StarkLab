@@ -239,19 +239,33 @@ def update_news(request):
 
 # views.py
 from django.http import JsonResponse
+from django.shortcuts import render
 from .models import News
+import json
+from django.views.decorators.csrf import csrf_exempt
 
+# 處理新聞列表及搜尋功能
+def news_view(request):
+    # 取得搜尋關鍵字
+    query = request.GET.get('search', '')
+
+    # 查詢新聞資料，如果有搜尋關鍵字，則過濾標題中包含該關鍵字的新聞
+    if query:
+        news_list = News.objects.filter(title__icontains=query)
+    else:
+        news_list = News.objects.all()
+
+    # 將新聞列表傳遞給模板
+    return render(request, 'news.html', {'news_list': news_list})
+
+# RESTful API 查詢所有新聞資料並以JSON格式返回
 def news_list(request):
     if request.method == 'GET':
         # 查詢所有新聞記錄，並返回標題、連結、內容、來源和日期
         news = News.objects.all().values('title', 'link', 'content', 'source', 'date')
         return JsonResponse(list(news), safe=False)
 
-import json
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-from .models import News
-
+# RESTful API 新增新聞資料
 @csrf_exempt
 def news_create(request):
     if request.method == 'POST':
