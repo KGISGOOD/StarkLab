@@ -63,46 +63,41 @@
         document.getElementById('update-news-btn').addEventListener('click', function() {
             // 顯示進度條
             document.getElementById('progress-container').style.display = 'block';
-    
-            // 開始更新新聞並輪詢進度
+
+            // 設置進度條初始值
+            var progressElement = document.getElementById('progress');
+            var progress = 0;
+
+            // 每秒更新一次進度條
             var interval = setInterval(function() {
-                // 透過 AJAX 發送獲取進度和新聞的請求
-                fetch('/news/progress/')
-                .then(response => response.json())
-                .then(data => {
-                    var progressElement = document.getElementById('progress');
-                    var progress = data.progress;
-    
-                    // 更新進度條
-                    progressElement.style.width = progress + '%';
-                    progressElement.innerHTML = progress + '%';
-    
-                    // 更新新聞列表
-                    var newsListElement = document.querySelector('ul');
-                    newsListElement.innerHTML = '';  // 清空現有的新聞列表
-                    data.news_list.forEach(function(news) {
-                        var newsItem = `
-                            <li>
-                                <a href="${news.link}">${news.title}</a><br>
-                                <p>${news.content}</p>
-                                <small>Source: ${news.source} | Date: ${news.date}</small>
-                            </li>`;
-                        newsListElement.innerHTML += newsItem;
-                    });
-    
-                    // 當進度達到 100% 時，停止輪詢
-                    if (progress >= 100) {
-                        clearInterval(interval);
-                        alert('更新完成！');
-                        document.getElementById('progress-container').style.display = 'none';
-                    }
-                })
-                .catch(error => {
-                    alert('更新失敗！');
-                    clearInterval(interval);  // 如果發生錯誤，停止輪詢
-                    document.getElementById('progress-container').style.display = 'none';
-                });
-            }, 2000);  // 每 2 秒輪詢一次
+                progress += 10;
+                progressElement.style.width = progress + '%';
+                progressElement.innerHTML = progress + '%';
+
+                // 當進度條滿時停止更新
+                if (progress >= 100) {
+                    clearInterval(interval);
+                }
+            }, 1000);
+
+            // 透過 AJAX 發送更新新聞的請求
+            fetch('/update/', {
+                method: 'GET',
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 更新完成後顯示已更新完成
+                alert('更新完成！');
+                // 更新完成後將進度條重置並隱藏
+                progressElement.style.width = '0%';
+                progressElement.innerHTML = '0%';
+                document.getElementById('progress-container').style.display = 'none';
+            })
+            .catch(error => {
+                alert('更新失敗！');
+                // 失敗後隱藏進度條
+                document.getElementById('progress-container').style.display = 'none';
+            });
         });
     </script>
 </body>
