@@ -225,11 +225,6 @@ def fetch_news_data():
     
     return news_list
 
-def news_view(request):
-    news_list = fetch_news_data()
-    return render(request, 'news.html', {'news_list': news_list})
-
-
 from django.http import JsonResponse
 
 def update_news(request):
@@ -257,6 +252,7 @@ def news_view(request):
 
     # 將新聞列表傳遞給模板
     return render(request, 'news.html', {'news_list': news_list})
+
 
 # RESTful API 查詢所有新聞資料並以JSON格式返回
 def news_list(request):
