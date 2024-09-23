@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News List</title>
+    <style>
+        /* 進度條樣式 */
+        #progress-bar {
+            width: 100%;
+            background-color: #f3f3f3;
+        }
+
+        #progress {
+            width: 0%;
+            height: 30px;
+            background-color: #4caf50;
+            text-align: center;
+            line-height: 30px;
+            color: white;
+        }
+
+        /* 隱藏進度條 */
+        #progress-container {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>News List</h1>
+
+    <!-- 搜尋框 -->
+    <form method="GET" action="{% url 'news_list' %}">
+        <input type="text" name="search" placeholder="Search for news...">
+        <button type="submit">Search</button>
+    </form>
+
+    <!-- 更新新聞按鈕 -->
+    <button id="update-news-btn">Update News</button>
+
+    <!-- 進度條容器 -->
+    <div id="progress-container">
+        <div id="progress-bar">
+            <div id="progress">0%</div>
+        </div>
+    </div>
+
+    <!-- 顯示新聞列表 -->
+    <ul>
+        {% for news in news_list %}
+        <li>
+            <a href="{{ news.link }}">{{ news.title }}</a><br>
+            <p>{{ news.content }}</p>
+            <small>Source: {{ news.source }} | Date: {{ news.date }}</small>
+        </li>
+        {% empty %}
+        <p>No news found.</p>
+        {% endfor %}
+    </ul>
+
+    <!-- 使用 JavaScript 處理按鈕點擊事件和進度條 -->
+    <script>
+        document.getElementById('update-news-btn').addEventListener('click', function() {
+            // 顯示進度條
+            document.getElementById('progress-container').style.display = 'block';
+
+            // 設置進度條初始值
+            var progressElement = document.getElementById('progress');
+            var progress = 0;
+
+            // 每秒更新一次進度條
+            var interval = setInterval(function() {
+                progress += 10;
+                progressElement.style.width = progress + '%';
+                progressElement.innerHTML = progress + '%';
+
+                // 當進度條滿時停止更新
+                if (progress >= 100) {
+                    clearInterval(interval);
+                }
+            }, 1000);
+
+            // 透過 AJAX 發送更新新聞的請求
+            fetch('/update/', {
+                method: 'GET',
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 更新完成後顯示已更新完成
+                alert('更新完成！');
+                // 更新完成後將進度條重置並隱藏
+                progressElement.style.width = '0%';
+                progressElement.innerHTML = '0%';
+                document.getElementById('progress-container').style.display = 'none';
+            })
+            .catch(error => {
+                alert('更新失敗！');
+                // 失敗後隱藏進度條
+                document.getElementById('progress-container').style.display = 'none';
+            });
+        });
+    </script>
+</body>
+</html>

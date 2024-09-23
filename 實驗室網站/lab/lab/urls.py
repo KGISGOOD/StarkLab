@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path ,re_path
-from mylab import views , project1_views, project2_views
+from mylab import views , project1_views, project2_views, project3_views
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic.base import RedirectView
@@ -46,4 +46,10 @@ urlpatterns = [
     re_path(r'^callback/$', project2_views.callback),
     path('query/', project2_views.query_report, name='query_report'),  
     path('update_reports/', project2_views.update_reports, name='update_reports') ,
+    #project3
+    path("news", lambda request: redirect("/news/")),  # 根路徑導向 /news/
+    path("news/", project3_views.news_view, name='news_list'),  # 新增新聞列表視圖
+    path("news/create/", project3_views.news_create, name='news_create'),  # 新增新聞創建視圖 (POST)
+    path("update/", project3_views.update_news, name='update_news'),  # 新增更新爬蟲的視圖
+
 ]
