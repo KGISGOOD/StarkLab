@@ -74,7 +74,7 @@ def fetch_article_content(driver, source_name, url, retries=3):
         try:
             driver.get(url)
 
-            WebDriverWait(driver, 5).until(
+            WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, 'p'))
             )
 
