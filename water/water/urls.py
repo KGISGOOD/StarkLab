@@ -20,10 +20,8 @@ from mywater import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("news/", views.news_view, name='news_list'),  # 新增新聞列表視圖
+    path("news/", views.news_list, name='news_list'),  # 新增新聞列表視圖 (GET)
+    path("news/create/", views.news_create, name='news_create'),  # 新增新聞創建視圖 (POST)
     path("update/", views.update_news, name='update_news'),  # 新增更新爬蟲的視圖
-    path('music/', views.music_list, name='music_list'),  # GET 請求，查詢所有音樂
-    path('music/create/', views.music_create, name='music_create'),  # POST 請求，新增音樂
 ]
-
 
