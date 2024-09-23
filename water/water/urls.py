@@ -20,10 +20,9 @@ from mywater import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("news/", views.news_view, name='news_list'),  # 新增新聞列表視圖
-    path("news/create/", views.news_create, name='news_create'),  # 新增新聞創建視圖 (POST)
-    path("update/", views.update_news, name='update_news'),  # 新增更新爬蟲的視圖
-    path("news/", views.news_list, name='news_list'),  # 新增新聞列表視圖
-
+    path("news/", views.news_view, name='news_view'),
+    path("update/", views.update_news, name='update_news'),
+    path("api/news/", views.api_news_list, name='api_news_list'),
+    path("api/news/<int:news_id>/", views.api_news_detail, name='api_news_detail'),
 ]
 

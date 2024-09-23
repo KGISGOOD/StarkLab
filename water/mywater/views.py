@@ -238,29 +238,28 @@ def update_news(request):
 
 
 # views.py
+from django.shortcuts import render
 from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
 from .models import News
 
-def news_list(request):
-    if request.method == 'GET':
-        # 查詢所有新聞記錄，並返回標題、連結、內容、來源和日期
-        news = News.objects.all().values('title', 'link', 'content', 'source', 'date')
-        return JsonResponse(list(news), safe=False)
+@require_http_methods(["GET"])
+def api_news_list(request):
+    news = News.objects.all().values('id', 'title', 'link', 'content', 'source', 'date')
+    return JsonResponse(list(news), safe=False)
 
-import json
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-from .models import News
-
-@csrf_exempt
-def news_create(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        news = News.objects.create(
-            title=data['title'],
-            link=data['link'],
-            content=data['content'],
-            source=data['source'],
-            date=data['date']
-        )
-        return JsonResponse({"message": "News created", "news_id": news.id}, status=201)
+@require_http_methods(["GET"])
+def api_news_detail(request, news_id):
+    try:
+        news = News.objects.get(id=news_id)
+        data = {
+            'id': news.id,
+            'title': news.title,
+            'link': news.link,
+            'content': news.content,
+            'source': news.source,
+            'date': news.date
+        }
+        return JsonResponse(data)
+    except News.DoesNotExist:
+        return JsonResponse({"error": "News not found"}, status=404)
