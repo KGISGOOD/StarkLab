@@ -238,28 +238,50 @@ def update_news(request):
 
 
 # views.py
-from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from .models import News
+from django.core.paginator import Paginator
+from django.shortcuts import get_object_or_404
+
+def clean_content(content):
+    # 這裡可以添加清理內容的邏輯，例如移除不必要的空白字符等
+    return content.strip()
 
 @require_http_methods(["GET"])
 def api_news_list(request):
-    news = News.objects.all().values('id', 'title', 'link', 'content', 'source', 'date')
-    return JsonResponse(list(news), safe=False)
+    page_number = request.GET.get('page', 1)
+    per_page = request.GET.get('per_page', 10)
+    
+    news_queryset = News.objects.all().order_by('-date')
+    paginator = Paginator(news_queryset, per_page)
+    page_obj = paginator.get_page(page_number)
+
+    news_list = [{
+        'id': news.id,
+        'title': news.title,
+        'link': news.link,
+        'content': clean_content(news.content),
+        'source': news.source,
+        'date': news.date
+    } for news in page_obj]
+
+    return JsonResponse({
+        'results': news_list,
+        'count': paginator.count,
+        'num_pages': paginator.num_pages,
+        'current_page': page_obj.number
+    })
 
 @require_http_methods(["GET"])
 def api_news_detail(request, news_id):
-    try:
-        news = News.objects.get(id=news_id)
-        data = {
-            'id': news.id,
-            'title': news.title,
-            'link': news.link,
-            'content': news.content,
-            'source': news.source,
-            'date': news.date
-        }
-        return JsonResponse(data)
-    except News.DoesNotExist:
-        return JsonResponse({"error": "News not found"}, status=404)
+    news = get_object_or_404(News, id=news_id)
+    data = {
+        'id': news.id,
+        'title': news.title,
+        'link': news.link,
+        'content': clean_content(news.content),
+        'source': news.source,
+        'date': news.date
+    }
+    return JsonResponse(data)
