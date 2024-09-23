@@ -244,11 +244,33 @@ def news_view(request):
     # 取得搜尋關鍵字
     query = request.GET.get('search', '')
 
+    # 連接到 SQLite 資料庫
+    conn = sqlite3.connect('w.db')
+    cursor = conn.cursor()
+
     # 查詢新聞資料，如果有搜尋關鍵字，則過濾標題中包含該關鍵字的新聞
     if query:
-        news_list = News.objects.filter(title__icontains=query)
+        cursor.execute("SELECT * FROM news WHERE title LIKE ?", ('%' + query + '%',))
     else:
-        news_list = News.objects.all()
+        cursor.execute("SELECT * FROM news")
+
+    # 獲取所有結果
+    news_data = cursor.fetchall()
+
+    # 關閉資料庫連接
+    conn.close()
+
+    # 將結果轉換為字典列表
+    news_list = []
+    for row in news_data:
+        news_list.append({
+            'id': row[0],
+            'title': row[1],
+            'link': row[2],
+            'content': row[3],
+            'source': row[4],
+            'date': row[5]
+        })
 
     # 將新聞列表傳遞給模板
     return render(request, 'news.html', {'news_list': news_list})

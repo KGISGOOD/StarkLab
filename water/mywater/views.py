@@ -225,7 +225,9 @@ def fetch_news_data():
     
     return news_list
 
-
+def news_view(request):
+    news_list = fetch_news_data()
+    return render(request, 'news.html', {'news_list': news_list})
 
 
 from django.http import JsonResponse
@@ -251,7 +253,8 @@ def news_view(request):
     if query:
         news_list = News.objects.filter(title__icontains=query)
     else:
-        news_list = fetch_news_data()
+        news_list = News.objects.all()
+
     # 將新聞列表傳遞給模板
     return render(request, 'news.html', {'news_list': news_list})
 
