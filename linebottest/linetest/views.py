@@ -89,7 +89,7 @@ def callback(request):
                     ])
                     line_bot_api.reply_message(
                         event.reply_token,
-                        TextSendMessage(text="請直接輸入股票代號（例如：2330）來查詢股票資訊。", quick_reply=quick_reply)
+                        TextSendMessage(text="請直接輸入股票代號來查詢股票資訊。（例如：2330）", quick_reply=quick_reply)
                     )
                 else:
                     quick_reply = QuickReply(items=[
