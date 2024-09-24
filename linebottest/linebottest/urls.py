@@ -21,4 +21,6 @@ from linetest import views
 urlpatterns = [
     re_path(r'^callback/$', views.callback),  # 使用 re_path 替代 url
     path("admin/", admin.site.urls),
+    path('query/', views.query_report, name='query_report'),  
+    path('update_reports/', views.update_reports, name='update_reports') 
 ]

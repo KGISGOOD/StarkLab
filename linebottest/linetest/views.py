@@ -6,18 +6,18 @@ from .models import Stock
 import time
 import pandas as pd
 from io import StringIO
-
+import io
+from contextlib import redirect_stdout
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
-
+from django.http import HttpRequest
 from linebot import LineBotApi, WebhookParser
 from linebot.exceptions import InvalidSignatureError, LineBotApiError
-from linebot.models import MessageEvent, TextSendMessage
+from linebot.models import MessageEvent, TextSendMessage, QuickReply, QuickReplyButton, MessageAction
 
 line_bot_api = LineBotApi(settings.LINE_CHANNEL_ACCESS_TOKEN)
 parser = WebhookParser(settings.LINE_CHANNEL_SECRET)
-
 
 @csrf_exempt
 def callback(request):
@@ -39,60 +39,70 @@ def callback(request):
             if isinstance(event, MessageEvent):
                 user_message = event.message.text.strip()
                 
-                if user_message == "查詢":
-                    line_bot_api.reply_message(
-                        event.reply_token,
-                        TextSendMessage(text="請輸入股票代號")
-                    )
-                elif user_message.isdigit():
-                    # 假設使用者輸入的是股票代號
+                if user_message.isdigit():
                     stock_code = user_message
                     try:
-                        stock = Stock.objects.get(stock_code=stock_code)
-                        # 使用 query_report 函數中的計算邏輯
-                        score_data = calculate_scores(stock)
-                        
-                        response_message = (
-                            f"股票代號 {stock_code} 的分數：\n"
-                            f"資產負債表分數: {score_data['資產負債表分數']}\n"
-                            f"綜合損益表分數: {score_data['綜合損益表分數']}\n"
-                            f"現金流量表分數: {score_data['現金流量表分數']}"
-                        )
-                        
+                        mock_request = HttpRequest()
+                        mock_request.method = 'POST'
+                        mock_request.POST = {'stock_code': stock_code}
+
+                        f = io.StringIO()
+                        with redirect_stdout(f):
+                            query_report(mock_request)
+                        output = f.getvalue()
+
+                        filtered_output = "\n".join([
+                            line for line in output.split("\n")
+                            if "計算" not in line
+                        ])
+
+                        scores = {}
+                        for line in filtered_output.split('\n'):
+                            if '分數:' in line:
+                                key, value = line.split(':')
+                                scores[key.strip()] = value.strip()
+
+                        if scores:
+                            response_message = f"股票代號 {stock_code} ：\n"
+                            for key, value in scores.items():
+                                response_message += f"{key}: {value}\n"
+                        else:
+                            response_message = "無法獲取股票分數資訊。"
+
+                        quick_reply = QuickReply(items=[
+                            QuickReplyButton(action=MessageAction(label="查詢說明", text="查詢說明")),
+                        ])
+
                         line_bot_api.reply_message(
                             event.reply_token,
-                            TextSendMessage(text=response_message)
+                            TextSendMessage(text=response_message, quick_reply=quick_reply)
                         )
-                    except Stock.DoesNotExist:
+                    except Exception as e:
+                        print(f"發生異常: {str(e)}")
                         line_bot_api.reply_message(
                             event.reply_token,
-                            TextSendMessage(text="找不到該股票代號的資料")
+                            TextSendMessage(text=f"查詢時發生錯誤: {str(e)}")
                         )
-                else:
+                elif user_message == "查詢說明":
+                    quick_reply = QuickReply(items=[
+                        QuickReplyButton(action=MessageAction(label="查詢說明", text="查詢說明")),
+                    ])
                     line_bot_api.reply_message(
                         event.reply_token,
-                        TextSendMessage(text="請輸入「查詢」來開始查詢股票資訊")
+                        TextSendMessage(text="請直接輸入股票代號（例如：2330）來查詢股票資訊。", quick_reply=quick_reply)
+                    )
+                else:
+                    quick_reply = QuickReply(items=[
+                        QuickReplyButton(action=MessageAction(label="查詢說明", text="查詢說明")),
+                    ])
+                    line_bot_api.reply_message(
+                        event.reply_token,
+                        TextSendMessage(text="無法識別的輸入。請輸入股票代號或點擊「查詢說明」獲取幫助。", quick_reply=quick_reply)
                     )
 
         return HttpResponse()
     else:
         return HttpResponseBadRequest()
-
-def calculate_scores(stock):
-    # 這裡需要實現 query_report 函數中的計算邏輯
-    # 為了簡潔，這裡只展示了計算邏輯的框架
-    score_data = {}
-    
-    # 從 stock 對象中提取必要的數據
-    # 執行所有必要的計算
-    # 將結果存儲在 score_data 字典中
-    
-    # 示例（實際實現需要更詳細的計算）：
-    score_data['資產負債表分數'] = '計算得出的分數'
-    score_data['綜合損益表分數'] = '計算得出的分數'
-    score_data['現金流量表分數'] = '計算得出的分數'
-    
-    return score_data
 
 
 def fetch_reports(stock_code):
