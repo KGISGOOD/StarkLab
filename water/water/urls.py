@@ -25,5 +25,7 @@ urlpatterns = [
     path("news/", views.news_view, name='news_list'),  # 新增新聞列表視圖
     path("news/create/", views.news_create, name='news_create'),  # 新增新聞創建視圖 (POST)
     path("update/", views.update_news, name='update_news'),  # 新增更新爬蟲的視圖
+    path('api/news/', views.news_api, name='news_api'),
+
 ]
 

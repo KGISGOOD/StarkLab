@@ -278,3 +278,14 @@ def news_create(request):
             date=data['date']
         )
         return JsonResponse({"message": "News created", "news_id": news.id}, status=201)
+    
+
+from django.views.decorators.http import require_GET
+
+@require_GET
+def news_api(request):
+    try:
+        news_list = list(News.objects.all().values('id', 'title', 'link', 'content', 'source', 'date'))
+        return JsonResponse(news_list, safe=False)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
