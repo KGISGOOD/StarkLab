@@ -296,3 +296,36 @@ def news_create(request):
             date=data['date']
         )
         return JsonResponse({"message": "News created", "news_id": news.id}, status=201)
+    
+from django.views.decorators.http import require_GET
+
+@require_GET
+def news_api(request):
+    try:
+        # 連接到 SQLite 資料庫
+        conn = sqlite3.connect('w.db')
+        cursor = conn.cursor()
+
+        # 執行查詢
+        cursor.execute("SELECT id, title, link, content, source, date FROM news")
+        news_data = cursor.fetchall()
+
+        # 關閉資料庫連接
+        conn.close()
+
+        # 將結果轉換為字典列表
+        news_list = []
+        for row in news_data:
+            news_list.append({
+                'id': row[0],
+                'title': row[1],
+                'link': row[2],
+                'content': row[3][:50] + '...' if len(row[3]) > 50 else row[3],  # 限制內容為50字
+                'source': row[4],
+                'date': row[5]
+            })
+
+        return JsonResponse(news_list, safe=False)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+    

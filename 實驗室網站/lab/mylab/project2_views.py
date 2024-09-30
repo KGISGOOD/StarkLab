@@ -79,15 +79,7 @@ def callback(request):
         return HttpResponseBadRequest()
 
 def calculate_scores(stock):
-    # 這裡需要實現 query_report 函數中的計算邏輯
-    # 為了簡潔，這裡只展示了計算邏輯的框架
     score_data = {}
-    
-    # 從 stock 對象中提取必要的數據
-    # 執行所有必要的計算
-    # 將結果存儲在 score_data 字典中
-    
-    # 示例（實際實現需要更詳細的計算）：
     score_data['資產負債表分數'] = '計算得出的分數'
     score_data['綜合損益表分數'] = '計算得出的分數'
     score_data['現金流量表分數'] = '計算得出的分數'
