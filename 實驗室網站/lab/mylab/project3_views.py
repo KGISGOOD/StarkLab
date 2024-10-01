@@ -137,6 +137,12 @@ def main():
 
     db_name = 'w.db'
     table_name = 'news'
+    csv_file = 'w.csv'
+
+    # 檢查 CSV 文件是否存在
+    if not os.path.exists(csv_file):
+        print(f"找不到文件 {csv_file}，請確認文件存在。")
+        return
 
     # 設置資料庫
     conn = sqlite3.connect(db_name)
@@ -151,88 +157,40 @@ def main():
         date TEXT
     )
     ''')
-    
-    output_file = 'w.csv'
-    if os.path.exists(output_file):
-        os.remove(output_file)
 
-    # 爬取新聞並同時儲存到 CSV 和資料庫
-    for item in all_news_items:
-        source_name = item['來源']
-        original_url = item['連結']
-        final_url = extract_final_url(original_url)
+    # 讀取 CSV 文件並將其存入資料庫
+    try:
+        # 使用 pandas 讀取 CSV
+        df = pd.read_csv(csv_file, encoding='utf-8')
 
-        content = fetch_article_content(driver, source_name, final_url, retries=3)
+        # 檢查是否有需要的欄位
+        required_columns = ['標題', '連結', '內文', '來源', '時間']
+        if not all(col in df.columns for col in required_columns):
+            print(f"CSV 文件中缺少必要欄位: {required_columns}")
+            return
 
-        if content != '未找到內容' and content != '錯誤':
-            result = {
-                '標題': item['標題'],
-                '連結': original_url,
-                '內文': content,
-                '來源': source_name,
-                '時間': item['時間']
-            }
-
-            if '台灣' in result['標題'] or '台灣' in result['內文']:
-                print(f"跳過包含「台灣」的文章: {result['標題']}")
-                continue  # 跳過該文章，不儲存
-
-            # 保存到 CSV
-            output_df = pd.DataFrame([result])
-            output_df.to_csv(output_file, mode='a', header=not os.path.exists(output_file), index=False, encoding='utf-8')
-
-            # 保存到資料庫
+        for _, row in df.iterrows():
             cursor.execute(f'''
             INSERT INTO {table_name} (title, link, content, source, date)
             VALUES (?, ?, ?, ?, ?)
-            ''', (result['標題'], result['連結'], result['內文'], result['來源'], result['時間']))
+            ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間']))
 
-            print(f"標題: {result['標題']}")
-            print(f"連結: {result['連結']}")
-            print(f"內文: {result['內文'][:1000]}...")
-            print(f"來源: {result['來源']}")
-            print(f"時間: {result['時間']}")
-            print('-' * 80)
+            print(f"已插入新聞: {row['標題']}")
 
-    conn.commit()
-    conn.close()
-    driver.quit()
+        conn.commit()
+        print(f"所有資料已成功存入 {db_name} 資料庫中的 {table_name} 表格。")
 
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-    print(f'爬取新聞並儲存資料共耗時 {elapsed_time:.2f} 秒')
-    print('新聞更新已完成！')
-    print('爬取後的內容已成功儲存到 CSV 和 SQLite 資料庫中')
+    except Exception as e:
+        print(f"讀取 CSV 或存入資料庫時發生錯誤: {e}")
 
-def fetch_news_data():
-    db_name = 'w.db'
-    table_name = 'news'
+    finally:
+        conn.close()
 
-    conn = sqlite3.connect(db_name)
-    cursor = conn.cursor()
-
-    cursor.execute(f'SELECT id, title, link, content, source, date FROM {table_name}')
-    news_data = cursor.fetchall()
-
-    conn.close()
-
-    news_list = []
-    for row in news_data:
-        news_list.append({
-            'id': row[0],
-            'title': row[1],
-            'link': row[2],
-            'content': row[3],
-            'source': row[4],
-            'date': row[5]
-        })
-    
-    return news_list
 
 from django.http import JsonResponse
 
 def update_news(request):
-    main()  # 執行爬取新聞的函數
+    main()  # 執行從 CSV 讀取並儲存到資料庫的函數
     return JsonResponse({'message': '新聞更新成功！'})
 
 
