@@ -173,6 +173,11 @@ def main():
                 '時間': item['時間']
             }
 
+             # 判斷是否包含「台灣」，如果包含則跳過
+            if '台灣' in result['標題'] or '台灣' in result['內文']:
+                print(f"跳過包含「台灣」的文章: {result['標題']}")
+                continue  # 跳過該文章，不儲存
+
             # 保存到 CSV
             output_df = pd.DataFrame([result])
             output_df.to_csv(output_file, mode='a', header=not os.path.exists(output_file), index=False, encoding='utf-8')
