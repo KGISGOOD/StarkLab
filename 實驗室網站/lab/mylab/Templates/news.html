@@ -5,24 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>News List</title>
     <style>
-        /* 進度條樣式 */
-        #progress-bar {
-            width: 100%;
-            background-color: #f3f3f3;
-        }
-
-        #progress {
-            width: 0%;
-            height: 30px;
-            background-color: #4caf50;
-            text-align: center;
-            line-height: 30px;
-            color: white;
-        }
-
-        /* 隱藏進度條 */
-        #progress-container {
+        /* 更新中文字樣式 */
+        #updating-text {
             display: none;
+            font-weight: bold;
+            color: #4caf50;
         }
     </style>
 </head>
@@ -38,12 +25,8 @@
     <!-- 更新新聞按鈕 -->
     <button id="update-news-btn">Update News</button>
 
-    <!-- 進度條容器 -->
-    <div id="progress-container">
-        <div id="progress-bar">
-            <div id="progress">0%</div>
-        </div>
-    </div>
+    <!-- 更新中文字 -->
+    <p id="updating-text">更新中...</p>
 
     <!-- 顯示新聞列表 -->
     <ul>
@@ -58,27 +41,14 @@
         {% endfor %}
     </ul>
 
-    <!-- 使用 JavaScript 處理按鈕點擊事件和進度條 -->
+    <!-- 使用 JavaScript 處理按鈕點擊事件和更新中文字 -->
     <script>
         document.getElementById('update-news-btn').addEventListener('click', function() {
-            // 顯示進度條
-            document.getElementById('progress-container').style.display = 'block';
+            // 顯示更新中文字
+            document.getElementById('updating-text').style.display = 'block';
 
-            // 設置進度條初始值
-            var progressElement = document.getElementById('progress');
-            var progress = 0;
-
-            // 每秒更新一次進度條
-            var interval = setInterval(function() {
-                progress += 10;
-                progressElement.style.width = progress + '%';
-                progressElement.innerHTML = progress + '%';
-
-                // 當進度條滿時停止更新
-                if (progress >= 100) {
-                    clearInterval(interval);
-                }
-            }, 1000);
+            // 禁用更新按鈕
+            this.disabled = true;
 
             // 透過 AJAX 發送更新新聞的請求
             fetch('/update/', {
@@ -88,15 +58,19 @@
             .then(data => {
                 // 更新完成後顯示已更新完成
                 alert('更新完成！');
-                // 更新完成後將進度條重置並隱藏
-                progressElement.style.width = '0%';
-                progressElement.innerHTML = '0%';
-                document.getElementById('progress-container').style.display = 'none';
+                // 隱藏更新中文字
+                document.getElementById('updating-text').style.display = 'none';
+                // 重新啟用更新按鈕
+                document.getElementById('update-news-btn').disabled = false;
+                // 重新加載頁面以顯示最新新聞
+                location.reload();
             })
             .catch(error => {
                 alert('更新失敗！');
-                // 失敗後隱藏進度條
-                document.getElementById('progress-container').style.display = 'none';
+                // 隱藏更新中文字
+                document.getElementById('updating-text').style.display = 'none';
+                // 重新啟用更新按鈕
+                document.getElementById('update-news-btn').disabled = false;
             });
         });
     </script>

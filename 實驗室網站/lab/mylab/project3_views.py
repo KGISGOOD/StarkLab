@@ -135,28 +135,10 @@ def main():
 
     driver = setup_chrome_driver()
 
-    db_name = 'w.db'
-    table_name = 'news'
-
-    # 設置資料庫
-    conn = sqlite3.connect(db_name)
-    cursor = conn.cursor()
-    cursor.execute(f'''
-    CREATE TABLE IF NOT EXISTS {table_name} (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT,
-        link TEXT,
-        content TEXT,
-        source TEXT,
-        date TEXT
-    )
-    ''')
-    
     output_file = 'w.csv'
     if os.path.exists(output_file):
         os.remove(output_file)
 
-    # 爬取新聞並同時儲存到 CSV 和資料庫
     for item in all_news_items:
         source_name = item['來源']
         original_url = item['連結']
@@ -181,26 +163,56 @@ def main():
             output_df = pd.DataFrame([result])
             output_df.to_csv(output_file, mode='a', header=not os.path.exists(output_file), index=False, encoding='utf-8')
 
-            # 保存到資料庫
-            cursor.execute(f'''
-            INSERT INTO {table_name} (title, link, content, source, date)
-            VALUES (?, ?, ?, ?, ?)
-            ''', (result['標題'], result['連結'], result['內文'], result['來源'], result['時間']))
-
             print(f"標題: {result['標題']}")
             print(f"連結: {result['連結']}")
-            print(f"內文: {result['內文'][:1000]}...")
+            print(f"內文: {result['內文'][:50]}...")
             print(f"來源: {result['來源']}")
             print(f"時間: {result['時間']}")
             print('-' * 80)
 
-    conn.commit()
-    conn.close()
     driver.quit()
 
+    # 從 w.csv 讀取數據並保存到數據庫
+    db_name = 'w.db'
+    table_name = 'news'
+
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+    cursor.execute(f'''
+    CREATE TABLE IF NOT EXISTS {table_name} (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT,
+        link TEXT,
+        content TEXT,
+        source TEXT,
+        date TEXT
+    )
+    ''')
+    cursor.execute(f"DELETE FROM {table_name}")
+
+    w_df = pd.read_csv('w.csv')
+    for _, row in w_df.iterrows():
+        cursor.execute(f'''
+        INSERT INTO {table_name} (title, link, content, source, date)
+        VALUES (?, ?, ?, ?, ?)
+        ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間']))
+
+    conn.commit()
+    conn.close()
+
     end_time = time.time()
-    elapsed_time = end_time - start_time
-    print(f'爬取新聞並儲存資料共耗時 {elapsed_time:.2f} 秒')
+    elapsed_time = int(end_time - start_time)
+    hours, remainder = divmod(elapsed_time, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    
+    time_str = ''
+    if hours > 0:
+        time_str += f'{hours} 小時 '
+    if minutes > 0 or hours > 0:
+        time_str += f'{minutes} 分 '
+    time_str += f'{seconds} 秒'
+    
+    print(f'爬取新聞並儲存資料共耗時 {time_str}')
     print('新聞更新已完成！')
     print('爬取後的內容已成功儲存到 CSV 和 SQLite 資料庫中')
 
