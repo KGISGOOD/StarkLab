@@ -5,7 +5,6 @@ import sqlite3
 import requests
 from bs4 import BeautifulSoup
 import time
-
 import csv
 import re
 from selenium import webdriver
@@ -15,6 +14,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from django.http import JsonResponse
 
 # 爬取新聞的函數
 def fetch_news(url):
@@ -109,23 +109,22 @@ def fetch_article_content(driver, source_name, url, retries=3):
 
     return '錯誤'
 
-
 def main():
     start_time = time.time()
     urls = [
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際大雨 when:30d
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際豪雨 when:30d
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際暴雨 when:30d
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際淹水 when:30d
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際洪水 when:30d
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際水災 when:30d
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際颱風 when:30d
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際颶風 when:30d
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際風災 when:30d
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際海嘯 when:30d
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際地震 when:30d
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際乾旱 when:30d
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'  # 國際旱災 when:30d
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
     ]
 
     all_news_items = []
@@ -135,18 +134,74 @@ def main():
 
     driver = setup_chrome_driver()
 
+    output_file = 'w.csv'
+    if os.path.exists(output_file):
+        os.remove(output_file)
+
+    # Create CSV file and write header
+    with open(output_file, 'w', newline='', encoding='utf-8') as csvfile:
+        fieldnames = ['標題', '連結', '內文', '來源', '時間']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+
+    # Fetch news and save to CSV
+    for item in all_news_items:
+        source_name = item['來源']
+        original_url = item['連結']
+        final_url = extract_final_url(original_url)
+
+        content = fetch_article_content(driver, source_name, final_url, retries=3)
+
+        if content != '未找到內容' and content != '錯誤':
+            result = {
+                '標題': item['標題'],
+                '連結': original_url,
+                '內文': content,
+                '來源': source_name,
+                '時間': item['時間']
+            }
+
+            # 要跳過的關鍵字清單
+            skip_keywords = ['台灣', '台北', '新北', '基隆', '新竹市', '桃園', '新竹縣', '宜蘭', 
+                            '台中', '苗栗', '彰化', '南投', '雲林', '高雄', '台南', '嘉義', 
+                            '屏東', '澎湖', '花東','花蓮','台9線', '金門', '馬祖', '綠島', '蘭嶼']
+
+            # 在結果中檢查是否包含任一個關鍵字
+            if any(keyword in result['標題'] or keyword in result['內文'] for keyword in skip_keywords):
+                print(f"跳過包含指定關鍵字的文章: {result['標題']}")
+                continue  # 跳過該文章，不儲存
+
+            # Save to CSV
+            with open(output_file, 'a', newline='', encoding='utf-8') as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                writer.writerow(result)
+
+            print(f"標題: {result['標題']}")
+            print(f"連結: {result['連結']}")
+            print(f"內文: {result['內文'][:1000]}...")
+            print(f"來源: {result['來源']}")
+            print(f"時間: {result['時間']}")
+            print('-' * 80)
+
+    driver.quit()
+
+    # Import CSV data to SQLite
+    import_csv_to_sqlite(output_file)
+
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f'爬取新聞並儲存資料共耗時 {elapsed_time:.2f} 秒')
+    print('新聞更新已完成！')
+    print('爬取後的內容已成功儲存到 CSV 和 SQLite 資料庫中')
+
+def import_csv_to_sqlite(csv_file):
     db_name = 'w.db'
     table_name = 'news'
-    csv_file = 'w.csv'
 
-    # 檢查 CSV 文件是否存在
-    if not os.path.exists(csv_file):
-        print(f"找不到文件 {csv_file}，請確認文件存在。")
-        return
-
-    # 設置資料庫
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
+
+    # Create table if not exists
     cursor.execute(f'''
     CREATE TABLE IF NOT EXISTS {table_name} (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -158,40 +213,47 @@ def main():
     )
     ''')
 
-    # 讀取 CSV 文件並將其存入資料庫
-    try:
-        # 使用 pandas 讀取 CSV
-        df = pd.read_csv(csv_file, encoding='utf-8')
+    # Clear existing data
+    cursor.execute(f'DELETE FROM {table_name}')
 
-        # 檢查是否有需要的欄位
-        required_columns = ['標題', '連結', '內文', '來源', '時間']
-        if not all(col in df.columns for col in required_columns):
-            print(f"CSV 文件中缺少必要欄位: {required_columns}")
-            return
+    # Read CSV and insert into SQLite
+    df = pd.read_csv(csv_file)
+    df.to_sql(table_name, conn, if_exists='append', index=False)
 
-        for _, row in df.iterrows():
-            cursor.execute(f'''
-            INSERT INTO {table_name} (title, link, content, source, date)
-            VALUES (?, ?, ?, ?, ?)
-            ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間']))
+    conn.commit()
+    conn.close()
 
-            print(f"已插入新聞: {row['標題']}")
+def fetch_news_data():
+    db_name = 'w.db'
+    table_name = 'news'
 
-        conn.commit()
-        print(f"所有資料已成功存入 {db_name} 資料庫中的 {table_name} 表格。")
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
 
-    except Exception as e:
-        print(f"讀取 CSV 或存入資料庫時發生錯誤: {e}")
+    cursor.execute(f'SELECT id, title, link, content, source, date FROM {table_name}')
+    news_data = cursor.fetchall()
 
-    finally:
-        conn.close()
+    conn.close()
 
-
-from django.http import JsonResponse
+    news_list = []
+    for row in news_data:
+        news_list.append({
+            'id': row[0],
+            'title': row[1],
+            'link': row[2],
+            'content': row[3],
+            'source': row[4],
+            'date': row[5]
+        })
+    
+    return news_list
 
 def update_news(request):
-    main()  # 執行從 CSV 讀取並儲存到資料庫的函數
+    main()  # 執行爬取新聞的函數
     return JsonResponse({'message': '新聞更新成功！'})
+
+if __name__ == "__main__":
+    main()
 
 
 # views.py
