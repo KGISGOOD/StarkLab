@@ -155,8 +155,13 @@ def main():
                 '時間': item['時間']
             }
 
-            if '台灣' in result['標題'] or '台灣' in result['內文']:
-                print(f"跳過包含「台灣」的文章: {result['標題']}")
+            skip_keywords = ['台灣', '台北', '新北', '基隆', '新竹市', '桃園', '新竹縣', '宜蘭', 
+                            '台中', '苗栗', '彰化', '南投', '雲林', '高雄', '台南', '嘉義', 
+                            '屏東', '澎湖', '花東','花蓮','台9線', '金門', '馬祖', '綠島', '蘭嶼']
+
+            # 在結果中檢查是否包含任一個關鍵字
+            if any(keyword in result['標題'] or keyword in result['內文'] for keyword in skip_keywords):
+                print(f"跳過包含指定關鍵字的文章: {result['標題']}")
                 continue  # 跳過該文章，不儲存
 
             # 保存到 CSV
