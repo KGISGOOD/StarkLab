@@ -5,6 +5,7 @@ import sqlite3
 import requests
 from bs4 import BeautifulSoup
 import time
+
 import csv
 import re
 from selenium import webdriver
@@ -14,7 +15,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from django.http import JsonResponse
+from datetime import datetime, timedelta
 
 # 爬取新聞的函數
 def fetch_news(url):
@@ -36,7 +37,31 @@ def fetch_news(url):
             source_name = news_source.get_text(strip=True) if news_source else '未知'
 
             time_element = article.find('div', class_='UOVeFe').find('time', class_='hvbAAd') if article.find('div', class_='UOVeFe') else None
-            date = time_element.get_text(strip=True) if time_element else '未知'
+            date_str = time_element.get_text(strip=True) if time_element else '未知'
+        
+            # 轉換為日期類型
+            if '天前' in date_str:
+                days_ago = int(date_str.replace('天前', '').strip())
+                date = datetime.now() - timedelta(days=days_ago)
+            elif '小時前' in date_str:
+                hours_ago = int(date_str.replace('小時前', '').strip())
+                date = datetime.now() - timedelta(hours=hours_ago)
+            elif '分鐘前' in date_str:
+                minutes_ago = int(date_str.replace('分鐘前', '').strip())
+                date = datetime.now() - timedelta(minutes=minutes_ago)
+            elif '昨天' in date_str: 
+                date = datetime.now() - timedelta(days=1)
+            elif '日' in date_str: 
+                month_day = date_str.split('月')
+                month = int(month_day[0])
+                day = int(month_day[1].replace('日', '').strip())
+                year = datetime.now().year 
+                date = datetime(year, month, day)
+            else:
+                date = '未知'  
+
+            # 將日期轉換為字符串格式
+            date = date.strftime('%Y-%m-%d') if isinstance(date, datetime) else date  # 僅保留日期
 
             news_list.append({
                 '標題': title,
@@ -109,22 +134,23 @@ def fetch_article_content(driver, source_name, url, retries=3):
 
     return '錯誤'
 
+
 def main():
     start_time = time.time()
     urls = [
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際大雨 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際豪雨 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際暴雨 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際淹水 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際洪水 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際水災 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際颱風 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際颶風 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際風災 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際海嘯 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際地震 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際乾旱 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'  # 國際旱災 
     ]
 
     all_news_items = []
@@ -138,13 +164,6 @@ def main():
     if os.path.exists(output_file):
         os.remove(output_file)
 
-    # Create CSV file and write header
-    with open(output_file, 'w', newline='', encoding='utf-8') as csvfile:
-        fieldnames = ['標題', '連結', '內文', '來源', '時間']
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-
-    # Fetch news and save to CSV
     for item in all_news_items:
         source_name = item['來源']
         original_url = item['連結']
@@ -161,47 +180,35 @@ def main():
                 '時間': item['時間']
             }
 
-            # 要跳過的關鍵字清單
             skip_keywords = ['台灣', '台北', '新北', '基隆', '新竹市', '桃園', '新竹縣', '宜蘭', 
                             '台中', '苗栗', '彰化', '南投', '雲林', '高雄', '台南', '嘉義', 
-                            '屏東', '澎湖', '花東','花蓮','台9線', '金門', '馬祖', '綠島', '蘭嶼']
+                            '屏東', '澎湖', '花東','花蓮','台9線', '金門', '馬祖', '綠島', '蘭嶼',
+                            '臺灣','台北','臺中','臺南','臺9縣','全台','全臺']
 
             # 在結果中檢查是否包含任一個關鍵字
             if any(keyword in result['標題'] or keyword in result['內文'] for keyword in skip_keywords):
                 print(f"跳過包含指定關鍵字的文章: {result['標題']}")
                 continue  # 跳過該文章，不儲存
 
-            # Save to CSV
-            with open(output_file, 'a', newline='', encoding='utf-8') as csvfile:
-                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-                writer.writerow(result)
+            # 保存到 CSV
+            output_df = pd.DataFrame([result])
+            output_df.to_csv(output_file, mode='a', header=not os.path.exists(output_file), index=False, encoding='utf-8')
 
             print(f"標題: {result['標題']}")
             print(f"連結: {result['連結']}")
-            print(f"內文: {result['內文'][:1000]}...")
+            print(f"內文: {result['內文'][:50]}...")
             print(f"來源: {result['來源']}")
             print(f"時間: {result['時間']}")
             print('-' * 80)
 
     driver.quit()
 
-    # Import CSV data to SQLite
-    import_csv_to_sqlite(output_file)
-
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-    print(f'爬取新聞並儲存資料共耗時 {elapsed_time:.2f} 秒')
-    print('新聞更新已完成！')
-    print('爬取後的內容已成功儲存到 CSV 和 SQLite 資料庫中')
-
-def import_csv_to_sqlite(csv_file):
+    # 從 w.csv 讀取數據並保存到數據庫
     db_name = 'w.db'
     table_name = 'news'
 
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
-
-    # Create table if not exists
     cursor.execute(f'''
     CREATE TABLE IF NOT EXISTS {table_name} (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -212,16 +219,33 @@ def import_csv_to_sqlite(csv_file):
         date TEXT
     )
     ''')
+    cursor.execute(f"DELETE FROM {table_name}")
 
-    # Clear existing data
-    cursor.execute(f'DELETE FROM {table_name}')
-
-    # Read CSV and insert into SQLite
-    df = pd.read_csv(csv_file)
-    df.to_sql(table_name, conn, if_exists='append', index=False)
+    w_df = pd.read_csv('w.csv')
+    for _, row in w_df.iterrows():
+        cursor.execute(f'''
+        INSERT INTO {table_name} (title, link, content, source, date)
+        VALUES (?, ?, ?, ?, ?)
+        ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間']))
 
     conn.commit()
     conn.close()
+
+    end_time = time.time()
+    elapsed_time = int(end_time - start_time)
+    hours, remainder = divmod(elapsed_time, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    
+    time_str = ''
+    if hours > 0:
+        time_str += f'{hours} 小時 '
+    if minutes > 0 or hours > 0:
+        time_str += f'{minutes} 分 '
+    time_str += f'{seconds} 秒'
+    
+    print(f'爬取新聞並儲存資料共耗時 {time_str}')
+    print('新聞更新已完成！')
+    print('爬取後的內容已成功儲存到 CSV 和 SQLite 資料庫中')
 
 def fetch_news_data():
     db_name = 'w.db'
@@ -248,12 +272,11 @@ def fetch_news_data():
     
     return news_list
 
+from django.http import JsonResponse
+
 def update_news(request):
     main()  # 執行爬取新聞的函數
     return JsonResponse({'message': '新聞更新成功！'})
-
-if __name__ == "__main__":
-    main()
 
 
 # views.py
