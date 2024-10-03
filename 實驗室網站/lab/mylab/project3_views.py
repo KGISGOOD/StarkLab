@@ -49,6 +49,8 @@ def fetch_news(url):
             elif '分鐘前' in date_str:
                 minutes_ago = int(date_str.replace('分鐘前', '').strip())
                 date = datetime.now() - timedelta(minutes=minutes_ago)
+            elif '昨天' in date_str: 
+                date = datetime.now() - timedelta(days=1)
             elif '日' in date_str: 
                 month_day = date_str.split('月')
                 month = int(month_day[0])
