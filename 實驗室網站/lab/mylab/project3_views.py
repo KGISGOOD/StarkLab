@@ -221,18 +221,22 @@ def main():
     ''')
     cursor.execute(f"DELETE FROM {table_name}")
 
-    # 讀取 w.csv 並按照時間進行排序，從近到遠
+    # 讀取 w.csv 並按照日期進行排序，從近到遠
     w_df = pd.read_csv('w.csv')
-    w_df['時間'] = pd.to_datetime(w_df['時間'], errors='coerce')  # 將時間轉換為日期格式
-    w_df = w_df.sort_values(by='時間', ascending=False)  # 按照時間從近到遠排序
+    
+    # 將 '時間' 列轉換為 datetime 格式
+    w_df['時間'] = pd.to_datetime(w_df['時間'], format='%Y-%m-%d', errors='coerce')  # 指定日期格式
 
+    # 按照時間從近到遠排序
+    w_df = w_df.sort_values(by='時間', ascending=False)  
+    
     # 將排序後的資料插入資料庫
     for _, row in w_df.iterrows():
         cursor.execute(f'''
         INSERT INTO {table_name} (title, link, content, source, date)
         VALUES (?, ?, ?, ?, ?)
-        ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間']))
-
+        ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間'].strftime('%Y-%m-%d')))  # 將時間轉換為字符串
+    
     conn.commit()
     conn.close()
 
