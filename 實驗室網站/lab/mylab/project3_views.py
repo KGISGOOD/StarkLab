@@ -73,7 +73,8 @@ def fetch_news(url):
         return news_list
 
     except Exception as e:
-        print(f"抓取新聞時發生錯誤: {e}")
+        print(f"抓取新聞時發生錯誤")
+        #print(f"抓取新聞時發生錯誤: {e}")
         return []
 
 # 設置 Chrome 的選項
@@ -123,7 +124,8 @@ def fetch_article_content(driver, source_name, url, retries=3):
             return content
 
         except Exception as e:
-            print(f"第 {attempt + 1} 次嘗試抓取內容失敗: {e}")
+            print(f"第 {attempt + 1} 次嘗試抓取內容失敗")
+            #print(f"第 {attempt + 1} 次嘗試抓取內容失敗: {e}")
 
             if attempt < retries - 1:
                 print(f"嘗試重新爬取...（剩餘嘗試次數：{retries - attempt - 1}）")
@@ -227,16 +229,14 @@ def main():
     # 將 '時間' 列轉換為 datetime 格式
     w_df['時間'] = pd.to_datetime(w_df['時間'], format='%Y-%m-%d', errors='coerce')  # 指定日期格式
 
-    # 按照時間從近到遠排序
-    w_df = w_df.sort_values(by='時間', ascending=False)  
+    w_df = w_df.sort_values(by='時間', ascending=False)  # 修改為 ascending=True
     
-    # 將排序後的資料插入資料庫
+    # 將排序後的資料直接插入資料庫
     for _, row in w_df.iterrows():
         cursor.execute(f'''
         INSERT INTO {table_name} (title, link, content, source, date)
         VALUES (?, ?, ?, ?, ?)
         ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間'].strftime('%Y-%m-%d')))  # 將時間轉換為字符串
-    
     conn.commit()
     conn.close()
 
