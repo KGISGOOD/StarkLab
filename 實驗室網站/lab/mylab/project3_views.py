@@ -233,10 +233,18 @@ def main():
     
     # 將排序後的資料直接插入資料庫
     for _, row in w_df.iterrows():
+        # 檢查資料是否已存在
         cursor.execute(f'''
-        INSERT INTO {table_name} (title, link, content, source, date)
-        VALUES (?, ?, ?, ?, ?)
-        ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間'].strftime('%Y-%m-%d')))  # 將時間轉換為字符串
+        SELECT COUNT(*) FROM {table_name} WHERE title = ? AND link = ?
+        ''', (row['標題'], row['連結']))
+        exists = cursor.fetchone()[0]
+
+        if exists == 0:  # 如果不存在，則插入
+            cursor.execute(f'''
+            INSERT INTO {table_name} (title, link, content, source, date)
+            VALUES (?, ?, ?, ?, ?)
+            ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間'].strftime('%Y-%m-%d')))  # 將時間轉換為字符串
+            
     conn.commit()
     conn.close()
 
