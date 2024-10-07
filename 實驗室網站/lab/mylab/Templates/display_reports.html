@@ -112,7 +112,6 @@
             border: 2px solid #333;
             border-radius: 8px;
             padding: 20px;
-            text-align: center;
             background-color: #f9f9f9;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
@@ -176,7 +175,7 @@
             background-color: #e0e0e0;
         }
 
-        
+
         .no-report {
             text-align: center;
             margin-top: 40px;
@@ -228,9 +227,13 @@
         }
 
         .back-btn {
-            margin-right: 30px;; /* 使按鈕不那麼靠邊 */
-            margin-left: 10px; /* 調整與目錄按鈕的距離 */
+            margin-right: 30px;
+            ;
+            /* 使按鈕不那麼靠邊 */
+            margin-left: 10px;
+            /* 調整與目錄按鈕的距離 */
         }
+        
     </style>
 </head>
 
@@ -240,7 +243,8 @@
             <button class="dropbtn">目錄</button>
             <div class="dropdown-content">
                 {% for report in reports %}
-                <a href="#{{ report.report_type }}" onclick="scrollToSection(event, '{{ report.report_type }}')">{{ report.report_type }}</a>
+                <a href="#{{ report.report_type }}" onclick="scrollToSection(event, '{{ report.report_type }}')">{{
+                    report.report_type }}</a>
                 {% endfor %}
             </div>
         </div>
@@ -250,12 +254,27 @@
 
     <div class="score-container">
         {% if score_data.綜合損益表分數 %}
-        <div class="score">
+        <div class="score" style="overflow: auto; max-width: 100%; padding: 20px; box-sizing: border-box;"> <!-- 添加 max-width 和 padding -->
             <h2>資產負債表分數 : {{ score_data.資產負債表分數 }}</h2>
+            <p>財務槓桿(50%) = 負債 / 資產 </p>
+            <p>應收帳款收現日(25%) = 應收帳款 / 營業收入 * 365 </p>
+            <p>銷貨天數 (25%)</p>
+            <p>加分項(基本5 / 其餘按比例加) = 現金與約當現金 / 總資產 (10-25%)</p>
             <br>
             <h2>綜合損益表分數 : {{ score_data.綜合損益表分數 }}</h2>
+            <p>毛利率 (20%)</p>
+            <p>營業利益率 (20%)</p>
+            <p>經營安全邊際(20%) = 毛利率 / 營業利益率 > 60%</p>
+            <p>淨利率 (10%)</p>
+            <p>EPS (10%)</p>
+            <p>ROE (20%)= 本期淨利 / 權益總額 > 20% </p>
             <br>
             <h2>現金流量表分數 : {{ score_data.現金流量表分數 }}</h2>
+            <p>現金流量比率(10%) = 淨現金流量 / 流動資產 > 100% </p>
+            <p>現金允當比率(70%) = 淨現金流量 / (存貨 + 股利) > 100% </p>
+            <p>現金再投資比率(20%) = 淨現金流量 / (固定資產 + 其他資產 + 營業資金) > 10% </p>
+            <br>
+            <strong style="font-size: 1.2em;color: red;">若計算過程中某項數據缺失或無法計算，該項目計為 0</strong>
         </div>
         {% endif %}
     </div>
