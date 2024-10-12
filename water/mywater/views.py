@@ -107,6 +107,15 @@ def fetch_article_content(driver, source_name, url, retries=3):
             content = ''
             img_url = 'null'
             if source_name == '經濟日報':
+                if response.status_code == 200:
+                    soup = BeautifulSoup(response.text, 'html.parser')
+                    container_div = soup.find('section', class_='article-body__editor')
+                    if container_div:
+                        img_tag = container_div.find('img', src=lambda x: x and 'pgw.udn.com.tw' in x)
+                        if img_tag:
+                            img_url = img_tag.get('src') 
+                            print("找到的圖片連結:", img_url) 
+
                 paragraphs = driver.find_elements(By.CSS_SELECTOR, 'section.article-body__editor p')
                 content = '\n'.join([p.text for p in paragraphs])
             elif source_name == 'Yahoo奇摩新聞':
@@ -206,7 +215,7 @@ def main():
         original_url = item['連結']
         final_url = extract_final_url(original_url)
 
-        content = fetch_article_content(driver, source_name, final_url, retries=3)
+        content, img_url = fetch_article_content(driver, source_name, final_url, retries=3)  
 
         if content != '未找到內容' and content != '錯誤':
             result = {
@@ -214,7 +223,8 @@ def main():
                 '連結': original_url,
                 '內文': content,
                 '來源': source_name,
-                '時間': item['時間']
+                '時間': item['時間'],
+                '圖片': img_url 
             }
 
             skip_keywords = ['台灣', '台北', '新北', '基隆', '新竹市', '桃園', '新竹縣', '宜蘭', 
@@ -236,6 +246,7 @@ def main():
             print(f"內文: {result['內文'][:50]}...")
             print(f"來源: {result['來源']}")
             print(f"時間: {result['時間']}")
+            print(f"圖片: {result['圖片']}") 
             print('-' * 80)
 
     driver.quit()
