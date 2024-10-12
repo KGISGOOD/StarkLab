@@ -264,7 +264,8 @@ def main():
         link TEXT,
         content TEXT,
         source TEXT,
-        date TEXT
+        date TEXT,
+        image TEXT 
     )
     ''')
     cursor.execute(f"DELETE FROM {table_name}")
@@ -285,11 +286,11 @@ def main():
         ''', (row['標題'], row['連結']))
         exists = cursor.fetchone()[0]
 
-        if exists == 0:  # 如果不存在，則插入
+        if exists == 0:  
             cursor.execute(f'''
             INSERT INTO {table_name} (title, link, content, source, date)
             VALUES (?, ?, ?, ?, ?)
-            ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間'].strftime('%Y-%m-%d')))  # 將時間轉換為字符串
+            ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間'].strftime('%Y-%m-%d'),row['圖片']))  # 將時間轉換為字符串
             
     conn.commit()
     conn.close()
