@@ -15,6 +15,7 @@ class News(models.Model):
     content = models.TextField()
     source = models.CharField(max_length=100)
     date = models.CharField(max_length=100)
+    image = models.URLField(max_length=500, blank=True, null=True)
 
     class Meta:
         db_table = "news"
