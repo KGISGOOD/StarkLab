@@ -63,12 +63,34 @@ def fetch_news(url):
             # 將日期轉換為字符串格式
             date = date.strftime('%Y-%m-%d') if isinstance(date, datetime) else date  # 僅保留日期
 
+
+
+            image_urls = []  # 用來存儲圖片 URL 的列表
+
+            # 抓取圖片並逐個存入 image_urls
+            image_elements = article.find_all('img', class_='Quavad')
+            base_url = 'https://news.google.com'
+
+            for image_element in image_elements:
+                srcset = image_element.get('srcset')
+                if srcset:
+                    # 分割 srcset，取第一個1x的圖片
+                    image_url = srcset.split(' ')[0]
+                    full_image_url = requests.compat.urljoin(base_url, image_url)
+                    image_urls.append(full_image_url)  # 逐個添加圖片 URL
+                    print(f"添加的圖片 URL: {full_image_url}")  # 逐個打印圖片 URL
+
+            if not image_urls:
+                image_urls = 'null' 
+            # 將新聞資料添加到 news_list
             news_list.append({
                 '標題': title,
                 '連結': full_link,
                 '來源': source_name,
-                '時間': date
-            })
+                '時間': date_str,
+                '圖片': image_urls  # 將所有圖片 URL 存入這裡
+            }) # 將整個新聞項目添加到 news_list
+
 
         return news_list
 
@@ -179,7 +201,9 @@ def main():
                 '連結': original_url,
                 '內文': content,
                 '來源': source_name,
-                '時間': item['時間']
+                '時間': item['時間'],
+                '圖片': item['圖片']
+
             }
 
             skip_keywords = ['台灣', '台北', '新北', '基隆', '新竹市', '桃園', '新竹縣', '宜蘭', 
@@ -201,6 +225,7 @@ def main():
             print(f"內文: {result['內文'][:50]}...")
             print(f"來源: {result['來源']}")
             print(f"時間: {result['時間']}")
+            print(f"圖片: {result['圖片']}") 
             print('-' * 80)
 
     driver.quit()
@@ -216,9 +241,11 @@ def main():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT,
         link TEXT,
+        image TEXT,
         content TEXT,
         source TEXT,
-        date TEXT
+        date TEXT,
+
     )
     ''')
     cursor.execute(f"DELETE FROM {table_name}")
@@ -241,9 +268,9 @@ def main():
 
         if exists == 0:  # 如果不存在，則插入
             cursor.execute(f'''
-            INSERT INTO {table_name} (title, link, content, source, date)
-            VALUES (?, ?, ?, ?, ?)
-            ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間'].strftime('%Y-%m-%d')))  # 將時間轉換為字符串
+            INSERT INTO {table_name} (title, link, content, source, date, image)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間'].strftime('%Y-%m-%d'), row['圖片']))  # 將時間轉換為字符串
             
     conn.commit()
     conn.close()
@@ -284,7 +311,8 @@ def fetch_news_data():
             'link': row[2],
             'content': row[3],
             'source': row[4],
-            'date': row[5]
+            'date': row[5],
+            'image': row[6] 
         })
     
     return news_list
@@ -333,7 +361,8 @@ def news_view(request):
             'link': row[2],
             'content': row[3],
             'source': row[4],
-            'date': row[5]
+            'date': row[5],
+            'image': row[6] 
         })
 
     # 將新聞列表傳遞給模板
@@ -357,7 +386,8 @@ def news_create(request):
             link=data['link'],
             content=data['content'],
             source=data['source'],
-            date=data['date']
+            date=data['date'],
+            image=data.get('image', 'null')
         )
         return JsonResponse({"message": "News created", "news_id": news.id}, status=201)
     
@@ -386,7 +416,8 @@ def news_api(request):
                 'link': row[2],
                 'content': row[3][:50] + '...' if len(row[3]) > 50 else row[3],  # 限制內容為50字
                 'source': row[4],
-                'date': row[5]
+                'date': row[5],
+                'image': row[6] 
             })
 
         return JsonResponse(news_list, safe=False)
