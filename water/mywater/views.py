@@ -96,41 +96,77 @@ def extract_final_url(google_news_url):
     return google_news_url
 
 def fetch_article_content(driver, source_name, url, retries=3):
-    selectors = {
-        'udn.com': ('section.article-body__editor', 'img[src*="pgw.udn.com.tw"]', 'p'),
-        'tw.news.yahoo.com': ('div.caas-body', 'img.caas-img', 'div.caas-body p'),
-        'newtalk.tw': ('div.articleBody.clearfix', 'img[itemprop="image"]', 'p'),
-        'ltn.com.tw': ('p', 'div.image-popup-vertical-fit img', 'p')
-    }
-
+    img_url = None  # 初始化圖片連結變數
     for attempt in range(retries):
         try:
             driver.get(url)
-            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'p')))
 
-            content = img_url = 'null'
-            for site, (article_selector, img_selector, para_selector) in selectors.items():
-                if site in url:
-                    response = requests.get(url)
-                    if response.status_code == 200:
-                        soup = BeautifulSoup(response.text, 'html.parser')
-                        img_tag = soup.select_one(img_selector)
-                        img_url = img_tag['src'] if img_tag else 'null'
+            WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, 'p'))
+            )
 
-                    paragraphs = driver.find_elements(By.CSS_SELECTOR, para_selector)
-                    content = '\n'.join([p.text.strip() for p in paragraphs]) or '未找到內容'
-                    print(f"{site} 圖片連結: {img_url}")
-                    return content, img_url
+            content = ''
+            if source_name == '經濟日報':
+                paragraphs = driver.find_elements(By.CSS_SELECTOR, 'section.article-body__editor p')
+                content = '\n'.join([p.text for p in paragraphs])
+
+            elif source_name == 'Yahoo奇摩新聞':
+                paragraphs = driver.find_elements(By.CSS_SELECTOR, 'div.caas-body p')
+                content = '\n'.join([p.text for p in paragraphs])
+            elif source_name == 'Newtalk新聞':
+                paragraphs = driver.find_elements(By.CSS_SELECTOR, 'div.articleBody.clearfix p')
+                content = '\n'.join([p.text for p in paragraphs])
+            elif source_name == '自由時報':
+                paragraphs = driver.find_elements(By.CSS_SELECTOR, 'p')
+                content = '\n'.join([p.text.strip() for p in paragraphs])
+
+            if not content.strip():
+                content = '未找到內容'
+
+            # 根據不同的 URL 提取圖片連結
+            if "money.udn.com" in url:
+                container_div = driver.find_element(By.CSS_SELECTOR, 'section.article-body__editor')
+                img_tag = container_div.find_element(By.CSS_SELECTOR, 'img[src*="pgw.udn.com.tw"]')
+                if img_tag:
+                    img_url = img_tag.get_attribute('src')
+
+            elif "newtalk.tw" in url:
+                image_divs = driver.find_elements(By.CSS_SELECTOR, 'div.news_img')
+                for div in image_divs:
+                    img_tag = div.find_element(By.CSS_SELECTOR, 'img[itemprop="image"]')
+                    if img_tag:
+                        img_url = img_tag.get_attribute('src')
+                        break  # 找到第一個圖片後就可以退出
+
+            elif "tw.news.yahoo.com" in url:
+                img_div = driver.find_element(By.CSS_SELECTOR, 'div.caas-body')
+                figure_tag = img_div.find_element(By.CSS_SELECTOR, 'figure.caas-figure')
+                img_tag = figure_tag.find_element(By.CSS_SELECTOR, 'img.caas-img[data-src]')
+                if img_tag:
+                    img_url = img_tag.get_attribute('data-src')
+
+            elif "news.ltn.com.tw" in url:
+                image_divs = driver.find_elements(By.CSS_SELECTOR, 'div.image-popup-vertical-fit')
+                for div in image_divs:
+                    img_tag = div.find_element(By.CSS_SELECTOR, 'img')
+                    if img_tag:
+                        img_url = img_tag.get_attribute('src')
+                        break  # 找到第一個圖片後就可以退出
+
+            return content, img_url  # 返回內容和圖片連結
 
         except Exception as e:
-            print(f"第 {attempt + 1} 次嘗試抓取內容失敗: {e}")
+            print(f"第 {attempt + 1} 次嘗試抓取內容失敗")
+            # print(f"第 {attempt + 1} 次嘗試抓取內容失敗: {e}")
+
             if attempt < retries - 1:
-                print(f"重新嘗試...（剩餘次數：{retries - attempt - 1}）")
+                print(f"嘗試重新爬取...（剩餘嘗試次數：{retries - attempt - 1}）")
                 time.sleep(2)
             else:
-                return '錯誤', 'null'
+                print("多次嘗試後仍然失敗，停止嘗試。")
+                return '錯誤', None  # 返回錯誤狀態和空的圖片連結
 
-    return '錯誤', 'null'
+    return '錯誤', None  # 返回錯誤狀態和空的圖片連結
 
 
 def main():
