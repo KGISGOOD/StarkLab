@@ -15,6 +15,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from datetime import datetime, timedelta
 
 # 爬取新聞的函數
 def fetch_news(url):
@@ -36,7 +37,31 @@ def fetch_news(url):
             source_name = news_source.get_text(strip=True) if news_source else '未知'
 
             time_element = article.find('div', class_='UOVeFe').find('time', class_='hvbAAd') if article.find('div', class_='UOVeFe') else None
-            date = time_element.get_text(strip=True) if time_element else '未知'
+            date_str = time_element.get_text(strip=True) if time_element else '未知'
+        
+            # 轉換為日期類型
+            if '天前' in date_str:
+                days_ago = int(date_str.replace('天前', '').strip())
+                date = datetime.now() - timedelta(days=days_ago)
+            elif '小時前' in date_str:
+                hours_ago = int(date_str.replace('小時前', '').strip())
+                date = datetime.now() - timedelta(hours=hours_ago)
+            elif '分鐘前' in date_str:
+                minutes_ago = int(date_str.replace('分鐘前', '').strip())
+                date = datetime.now() - timedelta(minutes=minutes_ago)
+            elif '昨天' in date_str: 
+                date = datetime.now() - timedelta(days=1)
+            elif '日' in date_str: 
+                month_day = date_str.split('月')
+                month = int(month_day[0])
+                day = int(month_day[1].replace('日', '').strip())
+                year = datetime.now().year 
+                date = datetime(year, month, day)
+            else:
+                date = '未知'  
+
+            # 將日期轉換為字符串格式
+            date = date.strftime('%Y-%m-%d') if isinstance(date, datetime) else date  # 僅保留日期
 
             news_list.append({
                 '標題': title,
@@ -48,7 +73,8 @@ def fetch_news(url):
         return news_list
 
     except Exception as e:
-        print(f"抓取新聞時發生錯誤: {e}")
+        print(f"抓取新聞時發生錯誤")
+        #print(f"抓取新聞時發生錯誤: {e}")
         return []
 
 # 設置 Chrome 的選項
@@ -70,11 +96,12 @@ def extract_final_url(google_news_url):
     return google_news_url
 
 def fetch_article_content(driver, source_name, url, retries=3):
+    img_url = None  # 初始化圖片連結變數
     for attempt in range(retries):
         try:
             driver.get(url)
 
-            WebDriverWait(driver, 5).until(
+            WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, 'p'))
             )
 
@@ -82,12 +109,15 @@ def fetch_article_content(driver, source_name, url, retries=3):
             if source_name == '經濟日報':
                 paragraphs = driver.find_elements(By.CSS_SELECTOR, 'section.article-body__editor p')
                 content = '\n'.join([p.text for p in paragraphs])
+
             elif source_name == 'Yahoo奇摩新聞':
                 paragraphs = driver.find_elements(By.CSS_SELECTOR, 'div.caas-body p')
                 content = '\n'.join([p.text for p in paragraphs])
+
             elif source_name == 'Newtalk新聞':
                 paragraphs = driver.find_elements(By.CSS_SELECTOR, 'div.articleBody.clearfix p')
                 content = '\n'.join([p.text for p in paragraphs])
+
             elif source_name == '自由時報':
                 paragraphs = driver.find_elements(By.CSS_SELECTOR, 'p')
                 content = '\n'.join([p.text.strip() for p in paragraphs])
@@ -95,37 +125,66 @@ def fetch_article_content(driver, source_name, url, retries=3):
             if not content.strip():
                 content = '未找到內容'
 
-            return content
+            # 使用 try-except 抓取圖片連結
+            try:
+                # 發送 GET 請求
+                response = requests.get(url)
+                response.raise_for_status()
+
+                # 使用 BeautifulSoup 解析 HTML
+                soup = BeautifulSoup(response.text, 'html.parser')
+
+                # 查找所有圖片標籤
+                image_elements = soup.find_all('img', class_='Quavad')
+
+                image_urls = []
+                base_url = 'https://news.google.com'
+
+                # 遍歷每個圖片標籤，提取 srcset 中的相對路徑並轉換為完整網址
+                for image_element in image_elements:
+                    srcset = image_element.get('srcset')
+                    if srcset:
+                        # 分割 srcset，取第一個1x的圖片
+                        image_url = srcset.split(' ')[0]
+                        full_image_url = requests.compat.urljoin(base_url, image_url)
+                        image_urls.append(full_image_url)
+
+                if image_urls:
+                    img_url = image_urls[0]  # 使用第一個圖片連結
+
+            except Exception as e:
+                print(f"Error: {e}")
+
+            return content, img_url  # 返回內容和圖片連結
 
         except Exception as e:
-            print(f"第 {attempt + 1} 次嘗試抓取內容失敗: {e}")
-
+            print(f"第 {attempt + 1} 次嘗試抓取內容失敗")
             if attempt < retries - 1:
                 print(f"嘗試重新爬取...（剩餘嘗試次數：{retries - attempt - 1}）")
                 time.sleep(2)
             else:
                 print("多次嘗試後仍然失敗，停止嘗試。")
-                return '錯誤'
+                return '錯誤', None  # 返回錯誤狀態和空的圖片連結
 
-    return '錯誤'
+    return '錯誤', None  # 返回錯誤狀態和空的圖片連結
 
 
 def main():
     start_time = time.time()
     urls = [
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際大雨 when:30d
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際豪雨 when:30d
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際暴雨 when:30d
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際淹水 when:30d
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際洪水 when:30d
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際水災 when:30d
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際颱風 when:30d
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際颶風 when:30d
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際風災 when:30d
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際海嘯 when:30d
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際地震 when:30d
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際乾旱 when:30d
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'  # 國際旱災 when:30d
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際大雨 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際豪雨 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際暴雨 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際淹水 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際洪水 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際水災 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際颱風 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際颶風 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際風災 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際海嘯 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際地震 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際乾旱 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'  # 國際旱災 
     ]
 
     all_news_items = []
@@ -135,10 +194,55 @@ def main():
 
     driver = setup_chrome_driver()
 
+    output_file = 'w.csv'
+    if os.path.exists(output_file):
+        os.remove(output_file)
+
+    for item in all_news_items:
+        source_name = item['來源']
+        original_url = item['連結']
+        final_url = extract_final_url(original_url)
+
+        content, img_url = fetch_article_content(driver, source_name, final_url, retries=3)  
+
+        if content != '未找到內容' and content != '錯誤':
+            result = {
+                '標題': item['標題'],
+                '連結': original_url,
+                '內文': content,
+                '來源': source_name,
+                '時間': item['時間'],
+                '圖片': img_url 
+            }
+
+            skip_keywords = ['台灣', '台北', '新北', '基隆', '新竹市', '桃園', '新竹縣', '宜蘭', 
+                            '台中', '苗栗', '彰化', '南投', '雲林', '高雄', '台南', '嘉義', 
+                            '屏東', '澎湖', '花東','花蓮','台9線', '金門', '馬祖', '綠島', '蘭嶼',
+                            '臺灣','台北','臺中','臺南','臺9縣','全台','全臺']
+
+            # 在結果中檢查是否包含任一個關鍵字
+            if any(keyword in result['標題'] or keyword in result['內文'] for keyword in skip_keywords):
+                print(f"跳過包含指定關鍵字的文章: {result['標題']}")
+                continue  # 跳過該文章，不儲存
+
+            # 保存到 CSV
+            output_df = pd.DataFrame([result])
+            output_df.to_csv(output_file, mode='a', header=not os.path.exists(output_file), index=False, encoding='utf-8')
+
+            print(f"標題: {result['標題']}")
+            print(f"連結: {result['連結']}")
+            print(f"內文: {result['內文'][:50]}...")
+            print(f"來源: {result['來源']}")
+            print(f"時間: {result['時間']}")
+            print(f"圖片: {result['圖片']}") 
+            print('-' * 80)
+
+    driver.quit()
+
+    # 從 w.csv 讀取數據並保存到數據庫
     db_name = 'w.db'
     table_name = 'news'
 
-    # 設置資料庫
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
     cursor.execute(f'''
@@ -148,60 +252,50 @@ def main():
         link TEXT,
         content TEXT,
         source TEXT,
-        date TEXT
+        date TEXT,
+        image TEXT 
     )
     ''')
+    cursor.execute(f"DELETE FROM {table_name}")
+
+    # 讀取 w.csv 並按照日期進行排序，從近到遠
+    w_df = pd.read_csv('w.csv')
     
-    output_file = 'w.csv'
-    if os.path.exists(output_file):
-        os.remove(output_file)
+    # 將 '時間' 列轉換為 datetime 格式
+    w_df['時間'] = pd.to_datetime(w_df['時間'], format='%Y-%m-%d', errors='coerce')  # 指定日期格式
 
-    # 爬取新聞並同時儲存到 CSV 和資料庫
-    for item in all_news_items:
-        source_name = item['來源']
-        original_url = item['連結']
-        final_url = extract_final_url(original_url)
+    w_df = w_df.sort_values(by='時間', ascending=False)  # 修改為 ascending=True
+    
+    # 將排序後的資料直接插入資料庫
+    for _, row in w_df.iterrows():
+        # 檢查資料是否已存在
+        cursor.execute(f'''
+        SELECT COUNT(*) FROM {table_name} WHERE title = ? AND link = ?
+        ''', (row['標題'], row['連結']))
+        exists = cursor.fetchone()[0]
 
-        content = fetch_article_content(driver, source_name, final_url, retries=3)
-
-        if content != '未找到內容' and content != '錯誤':
-            result = {
-                '標題': item['標題'],
-                '連結': original_url,
-                '內文': content,
-                '來源': source_name,
-                '時間': item['時間']
-            }
-
-             # 判斷是否包含「台灣」，如果包含則跳過
-            if '台灣' in result['標題'] or '台灣' in result['內文']:
-                print(f"跳過包含「台灣」的文章: {result['標題']}")
-                continue  # 跳過該文章，不儲存
-
-            # 保存到 CSV
-            output_df = pd.DataFrame([result])
-            output_df.to_csv(output_file, mode='a', header=not os.path.exists(output_file), index=False, encoding='utf-8')
-
-            # 保存到資料庫
+        if exists == 0:  
             cursor.execute(f'''
-            INSERT INTO {table_name} (title, link, content, source, date)
-            VALUES (?, ?, ?, ?, ?)
-            ''', (result['標題'], result['連結'], result['內文'], result['來源'], result['時間']))
-
-            print(f"標題: {result['標題']}")
-            print(f"連結: {result['連結']}")
-            print(f"內文: {result['內文'][:1000]}...")
-            print(f"來源: {result['來源']}")
-            print(f"時間: {result['時間']}")
-            print('-' * 80)
-
+            INSERT INTO {table_name} (title, link, content, source, date, image)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間'].strftime('%Y-%m-%d'),row['圖片']))  # 將時間轉換為字符串
+            
     conn.commit()
     conn.close()
-    driver.quit()
 
     end_time = time.time()
-    elapsed_time = end_time - start_time
-    print(f'爬取新聞並儲存資料共耗時 {elapsed_time:.2f} 秒')
+    elapsed_time = int(end_time - start_time)
+    hours, remainder = divmod(elapsed_time, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    
+    time_str = ''
+    if hours > 0:
+        time_str += f'{hours} 小時 '
+    if minutes > 0 or hours > 0:
+        time_str += f'{minutes} 分 '
+    time_str += f'{seconds} 秒'
+    
+    print(f'爬取新聞並儲存資料共耗時 {time_str}')
     print('新聞更新已完成！')
     print('爬取後的內容已成功儲存到 CSV 和 SQLite 資料庫中')
 
@@ -212,28 +306,36 @@ def fetch_news_data():
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
 
-    cursor.execute(f'SELECT id, title, link, content, source, date FROM {table_name}')
+    cursor.execute(f'SELECT id, title, link, content, source, date, image FROM {table_name}')
     news_data = cursor.fetchall()
 
     conn.close()
 
     news_list = []
     for row in news_data:
-        news_list.append({
-            'id': row[0],
-            'title': row[1],
-            'link': row[2],
-            'content': row[3],
-            'source': row[4],
-            'date': row[5]
-        })
+        if len(row) > 6:  # 檢查 row 的長度是否足夠
+            news_list.append({
+                'id': row[0],
+                'title': row[1],
+                'link': row[2],
+                'content': row[3],
+                'source': row[4],
+                'date': row[5],
+                'image': row[6]
+            })
+        else:
+            # 處理不完整資料的情況，例如設置預設值
+            news_list.append({
+                'id': row[0] if len(row) > 0 else None,
+                'title': row[1] if len(row) > 1 else None,
+                'link': row[2] if len(row) > 2 else None,
+                'content': row[3] if len(row) > 3 else None,
+                'source': row[4] if len(row) > 4 else None,
+                'date': row[5] if len(row) > 5 else None,
+                'image': None  # 預設值
+            })
     
     return news_list
-
-def news_view(request):
-    news_list = fetch_news_data()
-    return render(request, 'news.html', {'news_list': news_list})
-
 
 from django.http import JsonResponse
 
@@ -254,20 +356,56 @@ def news_view(request):
     # 取得搜尋關鍵字
     query = request.GET.get('search', '')
 
+    # 連接到 SQLite 資料庫
+    conn = sqlite3.connect('w.db')
+    cursor = conn.cursor()
+
     # 查詢新聞資料，如果有搜尋關鍵字，則過濾標題中包含該關鍵字的新聞
     if query:
-        news_list = News.objects.filter(title__icontains=query)
+        cursor.execute("SELECT * FROM news WHERE title LIKE ?", ('%' + query + '%',))
     else:
-        news_list = News.objects.all()
+        cursor.execute("SELECT * FROM news")
+
+    # 獲取所有結果
+    news_data = cursor.fetchall()
+
+    # 關閉資料庫連接
+    conn.close()
+
+    # 將結果轉換為字典列表
+    news_list = []
+    for row in news_data:
+        if len(row) > 6:  # 檢查 row 的長度是否足夠
+            news_list.append({
+                'id': row[0],
+                'title': row[1],
+                'link': row[2],
+                'content': row[3],
+                'source': row[4],
+                'date': row[5],
+                'image': row[6]
+            })
+        else:
+            # 處理不完整資料的情況，例如設置預設值
+            news_list.append({
+                'id': row[0] if len(row) > 0 else None,
+                'title': row[1] if len(row) > 1 else None,
+                'link': row[2] if len(row) > 2 else None,
+                'content': row[3] if len(row) > 3 else None,
+                'source': row[4] if len(row) > 4 else None,
+                'date': row[5] if len(row) > 5 else None,
+                'image': None  # 預設值
+            })
 
     # 將新聞列表傳遞給模板
     return render(request, 'news.html', {'news_list': news_list})
+
 
 # RESTful API 查詢所有新聞資料並以JSON格式返回
 def news_list(request):
     if request.method == 'GET':
         # 查詢所有新聞記錄，並返回標題、連結、內容、來源和日期
-        news = News.objects.all().values('title', 'link', 'content', 'source', 'date')
+        news = News.objects.all().values('title', 'link', 'content', 'source', 'date','image')
         return JsonResponse(list(news), safe=False)
 
 # RESTful API 新增新聞資料
@@ -280,17 +418,53 @@ def news_create(request):
             link=data['link'],
             content=data['content'],
             source=data['source'],
-            date=data['date']
+            date=data['date'],
+            image=data['image']
         )
         return JsonResponse({"message": "News created", "news_id": news.id}, status=201)
     
-
 from django.views.decorators.http import require_GET
 
 @require_GET
 def news_api(request):
     try:
-        news_list = list(News.objects.all().values('id', 'title', 'link', 'content', 'source', 'date'))
+        # 連接到 SQLite 資料庫
+        conn = sqlite3.connect('w.db')
+        cursor = conn.cursor()
+
+        # 執行查詢
+        cursor.execute("SELECT id, title, link, content, source, date, image FROM news")
+        news_data = cursor.fetchall()
+
+        # 關閉資料庫連接
+        conn.close()
+
+        # 將結果轉換為字典列表
+        news_list = []
+        for row in news_data:
+            if len(row) > 6:  # 檢查 row 的長度是否足夠
+                news_list.append({
+                    'id': row[0],
+                    'title': row[1],
+                    'link': row[2],
+                    'content': row[3],
+                    'source': row[4],
+                    'date': row[5],
+                    'image': row[6]
+                })
+            else:
+                # 處理不完整資料的情況，例如設置預設值
+                news_list.append({
+                    'id': row[0] if len(row) > 0 else None,
+                    'title': row[1] if len(row) > 1 else None,
+                    'link': row[2] if len(row) > 2 else None,
+                    'content': row[3] if len(row) > 3 else None,
+                    'source': row[4] if len(row) > 4 else None,
+                    'date': row[5] if len(row) > 5 else None,
+                    'image': None  # 預設值
+                })
+
         return JsonResponse(news_list, safe=False)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
