@@ -96,89 +96,41 @@ def extract_final_url(google_news_url):
     return google_news_url
 
 def fetch_article_content(driver, source_name, url, retries=3):
+    selectors = {
+        'udn.com': ('section.article-body__editor', 'img[src*="pgw.udn.com.tw"]', 'p'),
+        'tw.news.yahoo.com': ('div.caas-body', 'img.caas-img', 'div.caas-body p'),
+        'newtalk.tw': ('div.articleBody.clearfix', 'img[itemprop="image"]', 'p'),
+        'ltn.com.tw': ('p', 'div.image-popup-vertical-fit img', 'p')
+    }
+
     for attempt in range(retries):
         try:
             driver.get(url)
+            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'p')))
 
-            WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, 'p'))
-            )
+            content = img_url = 'null'
+            for site, (article_selector, img_selector, para_selector) in selectors.items():
+                if site in url:
+                    response = requests.get(url)
+                    if response.status_code == 200:
+                        soup = BeautifulSoup(response.text, 'html.parser')
+                        img_tag = soup.select_one(img_selector)
+                        img_url = img_tag['src'] if img_tag else 'null'
 
-            content = ''
-            img_url = 'null'
-            if source_name == '經濟日報':
-                if response.status_code == 200:
-                    soup = BeautifulSoup(response.text, 'html.parser')
-                    container_div = soup.find('section', class_='article-body__editor')
-                    if container_div:
-                        img_tag = container_div.find('img', src=lambda x: x and 'pgw.udn.com.tw' in x)
-                        if img_tag:
-                            img_url = img_tag.get('src') 
-                            print("找到的圖片連結:", img_url) 
-
-                paragraphs = driver.find_elements(By.CSS_SELECTOR, 'section.article-body__editor p')
-                content = '\n'.join([p.text for p in paragraphs])
-            elif source_name == 'Yahoo奇摩新聞':
-                response = requests.get(url)
-                if response.status_code == 200:
-                    soup = BeautifulSoup(response.text, "html.parser")
-                    img_div = soup.find("div", class_="caas-body")
-                    if img_div:
-                        figure_tag = img_div.find("figure", class_="caas-figure")
-                        if figure_tag:
-                            img_tag = figure_tag.find("img", class_="caas-img")
-                            if img_tag:
-                                img_url = img_tag.get("data-src")
-
-                paragraphs = driver.find_elements(By.CSS_SELECTOR, 'div.caas-body p')
-                content = '\n'.join([p.text for p in paragraphs])
-
-            elif source_name == 'Newtalk新聞':
-                response = requests.get(url)
-                if response.status_code == 200:
-                    soup = BeautifulSoup(response.text, 'html.parser')
-                    paragraphs = driver.find_elements(By.CSS_SELECTOR, 'div.articleBody.clearfix p')
-                    content = '\n'.join([p.text for p in paragraphs])
-
-                    image_divs = soup.find_all('div', class_='news_img')
-                    for div in image_divs:
-                        img_tag = div.find('img', itemprop="image")
-                        if img_tag:
-                            img_url = img_tag['src']  # 獲取圖片 URL
-                            print(f"newtalk 圖片連結: {img_url}")
-
-            elif source_name == '自由時報':
-                response = requests.get(url)
-                if response.status_code == 200:
-                    soup = BeautifulSoup(response.text, 'html.parser')
-                    paragraphs = driver.find_elements(By.CSS_SELECTOR, 'p')
-                    content = '\n'.join([p.text.strip() for p in paragraphs])
-
-                    image_divs = soup.find_all('div', class_='image-popup-vertical-fit')
-                    if image_divs:
-                        for div in image_divs:
-                            img_tag = div.find('img')
-                            if img_tag and 'src' in img_tag.attrs:
-                                img_url = img_tag['src']  # 獲取圖片 URL
-                                print(f"自由時報 圖片連結: {img_url}")
-
-            if not content.strip():
-                content = '未找到內容'
-
-            return content, img_url
+                    paragraphs = driver.find_elements(By.CSS_SELECTOR, para_selector)
+                    content = '\n'.join([p.text.strip() for p in paragraphs]) or '未找到內容'
+                    print(f"{site} 圖片連結: {img_url}")
+                    return content, img_url
 
         except Exception as e:
-            print(f"第 {attempt + 1} 次嘗試抓取內容失敗")
-            #print(f"第 {attempt + 1} 次嘗試抓取內容失敗: {e}")
-
+            print(f"第 {attempt + 1} 次嘗試抓取內容失敗: {e}")
             if attempt < retries - 1:
-                print(f"嘗試重新爬取...（剩餘嘗試次數：{retries - attempt - 1}）")
+                print(f"重新嘗試...（剩餘次數：{retries - attempt - 1}）")
                 time.sleep(2)
             else:
-                print("多次嘗試後仍然失敗，停止嘗試。")
-                return '錯誤'
+                return '錯誤', 'null'
 
-    return '錯誤'
+    return '錯誤', 'null'
 
 
 def main():
@@ -288,8 +240,8 @@ def main():
 
         if exists == 0:  
             cursor.execute(f'''
-            INSERT INTO {table_name} (title, link, content, source, date)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO {table_name} (title, link, content, source, date, image)
+            VALUES (?, ?, ?, ?, ?, ?)
             ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間'].strftime('%Y-%m-%d'),row['圖片']))  # 將時間轉換為字符串
             
     conn.commit()
@@ -318,21 +270,34 @@ def fetch_news_data():
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
 
-    cursor.execute(f'SELECT id, title, link, content, source, date FROM {table_name}')
+    cursor.execute(f'SELECT id, title, link, content, source, date, image FROM {table_name}')
     news_data = cursor.fetchall()
 
     conn.close()
 
     news_list = []
     for row in news_data:
-        news_list.append({
-            'id': row[0],
-            'title': row[1],
-            'link': row[2],
-            'content': row[3],
-            'source': row[4],
-            'date': row[5]
-        })
+        if len(row) > 6:  # 檢查 row 的長度是否足夠
+            news_list.append({
+                'id': row[0],
+                'title': row[1],
+                'link': row[2],
+                'content': row[3],
+                'source': row[4],
+                'date': row[5],
+                'image': row[6]
+            })
+        else:
+            # 處理不完整資料的情況，例如設置預設值
+            news_list.append({
+                'id': row[0] if len(row) > 0 else None,
+                'title': row[1] if len(row) > 1 else None,
+                'link': row[2] if len(row) > 2 else None,
+                'content': row[3] if len(row) > 3 else None,
+                'source': row[4] if len(row) > 4 else None,
+                'date': row[5] if len(row) > 5 else None,
+                'image': None  # 預設值
+            })
     
     return news_list
 
@@ -374,14 +339,27 @@ def news_view(request):
     # 將結果轉換為字典列表
     news_list = []
     for row in news_data:
-        news_list.append({
-            'id': row[0],
-            'title': row[1],
-            'link': row[2],
-            'content': row[3],
-            'source': row[4],
-            'date': row[5]
-        })
+        if len(row) > 6:  # 檢查 row 的長度是否足夠
+            news_list.append({
+                'id': row[0],
+                'title': row[1],
+                'link': row[2],
+                'content': row[3],
+                'source': row[4],
+                'date': row[5],
+                'image': row[6]
+            })
+        else:
+            # 處理不完整資料的情況，例如設置預設值
+            news_list.append({
+                'id': row[0] if len(row) > 0 else None,
+                'title': row[1] if len(row) > 1 else None,
+                'link': row[2] if len(row) > 2 else None,
+                'content': row[3] if len(row) > 3 else None,
+                'source': row[4] if len(row) > 4 else None,
+                'date': row[5] if len(row) > 5 else None,
+                'image': None  # 預設值
+            })
 
     # 將新聞列表傳遞給模板
     return render(request, 'news.html', {'news_list': news_list})
@@ -391,7 +369,7 @@ def news_view(request):
 def news_list(request):
     if request.method == 'GET':
         # 查詢所有新聞記錄，並返回標題、連結、內容、來源和日期
-        news = News.objects.all().values('title', 'link', 'content', 'source', 'date')
+        news = News.objects.all().values('title', 'link', 'content', 'source', 'date','image')
         return JsonResponse(list(news), safe=False)
 
 # RESTful API 新增新聞資料
@@ -404,7 +382,8 @@ def news_create(request):
             link=data['link'],
             content=data['content'],
             source=data['source'],
-            date=data['date']
+            date=data['date'],
+            image=data['image']
         )
         return JsonResponse({"message": "News created", "news_id": news.id}, status=201)
     
@@ -418,7 +397,7 @@ def news_api(request):
         cursor = conn.cursor()
 
         # 執行查詢
-        cursor.execute("SELECT id, title, link, content, source, date FROM news")
+        cursor.execute("SELECT id, title, link, content, source, date, image FROM news")
         news_data = cursor.fetchall()
 
         # 關閉資料庫連接
@@ -427,14 +406,27 @@ def news_api(request):
         # 將結果轉換為字典列表
         news_list = []
         for row in news_data:
-            news_list.append({
-                'id': row[0],
-                'title': row[1],
-                'link': row[2],
-                'content': row[3][:50] + '...' if len(row[3]) > 50 else row[3],  # 限制內容為50字
-                'source': row[4],
-                'date': row[5]
-            })
+            if len(row) > 6:  # 檢查 row 的長度是否足夠
+                news_list.append({
+                    'id': row[0],
+                    'title': row[1],
+                    'link': row[2],
+                    'content': row[3],
+                    'source': row[4],
+                    'date': row[5],
+                    'image': row[6]
+                })
+            else:
+                # 處理不完整資料的情況，例如設置預設值
+                news_list.append({
+                    'id': row[0] if len(row) > 0 else None,
+                    'title': row[1] if len(row) > 1 else None,
+                    'link': row[2] if len(row) > 2 else None,
+                    'content': row[3] if len(row) > 3 else None,
+                    'source': row[4] if len(row) > 4 else None,
+                    'date': row[5] if len(row) > 5 else None,
+                    'image': None  # 預設值
+                })
 
         return JsonResponse(news_list, safe=False)
     except Exception as e:
