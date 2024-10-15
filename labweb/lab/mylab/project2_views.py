@@ -714,6 +714,7 @@ def query_report(request):
                 return render(request, 'display_reports.html', {
                     'reports': reports,
                     'score_data': score_data,
+                    'stock_code': stock_code, 
                 })
             except Stock.DoesNotExist:
                 print('股票代碼不存在。')
