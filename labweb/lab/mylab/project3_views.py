@@ -36,67 +36,55 @@ def fetch_news(url):
             news_source = article.find('div', class_='vr1PYe')
             source_name = news_source.get_text(strip=True) if news_source else '未知'
 
-            time_element = article.find('div', class_='UOVeFe').find('time', class_='hvbAAd') if article.find('div', class_='UOVeFe') else None
+            time_element = article.find('div', class_='UOVeFe').find('time', class_='hvbAAd') if article.find('div', 'UOVeFe') else None
             date_str = time_element.get_text(strip=True) if time_element else '未知'
-        
-            # 轉換為日期類型
+
+            # 日期解析邏輯
             if '天前' in date_str:
-                days_ago = int(date_str.replace('天前', '').strip())
+                days_ago = int(re.search(r'\d+', date_str).group())  # 提取數字
                 date = datetime.now() - timedelta(days=days_ago)
             elif '小時前' in date_str:
-                hours_ago = int(date_str.replace('小時前', '').strip())
+                hours_ago = int(re.search(r'\d+', date_str).group())
                 date = datetime.now() - timedelta(hours=hours_ago)
             elif '分鐘前' in date_str:
-                minutes_ago = int(date_str.replace('分鐘前', '').strip())
+                minutes_ago = int(re.search(r'\d+', date_str).group())
                 date = datetime.now() - timedelta(minutes=minutes_ago)
-            elif '昨天' in date_str: 
+            elif '昨天' in date_str:
                 date = datetime.now() - timedelta(days=1)
-            elif '日' in date_str: 
-                month_day = date_str.split('月')
-                month = int(month_day[0])
-                day = int(month_day[1].replace('日', '').strip())
-                year = datetime.now().year 
-                date = datetime(year, month, day)
             else:
-                date = '未知'  
+                # 解析 '月日' 的日期格式
+                try:
+                    date = datetime.strptime(f'{datetime.now().year}年{date_str}', '%Y年%m月%d日')
+                except ValueError:
+                    date = '未知'
 
-            # 將日期轉換為字符串格式
-            date = date.strftime('%Y-%m-%d') if isinstance(date, datetime) else date  # 僅保留日期
+            date = date.strftime('%Y-%m-%d') if isinstance(date, datetime) else date
 
-
-
-            image_urls = []  # 用來存儲圖片 URL 的列表
-
-            # 抓取圖片並逐個存入 image_urls
+            image_urls = []
             image_elements = article.find_all('img', class_='Quavad')
             base_url = 'https://news.google.com'
 
             for image_element in image_elements:
                 srcset = image_element.get('srcset')
                 if srcset:
-                    # 分割 srcset，取第一個1x的圖片
                     image_url = srcset.split(' ')[0]
                     full_image_url = requests.compat.urljoin(base_url, image_url)
-                    image_urls.append(full_image_url)  # 逐個添加圖片 URL
-                    print(f"添加的圖片 URL: {full_image_url}")  # 逐個打印圖片 URL
+                    image_urls.append(full_image_url)
 
-            if not image_urls:
-                image_urls = 'null' 
-            # 將新聞資料添加到 news_list
+            image_urls = ', '.join(image_urls) if image_urls else 'null'
+
             news_list.append({
                 '標題': title,
                 '連結': full_link,
                 '來源': source_name,
-                '時間': date_str,
-                '圖片': image_urls  # 將所有圖片 URL 存入這裡
-            }) # 將整個新聞項目添加到 news_list
-
+                '時間': date,
+                '圖片': image_urls
+            })
 
         return news_list
 
     except Exception as e:
-        print(f"抓取新聞時發生錯誤")
-        #print(f"抓取新聞時發生錯誤: {e}")
+        print(f"抓取新聞時發生錯誤: {e}")
         return []
 
 # 設置 Chrome 的選項
