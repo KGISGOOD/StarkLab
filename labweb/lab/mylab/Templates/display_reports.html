@@ -243,8 +243,7 @@
             <button class="dropbtn">目錄</button>
             <div class="dropdown-content">
                 {% for report in reports %}
-                <a href="#{{ report.report_type }}" onclick="scrollToSection(event, '{{ report.report_type }}')">{{
-                    report.report_type }}</a>
+                <a href="#{{ report.report_type }}" onclick="scrollToSection(event, '{{ report.report_type }}')" style="font-size: 1.2em;">{{ report.report_type }}</a>
                 {% endfor %}
             </div>
         </div>
@@ -255,7 +254,7 @@
     <div class="score-container">
         {% if score_data.綜合損益表分數 %}
         <div class="score" style="overflow: auto; max-width: 100%; padding: 20px; box-sizing: border-box;"> 
-            <h1 >股票代號 : {{ stock_code }}</h1> 
+            <h1>股票代號 : {{ stock_code }}</h1> 
             <h2>資產負債表分數 : {{ score_data.資產負債表分數 }}</h2>
             <p>財務槓桿(50%) = 權益總額 / 資產總額 : <span style="color: blue;">{{ score_data.財務槓桿_50 }}</span></p>
             <p>應收帳款收現日(25%) = (應收帳款 / 營業收入) * 365 : <span style="color: blue;">{{ score_data.應收帳款收現日_25 }}</span></p>
