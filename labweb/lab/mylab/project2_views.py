@@ -1166,12 +1166,7 @@ def update_reports(request):
                         cash_dividends=股利,
                         operating_safety_margin=經營安全邊際,
                         roe=ROE,
-                        financial_leverage=financial_data.get('財務槓桿', 0),
-                        cash_to_assets_ratio=financial_data.get('現金及約當現金/資產總額比率', 0),
-                        accounts_receivable_days=financial_data.get('應收帳款收現日', 0),
-                        cash_flow_ratio=financial_data.get('現金流量比率', 0),
-                        cash_adequacy_ratio=financial_data.get('現金允當比率', 0),
-                        cash_reinvestment_ratio=financial_data.get('現金再投資比率', 0)
+
                     )
 
                     stock_metrics.save()
