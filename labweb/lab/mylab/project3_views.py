@@ -361,7 +361,7 @@ def news_view(request):
 def news_list(request):
     if request.method == 'GET':
         # 查詢所有新聞記錄，並返回標題、連結、內容、來源和日期
-        news = News.objects.all().values('title', 'link', 'content', 'source', 'date')
+        news = News.objects.all().values('title', 'link', 'content', 'source', 'date','image')
         return JsonResponse(list(news), safe=False)
 
 # RESTful API 新增新聞資料
