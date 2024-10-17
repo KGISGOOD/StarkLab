@@ -1157,19 +1157,17 @@ def update_reports(request):
                     score_data['現金流量表分數'] = f'{C:.2f}'
                     print(f"現金流量表分數: {score_data['現金流量表分數']}\n")
 
-                    stock_metrics = StockMetrics(
-                        stock_code=stock_code,
-                        gross_margin=毛利率,
-                        operating_margin=營業利益率,
-                        net_margin=淨利率,
-                        eps=EPS,
-                        cash_dividends=股利,
-                        operating_safety_margin=經營安全邊際,
-                        roe=ROE,
-
+                    StockMetrics.objects.update_or_create(
+                        stock_code=stock_code,  
+                        defaults={              
+                            'gross_margin': 毛利率,
+                            'operating_margin': 營業利益率,
+                            'net_margin': 淨利率,
+                            'eps': EPS,
+                            'operating_safety_margin': 經營安全邊際,
+                            'roe': ROE,
+                        }
                     )
-
-                    stock_metrics.save()
 
 
                     

@@ -22,19 +22,13 @@ class News(models.Model):
 
 class StockMetrics(models.Model):
     stock_code = models.CharField(max_length=10, unique=True, verbose_name='股票代號')  # 股票代號
-    gross_margin = models.DecimalField(max_digits=5, decimal_places=2, verbose_name='毛利率')
-    operating_margin = models.DecimalField(max_digits=5, decimal_places=2, verbose_name='營業利益率')
-    net_margin = models.DecimalField(max_digits=5, decimal_places=2, verbose_name='淨利率')
-    eps = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='基本每股盈餘 (EPS)')
-    cash_dividends = models.DecimalField(max_digits=20, decimal_places=2, verbose_name='發放現金股利')
-    operating_safety_margin = models.DecimalField(max_digits=5, decimal_places=2, verbose_name='經營安全邊際')
-    roe = models.DecimalField(max_digits=5, decimal_places=2, verbose_name='股東權益報酬率 (ROE)')
-    financial_leverage = models.DecimalField(max_digits=5, decimal_places=2, verbose_name='財務槓桿')
-    cash_to_assets_ratio = models.DecimalField(max_digits=5, decimal_places=2, verbose_name='現金及約當現金/資產總額比率')
-    accounts_receivable_days = models.DecimalField(max_digits=5, decimal_places=2, verbose_name='應收帳款收現日')
-    cash_flow_ratio = models.DecimalField(max_digits=5, decimal_places=2, verbose_name='現金流量比率')
-    cash_adequacy_ratio = models.DecimalField(max_digits=5, decimal_places=2, verbose_name='現金允當比率')
-    cash_reinvestment_ratio = models.DecimalField(max_digits=5, decimal_places=2, verbose_name='現金再投資比率')
+    gross_margin = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name='毛利率')
+    operating_margin = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name='營業利益率')
+    net_margin = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name='淨利率')
+    eps = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name='基本每股盈餘 (EPS)')
+    operating_safety_margin = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name='經營安全邊際')
+    roe = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name='股東權益報酬率 (ROE)')
 
     class Meta:
         db_table = "stockMetrics"
+
