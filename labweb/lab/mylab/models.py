@@ -22,12 +22,20 @@ class News(models.Model):
 
 class StockMetrics(models.Model):
     stock_code = models.CharField(max_length=10, unique=True, verbose_name='股票代號')  # 股票代號
-    毛利率 = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name='毛利率')
-    營業利益率 = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name='營業利益率')
-    淨利率 = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name='淨利率')
-    EPS = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name='基本每股盈餘 (EPS)')
-    經營安全邊際 = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name='經營安全邊際')
-    ROE = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name='股東權益報酬率 (ROE)')
+    毛利率 = models.FloatField(null=True, blank=True, verbose_name='毛利率')
+    營業利益率 = models.FloatField(null=True, blank=True, verbose_name='營業利益率')
+    淨利率 = models.FloatField(null=True, blank=True, verbose_name='淨利率')
+    EPS = models.FloatField(null=True, blank=True, verbose_name='基本每股盈餘 (EPS)')
+    經營安全邊際 = models.FloatField(null=True, blank=True, verbose_name='經營安全邊際')
+    ROE = models.FloatField(null=True, blank=True, verbose_name='股東權益報酬率 (ROE)')
+
+    財務槓桿 = models.FloatField(null=True, blank=True, verbose_name='財務槓桿')
+    應收帳款收現日 = models.FloatField(null=True, blank=True, verbose_name='應收帳款收現日')
+    銷貨天數 = models.FloatField(null=True, blank=True, verbose_name='銷貨天數')
+    加分項 = models.FloatField(null=True, blank=True, verbose_name='加分項')
+    現金流量比率 = models.FloatField(null=True, blank=True, verbose_name='現金流量比率')
+    現金允當比率 = models.FloatField(null=True, blank=True, verbose_name='現金允當比率')
+    現金再投資比率 = models.FloatField(null=True, blank=True, verbose_name='現金再投資比率')
 
     class Meta:
         db_table = "stockMetrics"

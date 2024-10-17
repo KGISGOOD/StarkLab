@@ -1160,18 +1160,21 @@ def update_reports(request):
                     StockMetrics.objects.update_or_create(
                         stock_code=stock_code,  
                         defaults={              
+                            '財務槓桿': 財務槓桿,
+                            '應收帳款收現日': 應收帳款收現日,
+                            '銷貨天數': day,
+                            '加分項': 現金及約當現金_資產總額,
                             '毛利率': 毛利率,
                             '營業利益率': 營業利益率,
                             '淨利率': 淨利率,
                             'EPS': EPS,
                             '經營安全邊際': 經營安全邊際,
                             'ROE': ROE,
+                            '現金流量比率': 現金流量比率,
+                            '現金允當比率': 現金允當比率,
+                            '現金再投資比率': 現金再投資比率,
                         }
                     )
-
-
-
-                    
 
                 except ValueError as e:
                     print(f"計算時發生錯誤: {e}")
