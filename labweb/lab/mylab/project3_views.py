@@ -286,7 +286,7 @@ def fetch_news_data():
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
 
-    cursor.execute(f'SELECT id, title, link, content, source, date FROM {table_name}')
+    cursor.execute(f'SELECT id, title, link, content, source, date, image FROM {table_name}')
     news_data = cursor.fetchall()
 
     conn.close()
@@ -361,7 +361,7 @@ def news_view(request):
 def news_list(request):
     if request.method == 'GET':
         # 查詢所有新聞記錄，並返回標題、連結、內容、來源和日期
-        news = News.objects.all().values('title', 'link', 'content', 'source', 'date')
+        news = News.objects.all().values('title', 'link', 'content', 'source', 'date','image')
         return JsonResponse(list(news), safe=False)
 
 # RESTful API 新增新聞資料
@@ -388,8 +388,8 @@ def news_api(request):
         conn = sqlite3.connect('w.db')
         cursor = conn.cursor()
 
-        # 執行查詢
-        cursor.execute("SELECT id, title, link, content, source, date FROM news")
+        # 執行查詢，確保包含 'image' 欄位
+        cursor.execute("SELECT id, title, link, content, source, date, image FROM news")
         news_data = cursor.fetchall()
 
         # 關閉資料庫連接
@@ -405,7 +405,7 @@ def news_api(request):
                 'content': row[3][:50] + '...' if len(row[3]) > 50 else row[3],  # 限制內容為50字
                 'source': row[4],
                 'date': row[5],
-                'image': row[6] 
+                'image': row[6]  # 確保 image 欄位存在於查詢中
             })
 
         return JsonResponse(news_list, safe=False)
