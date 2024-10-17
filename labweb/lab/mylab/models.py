@@ -22,13 +22,14 @@ class News(models.Model):
 
 class StockMetrics(models.Model):
     stock_code = models.CharField(max_length=10, unique=True, verbose_name='股票代號')  # 股票代號
-    gross_margin = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name='毛利率')
-    operating_margin = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name='營業利益率')
-    net_margin = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name='淨利率')
-    eps = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name='基本每股盈餘 (EPS)')
-    operating_safety_margin = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name='經營安全邊際')
-    roe = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name='股東權益報酬率 (ROE)')
+    毛利率 = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name='毛利率')
+    營業利益率 = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name='營業利益率')
+    淨利率 = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name='淨利率')
+    EPS = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name='基本每股盈餘 (EPS)')
+    經營安全邊際 = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name='經營安全邊際')
+    ROE = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name='股東權益報酬率 (ROE)')
 
     class Meta:
         db_table = "stockMetrics"
+
 

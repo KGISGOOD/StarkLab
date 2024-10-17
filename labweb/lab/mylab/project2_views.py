@@ -1160,14 +1160,15 @@ def update_reports(request):
                     StockMetrics.objects.update_or_create(
                         stock_code=stock_code,  
                         defaults={              
-                            'gross_margin': 毛利率,
-                            'operating_margin': 營業利益率,
-                            'net_margin': 淨利率,
-                            'eps': EPS,
-                            'operating_safety_margin': 經營安全邊際,
-                            'roe': ROE,
+                            '毛利率': 毛利率,
+                            '營業利益率': 營業利益率,
+                            '淨利率': 淨利率,
+                            'EPS': EPS,
+                            '經營安全邊際': 經營安全邊際,
+                            'ROE': ROE,
                         }
                     )
+
 
 
                     
