@@ -691,7 +691,168 @@ def query_report(request):
                     score_data['現金流量表分數'] = f'{C:.2f}'
                     print(f"現金流量表分數: {score_data['現金流量表分數']}\n")
 
-                    
+                    #排序
+                    # 提取數據，這裡提取所有需要的欄位
+                    data_list = StockMetrics.objects.values_list(
+                        'stock_code', '毛利率', '營業利益率', '淨利率', 'EPS',
+                        '經營安全邊際', 'ROE', '財務槓桿', '應收帳款收現日',
+                        '銷貨天數', '加分項', '現金流量比率', '現金允當比率',
+                        '現金再投資比率'
+                    )
+
+                    # 格式化數據
+                    gross_margin_list = [{item[0]: item[1]} for item in data_list]  # 毛利率
+                    operating_margin_list = [{item[0]: item[2]} for item in data_list]  # 營業利益率
+                    net_margin_list = [{item[0]: item[3]} for item in data_list]  # 淨利率
+                    eps_list = [{item[0]: item[4]} for item in data_list]  # EPS
+                    safety_margin_list = [{item[0]: item[5]} for item in data_list]  # 經營安全邊際
+                    roe_list = [{item[0]: item[6]} for item in data_list]  # ROE
+                    financial_leverage_list = [{item[0]: item[7]} for item in data_list]  # 財務槓桿
+                    ar_days_list = [{item[0]: item[8]} for item in data_list]  # 應收帳款收現日
+                    sales_days_list = [{item[0]: item[9]} for item in data_list]  # 銷貨天數
+                    extra_points_list = [{item[0]: item[10]} for item in data_list]  # 加分項
+                    cash_flow_ratio_list = [{item[0]: item[11]} for item in data_list]  # 現金流量比率
+                    cash_adequacy_ratio_list = [{item[0]: item[12]} for item in data_list]  # 現金允當比率
+                    cash_reinvestment_ratio_list = [{item[0]: item[13]} for item in data_list]  # 現金再投資比率
+
+                    # 使用者輸入的股票代號
+                    user_input_stock_code = stock_code  # 假設這是用戶輸入的代號
+
+                    def calculate_percentage_position(sorted_list, stock_code):
+                        total_stocks = len(sorted_list)
+                        user_stock_position = next((i for i, item in enumerate(sorted_list) if stock_code in item), None)
+
+                        if user_stock_position is not None:
+                            return (user_stock_position + 1) / total_stocks * 100  # +1 因為 index 從 0 開始
+                        else:
+                            return None
+
+                    # 建立一個空的列表來存儲百分比結果
+                    percentage_results = []
+
+                    # 加總變量
+                    sum_part1 = 0  # 財務槓桿、應收帳款收現日、銷貨天數
+                    sum_part2 = 0  # 毛利率、營業利益率、經營安全邊際、淨利率、EPS、ROE
+                    sum_part3 = 0  # 現金流量比率、現金允當比率、現金再投資比率
+
+                    # 計算每個指標的百分比並應用權重
+                    # 毛利率
+                    sorted_gross_margin_list = sorted(gross_margin_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
+                    gross_margin_percentage = calculate_percentage_position(sorted_gross_margin_list, user_input_stock_code)
+                    weighted_gross_margin = gross_margin_percentage * 0.2
+                    percentage_results.append({'毛利率': {'percentage': gross_margin_percentage, 'weighted': weighted_gross_margin}})
+                    sum_part2 += weighted_gross_margin  # 加到第二部分
+
+                    # 營業利益率
+                    sorted_operating_margin_list = sorted(operating_margin_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
+                    operating_margin_percentage = calculate_percentage_position(sorted_operating_margin_list, user_input_stock_code)
+                    weighted_operating_margin = operating_margin_percentage * 0.2
+                    percentage_results.append({'營業利益率': {'percentage': operating_margin_percentage, 'weighted': weighted_operating_margin}})
+                    sum_part2 += weighted_operating_margin  # 加到第二部分
+
+                    # 淨利率
+                    sorted_net_margin_list = sorted(net_margin_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
+                    net_margin_percentage = calculate_percentage_position(sorted_net_margin_list, user_input_stock_code)
+                    weighted_net_margin = net_margin_percentage * 0.1
+                    percentage_results.append({'淨利率': {'percentage': net_margin_percentage, 'weighted': weighted_net_margin}})
+                    sum_part2 += weighted_net_margin  # 加到第二部分
+
+                    # EPS
+                    sorted_eps_list = sorted(eps_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
+                    eps_percentage = calculate_percentage_position(sorted_eps_list, user_input_stock_code)
+                    weighted_eps = eps_percentage * 0.1
+                    percentage_results.append({'EPS': {'percentage': eps_percentage, 'weighted': weighted_eps}})
+                    sum_part2 += weighted_eps  # 加到第二部分
+
+                    # 經營安全邊際
+                    sorted_safety_margin_list = sorted(safety_margin_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
+                    safety_margin_percentage = calculate_percentage_position(sorted_safety_margin_list, user_input_stock_code)
+                    weighted_safety_margin = safety_margin_percentage * 0.2
+                    percentage_results.append({'經營安全邊際': {'percentage': safety_margin_percentage, 'weighted': weighted_safety_margin}})
+                    sum_part2 += weighted_safety_margin  # 加到第二部分
+
+                    # ROE
+                    sorted_roe_list = sorted(roe_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
+                    roe_percentage = calculate_percentage_position(sorted_roe_list, user_input_stock_code)
+                    weighted_roe = roe_percentage * 0.2
+                    percentage_results.append({'ROE': {'percentage': roe_percentage, 'weighted': weighted_roe}})
+                    sum_part2 += weighted_roe  # 加到第二部分
+
+                    # 財務槓桿
+                    sorted_financial_leverage_list = sorted(financial_leverage_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
+                    financial_leverage_percentage = calculate_percentage_position(sorted_financial_leverage_list, user_input_stock_code)
+                    weighted_financial_leverage = financial_leverage_percentage * 0.5
+                    percentage_results.append({'財務槓桿': {'percentage': financial_leverage_percentage, 'weighted': weighted_financial_leverage}})
+                    sum_part1 += weighted_financial_leverage  # 加到第一部分
+
+                    # 應收帳款收現日（由小到大）
+                    sorted_ar_days_list = sorted(ar_days_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
+                    ar_days_percentage = calculate_percentage_position(sorted_ar_days_list, user_input_stock_code)
+                    weighted_ar_days = ar_days_percentage * 0.25
+                    percentage_results.append({'應收帳款收現日': {'percentage': ar_days_percentage, 'weighted': weighted_ar_days}})
+                    sum_part1 += weighted_ar_days  # 加到第一部分
+
+                    # 銷貨天數（由小到大）
+                    sorted_sales_days_list = sorted(sales_days_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
+                    sales_days_percentage = calculate_percentage_position(sorted_sales_days_list, user_input_stock_code)
+                    weighted_sales_days = sales_days_percentage * 0.25
+                    percentage_results.append({'銷貨天數': {'percentage': sales_days_percentage, 'weighted': weighted_sales_days}})
+                    sum_part1 += weighted_sales_days  # 加到第一部分
+
+                    # 加分項
+                    sorted_extra_points_list = sorted(extra_points_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
+                    extra_points_percentage = calculate_percentage_position(sorted_extra_points_list, user_input_stock_code)
+                    weighted_extra_points = extra_points_percentage * 1  # 假設加分項本身就是滿分
+                    percentage_results.append({'加分項': {'percentage': extra_points_percentage, 'weighted': weighted_extra_points}})
+                    # 這裡不需要加總
+
+                    # 現金流量比率
+                    sorted_cash_flow_ratio_list = sorted(cash_flow_ratio_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
+                    cash_flow_ratio_percentage = calculate_percentage_position(sorted_cash_flow_ratio_list, user_input_stock_code)
+                    weighted_cash_flow_ratio = cash_flow_ratio_percentage * 0.1
+                    percentage_results.append({'現金流量比率': {'percentage': cash_flow_ratio_percentage, 'weighted': weighted_cash_flow_ratio}})
+                    sum_part3 += weighted_cash_flow_ratio  # 加到第三部分
+
+                    # 現金允當比率
+                    sorted_cash_adequacy_ratio_list = sorted(cash_adequacy_ratio_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
+                    cash_adequacy_ratio_percentage = calculate_percentage_position(sorted_cash_adequacy_ratio_list, user_input_stock_code)
+                    weighted_cash_adequacy_ratio = cash_adequacy_ratio_percentage * 0.7
+                    percentage_results.append({'現金允當比率': {'percentage': cash_adequacy_ratio_percentage, 'weighted': weighted_cash_adequacy_ratio}})
+                    sum_part3 += weighted_cash_adequacy_ratio  # 加到第三部分
+
+                    # 現金再投資比率
+                    sorted_cash_reinvestment_ratio_list = sorted(cash_reinvestment_ratio_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
+                    cash_reinvestment_ratio_percentage = calculate_percentage_position(sorted_cash_reinvestment_ratio_list, user_input_stock_code)
+                    weighted_cash_reinvestment_ratio = cash_reinvestment_ratio_percentage * 0.2
+                    percentage_results.append({'現金再投資比率': {'percentage': cash_reinvestment_ratio_percentage, 'weighted': weighted_cash_reinvestment_ratio}})
+                    sum_part3 += weighted_cash_reinvestment_ratio  # 加到第三部分
+
+                    # 輸出結果
+                    for result in percentage_results:
+                        print(result)
+
+                    # 輸出加總結果
+                    print("Part 1 Total:", sum_part1)
+                    print("Part 2 Total:", sum_part2)
+                    print("Part 3 Total:", sum_part3)
+
+
+                    # 輸出排序結果和百分比
+                    # print("Sorted Gross Margin:", sorted_gross_margin_list, "Percentage Position:", gross_margin_percentage)
+                    # print("Sorted Operating Margin:", sorted_operating_margin_list, "Percentage Position:", operating_margin_percentage)
+                    # print("Sorted Net Margin:", sorted_net_margin_list, "Percentage Position:", net_margin_percentage)
+                    # print("Sorted EPS:", sorted_eps_list, "Percentage Position:", eps_percentage)
+                    # print("Sorted Safety Margin:", sorted_safety_margin_list, "Percentage Position:", safety_margin_percentage)
+                    # print("Sorted ROE:", sorted_roe_list, "Percentage Position:", roe_percentage)
+                    # print("Sorted Financial Leverage:", sorted_financial_leverage_list, "Percentage Position:", financial_leverage_percentage)
+                    # print("Sorted AR Days:", sorted_ar_days_list, "Percentage Position:", ar_days_percentage)
+                    # print("Sorted Sales Days:", sorted_sales_days_list, "Percentage Position:", sales_days_percentage)
+                    # print("Sorted Extra Points:", sorted_extra_points_list, "Percentage Position:", extra_points_percentage)
+                    # print("Sorted Cash Flow Ratio:", sorted_cash_flow_ratio_list, "Percentage Position:", cash_flow_ratio_percentage)
+                    # print("Sorted Cash Adequacy Ratio:", sorted_cash_adequacy_ratio_list, "Percentage Position:", cash_adequacy_ratio_percentage)
+                    # print("Sorted Cash Reinvestment Ratio:", sorted_cash_reinvestment_ratio_list, "Percentage Position:", cash_reinvestment_ratio_percentage)
+
+
 
                 except ValueError as e:
                     print(f"計算時發生錯誤: {e}")
@@ -720,6 +881,8 @@ def query_report(request):
                     'score_data': score_data,
                     'stock_code': stock_code, 
                 })
+
+            
             except Stock.DoesNotExist:
                 print('股票代碼不存在。')
     return render(request, 'query_report.html')
