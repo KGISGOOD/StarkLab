@@ -5,6 +5,8 @@ import sqlite3
 import requests
 from bs4 import BeautifulSoup
 import time
+import os
+
 
 import csv
 import re
@@ -18,7 +20,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime, timedelta
 
 # 爬取新聞的函數
-def fetch_news(url):
+def fetch_news(url,seen_titles):
     try:
         response = requests.get(url)
         response.raise_for_status()
@@ -30,6 +32,12 @@ def fetch_news(url):
         for article in articles:
             title_element = article.find('a', class_='JtKRv')
             title = title_element.get_text(strip=True) if title_element else '未知'
+            # 檢查是否是重複標題
+            if title in seen_titles:
+                print(f"跳過重複標題的文章: {title}")
+                continue  # 跳過該文章
+            # 標題加入已看到的集合
+            seen_titles.add(title)
             link = title_element.get('href', '').strip() if title_element else ''
             full_link = requests.compat.urljoin(url, link)
 
@@ -105,7 +113,7 @@ def extract_final_url(google_news_url):
         return match.group(1)
     return google_news_url
 
-def fetch_article_content(driver, source_name, url, retries=3):
+def fetch_article_content(driver, source_name, url, retries=1):  # 將 retries 改為 1
     for attempt in range(retries):
         try:
             driver.get(url)
@@ -137,12 +145,7 @@ def fetch_article_content(driver, source_name, url, retries=3):
             print(f"第 {attempt + 1} 次嘗試抓取內容失敗")
             #print(f"第 {attempt + 1} 次嘗試抓取內容失敗: {e}")
 
-            if attempt < retries - 1:
-                print(f"嘗試重新爬取...（剩餘嘗試次數：{retries - attempt - 1}）")
-                time.sleep(2)
-            else:
-                print("多次嘗試後仍然失敗，停止嘗試。")
-                return '錯誤'
+            return '錯誤'
 
     return '錯誤'
 
@@ -164,10 +167,12 @@ def main():
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際乾旱 
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'  # 國際旱災 
     ]
+    seen_titles = set()  # 用來跟蹤已處理的新聞標題
+
 
     all_news_items = []
     for url in urls:
-        news_items = fetch_news(url)
+        news_items = fetch_news(url, seen_titles)  # 傳入 seen_titles
         all_news_items.extend(news_items)
 
     driver = setup_chrome_driver()
@@ -232,11 +237,9 @@ def main():
         image TEXT,
         content TEXT,
         source TEXT,
-        date TEXT,
-
+        date TEXT
     )
-    ''')
-    cursor.execute(f"DELETE FROM {table_name}")
+''')
 
     # 讀取 w.csv 並按照日期進行排序，從近到遠
     w_df = pd.read_csv('w.csv')
