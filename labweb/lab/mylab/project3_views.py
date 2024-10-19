@@ -5,6 +5,8 @@ import sqlite3
 import requests
 from bs4 import BeautifulSoup
 import time
+import os
+
 
 import csv
 import re
@@ -18,7 +20,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime, timedelta
 
 # 爬取新聞的函數
-def fetch_news(url):
+def fetch_news(url,seen_titles):
     try:
         response = requests.get(url)
         response.raise_for_status()
@@ -30,6 +32,12 @@ def fetch_news(url):
         for article in articles:
             title_element = article.find('a', class_='JtKRv')
             title = title_element.get_text(strip=True) if title_element else '未知'
+            # 檢查是否是重複標題
+            if title in seen_titles:
+                print(f"跳過重複標題的文章: {title}")
+                continue  # 跳過該文章
+            # 標題加入已看到的集合
+            seen_titles.add(title)
             link = title_element.get('href', '').strip() if title_element else ''
             full_link = requests.compat.urljoin(url, link)
 
@@ -105,69 +113,63 @@ def extract_final_url(google_news_url):
         return match.group(1)
     return google_news_url
 
-def fetch_article_content(driver, source_name, url, retries=3):
-    for attempt in range(retries):
-        try:
-            driver.get(url)
+def fetch_article_content(driver, source_name, url):
+    try:
+        driver.get(url)
 
-            WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, 'p'))
-            )
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, 'p'))
+        )
 
-            content = ''
-            if source_name == '經濟日報':
-                paragraphs = driver.find_elements(By.CSS_SELECTOR, 'section.article-body__editor p')
-                content = '\n'.join([p.text for p in paragraphs])
-            elif source_name == 'Yahoo奇摩新聞':
-                paragraphs = driver.find_elements(By.CSS_SELECTOR, 'div.caas-body p')
-                content = '\n'.join([p.text for p in paragraphs])
-            elif source_name == 'Newtalk新聞':
-                paragraphs = driver.find_elements(By.CSS_SELECTOR, 'div.articleBody.clearfix p')
-                content = '\n'.join([p.text for p in paragraphs])
-            elif source_name == '自由時報':
-                paragraphs = driver.find_elements(By.CSS_SELECTOR, 'p')
-                content = '\n'.join([p.text.strip() for p in paragraphs])
+        content = ''
+        if source_name == '經濟日報':
+            paragraphs = driver.find_elements(By.CSS_SELECTOR, 'section.article-body__editor p')
+            content = '\n'.join([p.text for p in paragraphs])
+        elif source_name == 'Yahoo奇摩新聞':
+            paragraphs = driver.find_elements(By.CSS_SELECTOR, 'div.caas-body p')
+            content = '\n'.join([p.text for p in paragraphs])
+        elif source_name == 'Newtalk新聞':
+            paragraphs = driver.find_elements(By.CSS_SELECTOR, 'div.articleBody.clearfix p')
+            content = '\n'.join([p.text for p in paragraphs])
+        elif source_name == '自由時報':
+            paragraphs = driver.find_elements(By.CSS_SELECTOR, 'p')
+            content = '\n'.join([p.text.strip() for p in paragraphs])
 
-            if not content.strip():
-                content = '未找到內容'
+        if not content.strip():
+            content = '未找到內容'
 
-            return content
+        return content
 
-        except Exception as e:
-            print(f"第 {attempt + 1} 次嘗試抓取內容失敗")
-            #print(f"第 {attempt + 1} 次嘗試抓取內容失敗: {e}")
-
-            if attempt < retries - 1:
-                print(f"嘗試重新爬取...（剩餘嘗試次數：{retries - attempt - 1}）")
-                time.sleep(2)
-            else:
-                print("多次嘗試後仍然失敗，停止嘗試。")
-                return '錯誤'
-
-    return '錯誤'
+    except Exception as e:
+        print("嘗試抓取內容失敗")
+        #print(f"抓取失敗: {e}") # 如果你想保留錯誤訊息，可以取消註解這行
+        return '錯誤'
 
 
 def main():
     start_time = time.time()
     urls = [
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際大雨 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際豪雨 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際暴雨 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際淹水 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際洪水 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際水災 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際颱風 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際颶風 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際風災 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際海嘯 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際地震 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際乾旱 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'  # 國際旱災 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A7d-%E5%8F%B0%E7%81%A3%20-%E5%8F%B0%E5%8C%97%20-%E6%96%B0%E5%8C%97%20-%E5%9F%BA%E9%9A%86%20-%E6%96%B0%E7%AB%B9%E5%B8%82%20-%E6%A1%83%E5%9C%92%20-%E6%96%B0%E7%AB%B9%E7%B8%A3%20-%E5%AE%9C%E8%98%AD%20-%E5%8F%B0%E4%B8%AD%20-%E8%8B%97%E6%A0%97%20-%E5%BD%B0%E5%8C%96%20-%E5%8D%97%E6%8A%95%20-%E9%9B%B2%E6%9E%97%20-%E9%AB%98%E9%9B%84%20-%E5%8F%B0%E5%8D%97%20-%E5%98%89%E7%BE%A9%20-%E5%B1%8F%E6%9D%B1%20-%E6%BE%8E%E6%B9%96%20-%E8%8A%B1%E6%9D%B1%20-%E8%8A%B1%E8%93%AE%20-%E5%8F%B09%E7%B7%9A%20-%E9%87%91%E9%96%80%20-%E9%A6%AC%E7%A5%96%20-%E7%B6%A0%E5%B3%B6%20-%E8%98%AD%E5%B6%BC%20-%E8%87%BA%E7%81%A3%20-%E8%87%BA%E5%8C%97%20-%E8%87%BA%E4%B8%AD%20-%E8%87%BA%E5%8D%97%20-%E8%87%BA9%E7%B8%A3%20-%E5%85%A8%E5%8F%B0%20-%E5%85%A8%E8%87%BA&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際大雨 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A7d-%E5%8F%B0%E7%81%A3%20-%E5%8F%B0%E5%8C%97%20-%E6%96%B0%E5%8C%97%20-%E5%9F%BA%E9%9A%86%20-%E6%96%B0%E7%AB%B9%E5%B8%82%20-%E6%A1%83%E5%9C%92%20-%E6%96%B0%E7%AB%B9%E7%B8%A3%20-%E5%AE%9C%E8%98%AD%20-%E5%8F%B0%E4%B8%AD%20-%E8%8B%97%E6%A0%97%20-%E5%BD%B0%E5%8C%96%20-%E5%8D%97%E6%8A%95%20-%E9%9B%B2%E6%9E%97%20-%E9%AB%98%E9%9B%84%20-%E5%8F%B0%E5%8D%97%20-%E5%98%89%E7%BE%A9%20-%E5%B1%8F%E6%9D%B1%20-%E6%BE%8E%E6%B9%96%20-%E8%8A%B1%E6%9D%B1%20-%E8%8A%B1%E8%93%AE%20-%E5%8F%B09%E7%B7%9A%20-%E9%87%91%E9%96%80%20-%E9%A6%AC%E7%A5%96%20-%E7%B6%A0%E5%B3%B6%20-%E8%98%AD%E5%B6%BC%20-%E8%87%BA%E7%81%A3%20-%E8%87%BA%E5%8C%97%20-%E8%87%BA%E4%B8%AD%20-%E8%87%BA%E5%8D%97%20-%E8%87%BA9%E7%B8%A3%20-%E5%85%A8%E5%8F%B0%20-%E5%85%A8%E8%87%BA&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+       'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A7d-%E5%8F%B0%E7%81%A3%20-%E5%8F%B0%E5%8C%97%20-%E6%96%B0%E5%8C%97%20-%E5%9F%BA%E9%9A%86%20-%E6%96%B0%E7%AB%B9%E5%B8%82%20-%E6%A1%83%E5%9C%92%20-%E6%96%B0%E7%AB%B9%E7%B8%A3%20-%E5%AE%9C%E8%98%AD%20-%E5%8F%B0%E4%B8%AD%20-%E8%8B%97%E6%A0%97%20-%E5%BD%B0%E5%8C%96%20-%E5%8D%97%E6%8A%95%20-%E9%9B%B2%E6%9E%97%20-%E9%AB%98%E9%9B%84%20-%E5%8F%B0%E5%8D%97%20-%E5%98%89%E7%BE%A9%20-%E5%B1%8F%E6%9D%B1%20-%E6%BE%8E%E6%B9%96%20-%E8%8A%B1%E6%9D%B1%20-%E8%8A%B1%E8%93%AE%20-%E5%8F%B09%E7%B7%9A%20-%E9%87%91%E9%96%80%20-%E9%A6%AC%E7%A5%96%20-%E7%B6%A0%E5%B3%B6%20-%E8%98%AD%E5%B6%BC%20-%E8%87%BA%E7%81%A3%20-%E8%87%BA%E5%8C%97%20-%E8%87%BA%E4%B8%AD%20-%E8%87%BA%E5%8D%97%20-%E8%87%BA9%E7%B8%A3%20-%E5%85%A8%E5%8F%B0%20-%E5%85%A8%E8%87%BA&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A7d-%E5%8F%B0%E7%81%A3%20-%E5%8F%B0%E5%8C%97%20-%E6%96%B0%E5%8C%97%20-%E5%9F%BA%E9%9A%86%20-%E6%96%B0%E7%AB%B9%E5%B8%82%20-%E6%A1%83%E5%9C%92%20-%E6%96%B0%E7%AB%B9%E7%B8%A3%20-%E5%AE%9C%E8%98%AD%20-%E5%8F%B0%E4%B8%AD%20-%E8%8B%97%E6%A0%97%20-%E5%BD%B0%E5%8C%96%20-%E5%8D%97%E6%8A%95%20-%E9%9B%B2%E6%9E%97%20-%E9%AB%98%E9%9B%84%20-%E5%8F%B0%E5%8D%97%20-%E5%98%89%E7%BE%A9%20-%E5%B1%8F%E6%9D%B1%20-%E6%BE%8E%E6%B9%96%20-%E8%8A%B1%E6%9D%B1%20-%E8%8A%B1%E8%93%AE%20-%E5%8F%B09%E7%B7%9A%20-%E9%87%91%E9%96%80%20-%E9%A6%AC%E7%A5%96%20-%E7%B6%A0%E5%B3%B6%20-%E8%98%AD%E5%B6%BC%20-%E8%87%BA%E7%81%A3%20-%E8%87%BA%E5%8C%97%20-%E8%87%BA%E4%B8%AD%20-%E8%87%BA%E5%8D%97%20-%E8%87%BA9%E7%B8%A3%20-%E5%85%A8%E5%8F%B0%20-%E5%85%A8%E8%87%BA&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A7d-%E5%8F%B0%E7%81%A3%20-%E5%8F%B0%E5%8C%97%20-%E6%96%B0%E5%8C%97%20-%E5%9F%BA%E9%9A%86%20-%E6%96%B0%E7%AB%B9%E5%B8%82%20-%E6%A1%83%E5%9C%92%20-%E6%96%B0%E7%AB%B9%E7%B8%A3%20-%E5%AE%9C%E8%98%AD%20-%E5%8F%B0%E4%B8%AD%20-%E8%8B%97%E6%A0%97%20-%E5%BD%B0%E5%8C%96%20-%E5%8D%97%E6%8A%95%20-%E9%9B%B2%E6%9E%97%20-%E9%AB%98%E9%9B%84%20-%E5%8F%B0%E5%8D%97%20-%E5%98%89%E7%BE%A9%20-%E5%B1%8F%E6%9D%B1%20-%E6%BE%8E%E6%B9%96%20-%E8%8A%B1%E6%9D%B1%20-%E8%8A%B1%E8%93%AE%20-%E5%8F%B09%E7%B7%9A%20-%E9%87%91%E9%96%80%20-%E9%A6%AC%E7%A5%96%20-%E7%B6%A0%E5%B3%B6%20-%E8%98%AD%E5%B6%BC%20-%E8%87%BA%E7%81%A3%20-%E8%87%BA%E5%8C%97%20-%E8%87%BA%E4%B8%AD%20-%E8%87%BA%E5%8D%97%20-%E8%87%BA9%E7%B8%A3%20-%E5%85%A8%E5%8F%B0%20-%E5%85%A8%E8%87%BA&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A7d-%E5%8F%B0%E7%81%A3%20-%E5%8F%B0%E5%8C%97%20-%E6%96%B0%E5%8C%97%20-%E5%9F%BA%E9%9A%86%20-%E6%96%B0%E7%AB%B9%E5%B8%82%20-%E6%A1%83%E5%9C%92%20-%E6%96%B0%E7%AB%B9%E7%B8%A3%20-%E5%AE%9C%E8%98%AD%20-%E5%8F%B0%E4%B8%AD%20-%E8%8B%97%E6%A0%97%20-%E5%BD%B0%E5%8C%96%20-%E5%8D%97%E6%8A%95%20-%E9%9B%B2%E6%9E%97%20-%E9%AB%98%E9%9B%84%20-%E5%8F%B0%E5%8D%97%20-%E5%98%89%E7%BE%A9%20-%E5%B1%8F%E6%9D%B1%20-%E6%BE%8E%E6%B9%96%20-%E8%8A%B1%E6%9D%B1%20-%E8%8A%B1%E8%93%AE%20-%E5%8F%B09%E7%B7%9A%20-%E9%87%91%E9%96%80%20-%E9%A6%AC%E7%A5%96%20-%E7%B6%A0%E5%B3%B6%20-%E8%98%AD%E5%B6%BC%20-%E8%87%BA%E7%81%A3%20-%E8%87%BA%E5%8C%97%20-%E8%87%BA%E4%B8%AD%20-%E8%87%BA%E5%8D%97%20-%E8%87%BA9%E7%B8%A3%20-%E5%85%A8%E5%8F%B0%20-%E5%85%A8%E8%87%BA&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A7d-%E5%8F%B0%E7%81%A3%20-%E5%8F%B0%E5%8C%97%20-%E6%96%B0%E5%8C%97%20-%E5%9F%BA%E9%9A%86%20-%E6%96%B0%E7%AB%B9%E5%B8%82%20-%E6%A1%83%E5%9C%92%20-%E6%96%B0%E7%AB%B9%E7%B8%A3%20-%E5%AE%9C%E8%98%AD%20-%E5%8F%B0%E4%B8%AD%20-%E8%8B%97%E6%A0%97%20-%E5%BD%B0%E5%8C%96%20-%E5%8D%97%E6%8A%95%20-%E9%9B%B2%E6%9E%97%20-%E9%AB%98%E9%9B%84%20-%E5%8F%B0%E5%8D%97%20-%E5%98%89%E7%BE%A9%20-%E5%B1%8F%E6%9D%B1%20-%E6%BE%8E%E6%B9%96%20-%E8%8A%B1%E6%9D%B1%20-%E8%8A%B1%E8%93%AE%20-%E5%8F%B09%E7%B7%9A%20-%E9%87%91%E9%96%80%20-%E9%A6%AC%E7%A5%96%20-%E7%B6%A0%E5%B3%B6%20-%E8%98%AD%E5%B6%BC%20-%E8%87%BA%E7%81%A3%20-%E8%87%BA%E5%8C%97%20-%E8%87%BA%E4%B8%AD%20-%E8%87%BA%E5%8D%97%20-%E8%87%BA9%E7%B8%A3%20-%E5%85%A8%E5%8F%B0%20-%E5%85%A8%E8%87%BA&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A7d-%E5%8F%B0%E7%81%A3%20-%E5%8F%B0%E5%8C%97%20-%E6%96%B0%E5%8C%97%20-%E5%9F%BA%E9%9A%86%20-%E6%96%B0%E7%AB%B9%E5%B8%82%20-%E6%A1%83%E5%9C%92%20-%E6%96%B0%E7%AB%B9%E7%B8%A3%20-%E5%AE%9C%E8%98%AD%20-%E5%8F%B0%E4%B8%AD%20-%E8%8B%97%E6%A0%97%20-%E5%BD%B0%E5%8C%96%20-%E5%8D%97%E6%8A%95%20-%E9%9B%B2%E6%9E%97%20-%E9%AB%98%E9%9B%84%20-%E5%8F%B0%E5%8D%97%20-%E5%98%89%E7%BE%A9%20-%E5%B1%8F%E6%9D%B1%20-%E6%BE%8E%E6%B9%96%20-%E8%8A%B1%E6%9D%B1%20-%E8%8A%B1%E8%93%AE%20-%E5%8F%B09%E7%B7%9A%20-%E9%87%91%E9%96%80%20-%E9%A6%AC%E7%A5%96%20-%E7%B6%A0%E5%B3%B6%20-%E8%98%AD%E5%B6%BC%20-%E8%87%BA%E7%81%A3%20-%E8%87%BA%E5%8C%97%20-%E8%87%BA%E4%B8%AD%20-%E8%87%BA%E5%8D%97%20-%E8%87%BA9%E7%B8%A3%20-%E5%85%A8%E5%8F%B0%20-%E5%85%A8%E8%87%BA&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A7d-%E5%8F%B0%E7%81%A3%20-%E5%8F%B0%E5%8C%97%20-%E6%96%B0%E5%8C%97%20-%E5%9F%BA%E9%9A%86%20-%E6%96%B0%E7%AB%B9%E5%B8%82%20-%E6%A1%83%E5%9C%92%20-%E6%96%B0%E7%AB%B9%E7%B8%A3%20-%E5%AE%9C%E8%98%AD%20-%E5%8F%B0%E4%B8%AD%20-%E8%8B%97%E6%A0%97%20-%E5%BD%B0%E5%8C%96%20-%E5%8D%97%E6%8A%95%20-%E9%9B%B2%E6%9E%97%20-%E9%AB%98%E9%9B%84%20-%E5%8F%B0%E5%8D%97%20-%E5%98%89%E7%BE%A9%20-%E5%B1%8F%E6%9D%B1%20-%E6%BE%8E%E6%B9%96%20-%E8%8A%B1%E6%9D%B1%20-%E8%8A%B1%E8%93%AE%20-%E5%8F%B09%E7%B7%9A%20-%E9%87%91%E9%96%80%20-%E9%A6%AC%E7%A5%96%20-%E7%B6%A0%E5%B3%B6%20-%E8%98%AD%E5%B6%BC%20-%E8%87%BA%E7%81%A3%20-%E8%87%BA%E5%8C%97%20-%E8%87%BA%E4%B8%AD%20-%E8%87%BA%E5%8D%97%20-%E8%87%BA9%E7%B8%A3%20-%E5%85%A8%E5%8F%B0%20-%E5%85%A8%E8%87%BA&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A7d-%E5%8F%B0%E7%81%A3%20-%E5%8F%B0%E5%8C%97%20-%E6%96%B0%E5%8C%97%20-%E5%9F%BA%E9%9A%86%20-%E6%96%B0%E7%AB%B9%E5%B8%82%20-%E6%A1%83%E5%9C%92%20-%E6%96%B0%E7%AB%B9%E7%B8%A3%20-%E5%AE%9C%E8%98%AD%20-%E5%8F%B0%E4%B8%AD%20-%E8%8B%97%E6%A0%97%20-%E5%BD%B0%E5%8C%96%20-%E5%8D%97%E6%8A%95%20-%E9%9B%B2%E6%9E%97%20-%E9%AB%98%E9%9B%84%20-%E5%8F%B0%E5%8D%97%20-%E5%98%89%E7%BE%A9%20-%E5%B1%8F%E6%9D%B1%20-%E6%BE%8E%E6%B9%96%20-%E8%8A%B1%E6%9D%B1%20-%E8%8A%B1%E8%93%AE%20-%E5%8F%B09%E7%B7%9A%20-%E9%87%91%E9%96%80%20-%E9%A6%AC%E7%A5%96%20-%E7%B6%A0%E5%B3%B6%20-%E8%98%AD%E5%B6%BC%20-%E8%87%BA%E7%81%A3%20-%E8%87%BA%E5%8C%97%20-%E8%87%BA%E4%B8%AD%20-%E8%87%BA%E5%8D%97%20-%E8%87%BA9%E7%B8%A3%20-%E5%85%A8%E5%8F%B0%20-%E5%85%A8%E8%87%BA&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際海嘯 
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A7d-%E5%8F%B0%E7%81%A3%20-%E5%8F%B0%E5%8C%97%20-%E6%96%B0%E5%8C%97%20-%E5%9F%BA%E9%9A%86%20-%E6%96%B0%E7%AB%B9%E5%B8%82%20-%E6%A1%83%E5%9C%92%20-%E6%96%B0%E7%AB%B9%E7%B8%A3%20-%E5%AE%9C%E8%98%AD%20-%E5%8F%B0%E4%B8%AD%20-%E8%8B%97%E6%A0%97%20-%E5%BD%B0%E5%8C%96%20-%E5%8D%97%E6%8A%95%20-%E9%9B%B2%E6%9E%97%20-%E9%AB%98%E9%9B%84%20-%E5%8F%B0%E5%8D%97%20-%E5%98%89%E7%BE%A9%20-%E5%B1%8F%E6%9D%B1%20-%E6%BE%8E%E6%B9%96%20-%E8%8A%B1%E6%9D%B1%20-%E8%8A%B1%E8%93%AE%20-%E5%8F%B09%E7%B7%9A%20-%E9%87%91%E9%96%80%20-%E9%A6%AC%E7%A5%96%20-%E7%B6%A0%E5%B3%B6%20-%E8%98%AD%E5%B6%BC%20-%E8%87%BA%E7%81%A3%20-%E8%87%BA%E5%8C%97%20-%E8%87%BA%E4%B8%AD%20-%E8%87%BA%E5%8D%97%20-%E8%87%BA9%E7%B8%A3%20-%E5%85%A8%E5%8F%B0%20-%E5%85%A8%E8%87%BA&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際地震 
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A7d-%E5%8F%B0%E7%81%A3%20-%E5%8F%B0%E5%8C%97%20-%E6%96%B0%E5%8C%97%20-%E5%9F%BA%E9%9A%86%20-%E6%96%B0%E7%AB%B9%E5%B8%82%20-%E6%A1%83%E5%9C%92%20-%E6%96%B0%E7%AB%B9%E7%B8%A3%20-%E5%AE%9C%E8%98%AD%20-%E5%8F%B0%E4%B8%AD%20-%E8%8B%97%E6%A0%97%20-%E5%BD%B0%E5%8C%96%20-%E5%8D%97%E6%8A%95%20-%E9%9B%B2%E6%9E%97%20-%E9%AB%98%E9%9B%84%20-%E5%8F%B0%E5%8D%97%20-%E5%98%89%E7%BE%A9%20-%E5%B1%8F%E6%9D%B1%20-%E6%BE%8E%E6%B9%96%20-%E8%8A%B1%E6%9D%B1%20-%E8%8A%B1%E8%93%AE%20-%E5%8F%B09%E7%B7%9A%20-%E9%87%91%E9%96%80%20-%E9%A6%AC%E7%A5%96%20-%E7%B6%A0%E5%B3%B6%20-%E8%98%AD%E5%B6%BC%20-%E8%87%BA%E7%81%A3%20-%E8%87%BA%E5%8C%97%20-%E8%87%BA%E4%B8%AD%20-%E8%87%BA%E5%8D%97%20-%E8%87%BA9%E7%B8%A3%20-%E5%85%A8%E5%8F%B0%20-%E5%85%A8%E8%87%BA&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際乾旱 
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A7d-%E5%8F%B0%E7%81%A3%20-%E5%8F%B0%E5%8C%97%20-%E6%96%B0%E5%8C%97%20-%E5%9F%BA%E9%9A%86%20-%E6%96%B0%E7%AB%B9%E5%B8%82%20-%E6%A1%83%E5%9C%92%20-%E6%96%B0%E7%AB%B9%E7%B8%A3%20-%E5%AE%9C%E8%98%AD%20-%E5%8F%B0%E4%B8%AD%20-%E8%8B%97%E6%A0%97%20-%E5%BD%B0%E5%8C%96%20-%E5%8D%97%E6%8A%95%20-%E9%9B%B2%E6%9E%97%20-%E9%AB%98%E9%9B%84%20-%E5%8F%B0%E5%8D%97%20-%E5%98%89%E7%BE%A9%20-%E5%B1%8F%E6%9D%B1%20-%E6%BE%8E%E6%B9%96%20-%E8%8A%B1%E6%9D%B1%20-%E8%8A%B1%E8%93%AE%20-%E5%8F%B09%E7%B7%9A%20-%E9%87%91%E9%96%80%20-%E9%A6%AC%E7%A5%96%20-%E7%B6%A0%E5%B3%B6%20-%E8%98%AD%E5%B6%BC%20-%E8%87%BA%E7%81%A3%20-%E8%87%BA%E5%8C%97%20-%E8%87%BA%E4%B8%AD%20-%E8%87%BA%E5%8D%97%20-%E8%87%BA9%E7%B8%A3%20-%E5%85%A8%E5%8F%B0%20-%E5%85%A8%E8%87%BA&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'  # 國際旱災 
+    
     ]
+    seen_titles = set()  # 用來跟蹤已處理的新聞標題
+
 
     all_news_items = []
     for url in urls:
-        news_items = fetch_news(url)
+        news_items = fetch_news(url, seen_titles)  # 傳入 seen_titles
         all_news_items.extend(news_items)
 
     driver = setup_chrome_driver()
@@ -181,8 +183,8 @@ def main():
         original_url = item['連結']
         final_url = extract_final_url(original_url)
 
-        content = fetch_article_content(driver, source_name, final_url, retries=3)
-
+        content = fetch_article_content(driver, source_name, final_url)
+        
         if content != '未找到內容' and content != '錯誤':
             result = {
                 '標題': item['標題'],
@@ -193,16 +195,6 @@ def main():
                 '圖片': item['圖片']
 
             }
-
-            skip_keywords = ['台灣', '台北', '新北', '基隆', '新竹市', '桃園', '新竹縣', '宜蘭', 
-                            '台中', '苗栗', '彰化', '南投', '雲林', '高雄', '台南', '嘉義', 
-                            '屏東', '澎湖', '花東','花蓮','台9線', '金門', '馬祖', '綠島', '蘭嶼',
-                            '臺灣','台北','臺中','臺南','臺9縣','全台','全臺']
-
-            # 在結果中檢查是否包含任一個關鍵字
-            if any(keyword in result['標題'] or keyword in result['內文'] for keyword in skip_keywords):
-                print(f"跳過包含指定關鍵字的文章: {result['標題']}")
-                continue  # 跳過該文章，不儲存
 
             # 保存到 CSV
             output_df = pd.DataFrame([result])
@@ -232,11 +224,9 @@ def main():
         image TEXT,
         content TEXT,
         source TEXT,
-        date TEXT,
-
+        date TEXT
     )
-    ''')
-    cursor.execute(f"DELETE FROM {table_name}")
+''')
 
     # 讀取 w.csv 並按照日期進行排序，從近到遠
     w_df = pd.read_csv('w.csv')
