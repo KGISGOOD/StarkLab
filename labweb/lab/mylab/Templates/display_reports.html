@@ -255,25 +255,28 @@
         {% if score_data.綜合損益表分數 %}
         <div class="score" style="overflow: auto; max-width: 100%; padding: 20px; box-sizing: border-box;"> 
             <h1>股票代號 : {{ stock_code }}</h1> 
-            <h2>資產負債表分數 : {{ score_data.資產負債表分數 }}</h2>
-            <p>財務槓桿(50%) = 權益總額 / 資產總額 : <span style="color: blue;">{{ score_data.財務槓桿_50 }}</span></p>
-            <p>應收帳款收現日(25%) = (應收帳款 / 營業收入) * 365 : <span style="color: blue;">{{ score_data.應收帳款收現日_25 }}</span></p>
-            <p>銷貨天數 (25%) : <span style="color: blue;">{{ score_data.day_25 }}</span></p>
-            <p>加分項(基本5 / 其餘按比例加) = 現金與約當現金 / 總資產 (10-25%) : <span style="color: blue;">{{ score_data.現金及約當現金_資產總額_p }}</span></p>
+            <h2>資產負債表分數 : {{ results_dict.資產負債表分數 }}</h2>
+            <p>財務槓桿(50%) = 權益總額 / 資產總額 : <span style="color: blue;font-weight: bold;">值 : {{ calculations.財務槓桿 }}&emsp;分數 : {{ results_dict.財務槓桿_weighted }}</span></p>
+            <p>應收帳款收現日(25%) = (應收帳款 / 營業收入) * 365 : <span style="color: blue;font-weight: bold;">值 : {{ calculations.應收帳款收現日 }}&emsp;分數 : {{ results_dict.應收帳款收現日_weighted }}</span></p>
+            <p>銷貨天數 (25%) = 365 / 周轉率 : <span style="color: blue;font-weight: bold;">值 : {{ calculations.銷貨天數 }}&emsp;分數 : {{ results_dict.銷貨天數_weighted }}</span></p>
+            <!--<p>加分項(基本5 / 其餘按比例加) = 現金與約當現金 / 總資產 (10-25%) : <span style="color: blue;">{{ score_data.現金及約當現金_資產總額_p }}</span></p>-->
             <br>
-            <h2>綜合損益表分數 : {{ score_data.綜合損益表分數 }}</h2>
-            <p>毛利率 (20%) : <span style="color: blue;">{{ score_data.毛利率_20 }}</span></p>
-            <p>營業利益率 (20%) : <span style="color: blue;">{{ score_data.營業利益率_20 }}</span></p>
-            <p>經營安全邊際(20%) = 毛利率 / 營業利益率 > 60% : <span style="color: blue;">{{ score_data.經營安全邊際_20 }}</span></p>
-            <p>淨利率 (10%) : <span style="color: blue;">{{ score_data.淨利率_10 }}</span></p>
-            <p>EPS (10%) : <span style="color: blue;">{{ score_data.EPS_10 }}</span></p>
-            <p>ROE (20%)= 本期淨利 / 權益總額 > 20% : <span style="color: blue;">{{ score_data.ROE_20 }}</span></p>
+            <h2>綜合損益表分數 : {{ results_dict.綜合損益表分數 }}</h2>
+            <p>毛利率 (20%) : <span style="color: blue;font-weight: bold;">值 : {{ calculations.毛利率 }}&emsp;分數 : {{ results_dict.毛利率_weighted }}</span></p>
+            <p>營業利益率 (20%) : <span style="color: blue;font-weight: bold;">值 : {{ calculations.營業利益率 }}&emsp;分數 : {{ results_dict.營業利益率_weighted }}</span></p>
+            <p>經營安全邊際(20%) = 營業利益率 / 毛利率 > 60% : <span style="color: blue;font-weight: bold;">值 : {{ calculations.經營安全邊際 }}&emsp;分數 : {{ results_dict.經營安全邊際_weighted }}</span></p>
+            <p>淨利率 (10%) : <span style="color: blue;font-weight: bold;">值 : {{ calculations.淨利率 }}&emsp;分數 : {{ results_dict.淨利率_weighted }}</span></p>
+            <p>EPS (10%) : <span style="color: blue;font-weight: bold;">值 : {{ calculations.EPS }}&emsp;分數 : {{ results_dict.EPS_weighted }}</span></p>
+            <p>ROE (20%)= 本期淨利 / 權益總額 > 20% : <span style="color: blue;font-weight: bold;">值 : {{ calculations.ROE }}&emsp;分數 : {{ results_dict.ROE_weighted }}</span></p>
             <br>
             <h2>現金流量表分數 : {{ score_data.現金流量表分數 }}</h2>
-            <p>現金流量比率(10%) = 淨現金流量 / 流動資產 > 100% : <span style="color: blue;">{{ score_data.現金流量比率_10 }}</span></p>
-            <p>現金允當比率(70%) = 淨現金流量 / (存貨 + 股利) > 100% : <span style="color: blue;">{{ score_data.現金允當比率_70 }}</span></p>
-            <p>現金再投資比率(20%) = 淨現金流量 / (固定資產 + 其他資產 + 營業資金) > 10% : <span style="color: blue;">{{ score_data.現金再投資比率_20 }}</span></p>
+            <p>現金流量比率(10%) = 淨現金流量 / 流動資產 > 100% : <span style="color: blue;font-weight: bold;">值 : {{ results.現金流量比率_percent }}&emsp;分數 : {{ score_data.現金流量比率_10 }}</span></p>
+            <p>現金允當比率(70%) = 淨現金流量 / (資本支出<small style="font-size: 0.7em;">(本期新增固定資產（土地、生產器械、廠房）＋本期折舊)</small> + 存貨 + 股利) > 100% : <span style="color: blue;font-weight: bold;">值 : {{ results.現金流量允當比率_percent }}&emsp;分數 : {{ score_data.現金允當比率_70 }}</span></p>
+            
+            <p>現金再投資比率(20%) = 淨現金流量 / (固定資產 + 其他資產 + 營業資金) > 10% : <span style="color: blue;font-weight: bold;">值 : {{ results.現金再投資比率_percent }}&emsp;分數 : {{ score_data.現金再投資比率_20 }}</span></p>
             <br>
+            <strong style="font-size: 1.2em;color: red;">在資產負債表和綜合損益表中，每一個細項都會與其他公司進行比較，擁有較大值的項目會獲得較高的分數。接著，將各項分數依照權重進行加權，最終將所有加權後的分數加總。</strong><br>
+
             <strong style="font-size: 1.2em;color: red;">若計算過程中某項數據缺失或無法計算，該項目計為 0</strong>
         </div>
         {% endif %}

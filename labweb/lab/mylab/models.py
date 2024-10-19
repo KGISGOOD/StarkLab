@@ -33,9 +33,6 @@ class StockMetrics(models.Model):
     應收帳款收現日 = models.FloatField(null=True, blank=True, verbose_name='應收帳款收現日')
     銷貨天數 = models.FloatField(null=True, blank=True, verbose_name='銷貨天數')
     加分項 = models.FloatField(null=True, blank=True, verbose_name='加分項')
-    現金流量比率 = models.FloatField(null=True, blank=True, verbose_name='現金流量比率')
-    現金允當比率 = models.FloatField(null=True, blank=True, verbose_name='現金允當比率')
-    現金再投資比率 = models.FloatField(null=True, blank=True, verbose_name='現金再投資比率')
 
     class Meta:
         db_table = "stockMetrics"

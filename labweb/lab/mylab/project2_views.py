@@ -476,30 +476,46 @@ def query_report(request):
                             print("CSV 檔案不存在")
 
                     # 損益表
-                    if 毛利率 != 0:
+                    if 毛利率 :
                         毛利率_20 = 毛利率 * 0.2
+                        calculations['毛利率'] = 毛利率
                         score_data['毛利率_20'] = f'{毛利率_20:.2f}'
+                    else:
+                        毛利率 = 0
+                        score_data['毛利率_20'] = 0
+                        calculations['毛利率'] = 毛利率
 
-                    if 營業利益率 != 0:
+                    if 營業利益率 :
                         營業利益率_20 = 營業利益率 * 0.2
-                        score_data['營業利益率_20'] = f'{營業利益率_20:.2f}'                    
+                        score_data['營業利益率_20'] = f'{營業利益率_20:.2f}' 
+                        calculations['營業利益率'] = 營業利益率
+                    else:
+                        營業利益率 = 0
+                        score_data['營業利益率_20'] = 0                   
+                        calculations['營業利益率'] = 營業利益率
 
-                    if (毛利率 != 0) and (營業利益率 != 0):
-                        經營安全邊際 = 毛利率 / 營業利益率
+                    if 毛利率 :
+                        經營安全邊際 = 營業利益率 / 毛利率
                         if 經營安全邊際 > 0.6:
                             經營安全邊際_20 = 20
                         else:
                             經營安全邊際_20 = 經營安全邊際 * (100 / 3)
                         calculations['經營安全邊際'] = f'{經營安全邊際:.2f}'
                         score_data['經營安全邊際_20'] = f'{經營安全邊際_20:.2f}'
+                    else:
+                        經營安全邊際 = 0
+                        calculations['經營安全邊際'] = 0
+                        score_data['經營安全邊際_20'] = 0                       
 
                     if 淨利率 != 0:
                         淨利率_10 = 淨利率 * 0.1
                         score_data['淨利率_10'] = f'{淨利率_10:.2f}'
+                        calculations['淨利率'] = 淨利率
 
-                    if EPS != 0:
+                    if EPS :
                         EPS_10 = EPS * 0.1
                         score_data['EPS_10'] = f'{EPS_10:.2f}'
+                        calculations['EPS'] = EPS
 
                     if (本期淨利 != 0) and (權益總額 != 0):
                         ROE = 本期淨利 / 權益總額
@@ -516,6 +532,9 @@ def query_report(request):
                         財務槓桿_50 = 財務槓桿 * 50
                         calculations['財務槓桿'] = f'{財務槓桿:.2f}'
                         score_data['財務槓桿_50'] = f'{財務槓桿_50:.2f}'
+                    else:
+                        財務槓桿 = 0
+                        calculations['財務槓桿'] = f'{應收帳款收現日:.2f}'
 
                     if (現金及約當現金 != 0) and (資產總額 != 0):
                         現金及約當現金_資產總額 = 現金及約當現金 / 資產總額
@@ -528,128 +547,21 @@ def query_report(request):
                         calculations['現金及約當現金_資產總額'] = f'{現金及約當現金_資產總額:.2f}'
                         score_data['現金及約當現金_資產總額_p'] = f'{現金及約當現金_資產總額_p:.2f}'
 
-                    if (應收帳款 != 0) and (營業收入 != 0):
+                    if 應收帳款 :
                         應收帳款收現日 = (應收帳款 / 營業收入) * 365
                         應收帳款收現日_25 = 應收帳款收現日 * 0.25
                         if 應收帳款收現日_25 > 25:
                             應收帳款收現日_25 = 25
                         calculations['應收帳款收現日'] = f'{應收帳款收現日:.2f}'
                         score_data['應收帳款收現日_25'] = f'{應收帳款收現日_25:.2f}'
-
-                    # 確保 CSV 檔案路徑正確
-                    csv_file_path = os.path.join(os.path.dirname(__file__), 'csv', 'day.csv')
-
-                    # 檢查 CSV 檔案是否存在
-                    if os.path.exists(csv_file_path):
-                        # 讀取 CSV 檔案，指定編碼
-                        df_csv = pd.read_csv(csv_file_path, encoding='big5')
-                        
-                        # 確保 CSV 中包含 'code' 和 'day' 欄位
-                        if 'code' in df_csv.columns and 'day' in df_csv.columns:
-                            # 將 'code' 欄位轉換為數字型別
-                            df_csv['code'] = pd.to_numeric(df_csv['code'], errors='coerce')
-                            
-                            # 將使用者輸入的 stock_code 轉換為數字型別
-                            try:
-                                stock_code_numeric = float(stock_code)
-                            except ValueError:
-                                print(f"使用者輸入的 code '{stock_code}' 不是有效的數字。")
-                                stock_code_numeric = None
-                            
-                            if stock_code_numeric is not None:
-                                # 查找使用者輸入的 code 對應的行
-                                matching_rows = df_csv[df_csv['code'] == stock_code_numeric]
-
-                                # 檢查是否找到了對應的行
-                                if not matching_rows.empty:
-                                    # 取得對應的 'day' 欄位值
-                                    day= matching_rows['day'].values[0]  # 取得對應的 'day' 值
-                                    calculations['day'] = day
-                                else:
-                                    print(f"CSV 檔案中找不到 code '{stock_code}' 的數據")
-                            else:
-                                print("無法將使用者輸入的 code 轉換為數字。")
-                        else:
-                            print("CSV 檔案中找不到 'code' 或 'day' 欄位")
                     else:
-                        print("CSV 檔案不存在")
-
-                    # 讀取 day 值並進行條件檢查
-                    if 'day' in calculations:
-                        day_value = float(calculations['day'])
-                        
-                        # 半導體、電腦及週邊設備、電子零組件、光電業、其他電子通信網路
-                        if stock_code in ['2330', '2317', '2454', '2308', '2382', '3711', '2357', '3034', '2412', '2395',
-                                          '3008', '2345', '2327', '3231', '2379', '4938', '2301', '3661', '6669', '2207',
-                                          '3017', '3045', '4904', '1590', '2408']:
-                            if day_value < 60:
-                                day_25 = ((day_value - 60) / 50) * 25
-                                score_data['day_25'] = f'{day_25:.2f}'
-                            elif 60 <= day_value <= 90:
-                                day_25 = 25
-                                score_data['day_25'] = f'{day_25:.2f}'
-                            else:
-                                day_25 = ((day_value - 90) / 90) * 25
-                                score_data['day_25'] = f'{day_25:.2f}'
-                        # 金融保險
-                        elif stock_code in ['2881', '2883', '2887', '2882', '2886', '2884', '2885', '2890', '2892', '2880', '5880', '5876', '5871']:
-                            day_25 = 0
-                            score_data['day_25'] = f'{day_25:.2f}'
-                        
-                        # 塑膠/鋼鐵
-                        elif stock_code in ['1303', '1301', '1326', '6505', '2002', '3037', '1101', '1216', '2912']:
-                            if 40 <= day_value <= 60:
-                                day_25 = 25
-                                score_data['day_25'] = f'{day_25:.2f}'
-                            elif day_value < 40:
-                                day_25 = ((day_value - 40) / 40) * 25
-                                score_data['day_25'] = f'{day_25:.2f}'
-                            else:
-                                day_25 = ((day_value - 60) / 60) * 25
-                                score_data['day_25'] = f'{day_25:.2f}'
-                        # 食品    
-                        elif stock_code in ['1216', '2912']:
-                            if day_value < 15:
-                                day_25 = 25
-                                score_data['day_25'] = f'{day_25:.2f}'
-                            else:
-                                day_25 = 0
-                                score_data['day_25'] = f'{day_25:.2f}'        
-
-                        # 其他
-                        else:
-                            day_25 = 0
-                            score_data['day_25'] = f'{day_25:.2f}'
+                        應收帳款收現日 = 0
+                        calculations['應收帳款收現日'] = f'{應收帳款收現日:.2f}'
 
 
 
-                    # 現金流量表
-                    if (現金及約當現金 != 0) and (流動資產 != 0):
-                        現金流量比率 = 現金及約當現金 / 流動資產
-                        if 現金流量比率 > 1:
-                            現金流量比率_10 = 10
-                        else:
-                            現金流量比率_10 = 現金流量比率 * 10
-                        calculations['現金流量比率'] = f'{現金流量比率:.2f}'
-                        score_data['現金流量比率_10'] = f'{現金流量比率_10:.2f}'
 
-                    if (現金及約當現金 != 0) and (存貨 != 0) and (股利 != 0):
-                        現金允當比率 = 現金及約當現金 / (存貨 + 股利)
-                        if 現金允當比率 > 1:
-                            現金允當比率_70 = 70
-                        else:
-                            現金允當比率_70 = 現金允當比率 * 70
-                        calculations['現金允當比率'] = f'{現金允當比率:.2f}'
-                        score_data['現金允當比率_70'] = f'{現金允當比率_70:.2f}'
 
-                    if (現金及約當現金 != 0) and (非流動資產 != 0) and (權益總額 != 0):
-                        現金再投資比率 = 現金及約當現金 / (非流動資產 +(非流動負債 + 權益總額) / 非流動資產 +(流動資產 - 流動負債))
-                        if 現金再投資比率 > 0.1:
-                            現金再投資比率_20 = 20
-                        else:
-                            現金再投資比率_20 = 現金再投資比率 * 2
-                        calculations['現金再投資比率'] = f'{現金再投資比率:.2f}'
-                        score_data['現金再投資比率_20'] = f'{現金再投資比率_20:.2f}'
 
 
                     # 計算總計
@@ -678,26 +590,15 @@ def query_report(request):
                     score_data['綜合損益表分數'] = f'{P:.2f}'
                     print(f"綜合損益表分數: {score_data['綜合損益表分數']}\n")
 
-                    # 計算現金流量表分數
-                    C = 0
-                    print("計算現金流量表分數:")
-                    for key in ['現金流量比率_10', '現金允當比率_70', '現金再投資比率_20']:
-                        value = score_data.get(key, 0)  # 預設值設為整數 0
-                        try:
-                            C += float(value)
-                            print(f"{key}: {value}, 累加後的C: {C}")
-                        except ValueError:
-                            print(f"{key}: 無效值 '{value}', 略過此項目")
-                    score_data['現金流量表分數'] = f'{C:.2f}'
-                    print(f"現金流量表分數: {score_data['現金流量表分數']}\n")
 
                     #排序
+                    from collections import defaultdict
+
                     # 提取數據，這裡提取所有需要的欄位
                     data_list = StockMetrics.objects.values_list(
                         'stock_code', '毛利率', '營業利益率', '淨利率', 'EPS',
                         '經營安全邊際', 'ROE', '財務槓桿', '應收帳款收現日',
-                        '銷貨天數', '加分項', '現金流量比率', '現金允當比率',
-                        '現金再投資比率'
+                        '銷貨天數', '加分項'
                     )
 
                     # 格式化數據
@@ -711,130 +612,134 @@ def query_report(request):
                     ar_days_list = [{item[0]: item[8]} for item in data_list]  # 應收帳款收現日
                     sales_days_list = [{item[0]: item[9]} for item in data_list]  # 銷貨天數
                     extra_points_list = [{item[0]: item[10]} for item in data_list]  # 加分項
-                    cash_flow_ratio_list = [{item[0]: item[11]} for item in data_list]  # 現金流量比率
-                    cash_adequacy_ratio_list = [{item[0]: item[12]} for item in data_list]  # 現金允當比率
-                    cash_reinvestment_ratio_list = [{item[0]: item[13]} for item in data_list]  # 現金再投資比率
 
                     # 使用者輸入的股票代號
                     user_input_stock_code = stock_code  # 假設這是用戶輸入的代號
 
                     def calculate_percentage_position(sorted_list, stock_code):
                         total_stocks = len(sorted_list)
-                        user_stock_position = next((i for i, item in enumerate(sorted_list) if stock_code in item), None)
 
+                        # 計算每個值對應的百分比位置，處理相同值共享相同百分比的情況
+                        value_to_percent = defaultdict(list)
+                        
+                        for i, item in enumerate(sorted_list):
+                            stock_value = list(item.values())[0]
+                            value_to_percent[stock_value].append(i + 1)  # 索引 +1
+
+                        # 計算平均百分比位置，對應相同的數值
+                        for value, positions in value_to_percent.items():
+                            avg_position = sum(positions) / len(positions)
+                            percent_position = (avg_position / total_stocks) * 100
+                            value_to_percent[value] = percent_position
+
+                        # 根據股票代號，找到相應的百分比
+                        user_stock_position = next((item for item in sorted_list if stock_code in item), None)
                         if user_stock_position is not None:
-                            return (user_stock_position + 1) / total_stocks * 100  # +1 因為 index 從 0 開始
+                            stock_value = list(user_stock_position.values())[0]
+                            return value_to_percent[stock_value]
                         else:
                             return None
 
-                    # 建立一個空的列表來存儲百分比結果
-                    percentage_results = []
 
                     # 加總變量
                     sum_part1 = 0  # 財務槓桿、應收帳款收現日、銷貨天數
                     sum_part2 = 0  # 毛利率、營業利益率、經營安全邊際、淨利率、EPS、ROE
-                    sum_part3 = 0  # 現金流量比率、現金允當比率、現金再投資比率
 
-                    # 計算每個指標的百分比並應用權重
+
+                    # 初始化結果字典
+                    results_dict = {}
+
                     # 毛利率
                     sorted_gross_margin_list = sorted(gross_margin_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
                     gross_margin_percentage = calculate_percentage_position(sorted_gross_margin_list, user_input_stock_code)
-                    weighted_gross_margin = gross_margin_percentage * 0.2
-                    percentage_results.append({'毛利率': {'percentage': gross_margin_percentage, 'weighted': weighted_gross_margin}})
+                    weighted_gross_margin = round(gross_margin_percentage * 0.2, 2)  # 四捨五入到小數點第二位
+                    results_dict['毛利率'] = round(gross_margin_percentage, 2)  # 四捨五入
+                    results_dict['毛利率_weighted'] = weighted_gross_margin  # 分開存放權重
                     sum_part2 += weighted_gross_margin  # 加到第二部分
 
                     # 營業利益率
                     sorted_operating_margin_list = sorted(operating_margin_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
                     operating_margin_percentage = calculate_percentage_position(sorted_operating_margin_list, user_input_stock_code)
-                    weighted_operating_margin = operating_margin_percentage * 0.2
-                    percentage_results.append({'營業利益率': {'percentage': operating_margin_percentage, 'weighted': weighted_operating_margin}})
+                    weighted_operating_margin = round(operating_margin_percentage * 0.2, 2)  # 四捨五入到小數點第二位
+                    results_dict['營業利益率'] = round(operating_margin_percentage, 2)  # 四捨五入
+                    results_dict['營業利益率_weighted'] = weighted_operating_margin  # 分開存放權重
                     sum_part2 += weighted_operating_margin  # 加到第二部分
 
                     # 淨利率
                     sorted_net_margin_list = sorted(net_margin_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
                     net_margin_percentage = calculate_percentage_position(sorted_net_margin_list, user_input_stock_code)
-                    weighted_net_margin = net_margin_percentage * 0.1
-                    percentage_results.append({'淨利率': {'percentage': net_margin_percentage, 'weighted': weighted_net_margin}})
+                    weighted_net_margin = round(net_margin_percentage * 0.1, 2)  # 四捨五入到小數點第二位
+                    results_dict['淨利率'] = round(net_margin_percentage, 2)  # 四捨五入
+                    results_dict['淨利率_weighted'] = weighted_net_margin  # 分開存放權重
                     sum_part2 += weighted_net_margin  # 加到第二部分
 
                     # EPS
                     sorted_eps_list = sorted(eps_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
                     eps_percentage = calculate_percentage_position(sorted_eps_list, user_input_stock_code)
-                    weighted_eps = eps_percentage * 0.1
-                    percentage_results.append({'EPS': {'percentage': eps_percentage, 'weighted': weighted_eps}})
+                    weighted_eps = round(eps_percentage * 0.1, 2)  # 四捨五入到小數點第二位
+                    results_dict['EPS'] = round(eps_percentage, 2)  # 四捨五入
+                    results_dict['EPS_weighted'] = weighted_eps  # 分開存放權重
                     sum_part2 += weighted_eps  # 加到第二部分
 
                     # 經營安全邊際
                     sorted_safety_margin_list = sorted(safety_margin_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
                     safety_margin_percentage = calculate_percentage_position(sorted_safety_margin_list, user_input_stock_code)
-                    weighted_safety_margin = safety_margin_percentage * 0.2
-                    percentage_results.append({'經營安全邊際': {'percentage': safety_margin_percentage, 'weighted': weighted_safety_margin}})
+                    weighted_safety_margin = round(safety_margin_percentage * 0.2, 2)  # 四捨五入到小數點第二位
+                    results_dict['經營安全邊際'] = round(safety_margin_percentage, 2)  # 四捨五入
+                    results_dict['經營安全邊際_weighted'] = weighted_safety_margin  # 分開存放權重
                     sum_part2 += weighted_safety_margin  # 加到第二部分
 
                     # ROE
                     sorted_roe_list = sorted(roe_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
                     roe_percentage = calculate_percentage_position(sorted_roe_list, user_input_stock_code)
-                    weighted_roe = roe_percentage * 0.2
-                    percentage_results.append({'ROE': {'percentage': roe_percentage, 'weighted': weighted_roe}})
+                    weighted_roe = round(roe_percentage * 0.2, 2)  # 四捨五入到小數點第二位
+                    results_dict['ROE'] = round(roe_percentage, 2)  # 四捨五入
+                    results_dict['ROE_weighted'] = weighted_roe  # 分開存放權重
                     sum_part2 += weighted_roe  # 加到第二部分
 
                     # 財務槓桿
                     sorted_financial_leverage_list = sorted(financial_leverage_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
                     financial_leverage_percentage = calculate_percentage_position(sorted_financial_leverage_list, user_input_stock_code)
-                    weighted_financial_leverage = financial_leverage_percentage * 0.5
-                    percentage_results.append({'財務槓桿': {'percentage': financial_leverage_percentage, 'weighted': weighted_financial_leverage}})
+                    weighted_financial_leverage = round(financial_leverage_percentage * 0.5, 2)  # 四捨五入到小數點第二位
+                    results_dict['財務槓桿'] = round(financial_leverage_percentage, 2)  # 四捨五入
+                    results_dict['財務槓桿_weighted'] = weighted_financial_leverage  # 分開存放權重
                     sum_part1 += weighted_financial_leverage  # 加到第一部分
 
                     # 應收帳款收現日（由小到大）
                     sorted_ar_days_list = sorted(ar_days_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
                     ar_days_percentage = calculate_percentage_position(sorted_ar_days_list, user_input_stock_code)
-                    weighted_ar_days = ar_days_percentage * 0.25
-                    percentage_results.append({'應收帳款收現日': {'percentage': ar_days_percentage, 'weighted': weighted_ar_days}})
+                    weighted_ar_days = round(ar_days_percentage * 0.25, 2)  # 四捨五入到小數點第二位
+                    results_dict['應收帳款收現日'] = round(ar_days_percentage, 2)  # 四捨五入
+                    results_dict['應收帳款收現日_weighted'] = weighted_ar_days  # 分開存放權重
                     sum_part1 += weighted_ar_days  # 加到第一部分
 
                     # 銷貨天數（由小到大）
                     sorted_sales_days_list = sorted(sales_days_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
                     sales_days_percentage = calculate_percentage_position(sorted_sales_days_list, user_input_stock_code)
-                    weighted_sales_days = sales_days_percentage * 0.25
-                    percentage_results.append({'銷貨天數': {'percentage': sales_days_percentage, 'weighted': weighted_sales_days}})
+                    weighted_sales_days = round(sales_days_percentage * 0.25, 2)  # 四捨五入到小數點第二位
+                    results_dict['銷貨天數'] = round(sales_days_percentage, 2)  # 四捨五入
+                    results_dict['銷貨天數_weighted'] = weighted_sales_days  # 分開存放權重
                     sum_part1 += weighted_sales_days  # 加到第一部分
 
                     # 加分項
                     sorted_extra_points_list = sorted(extra_points_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
                     extra_points_percentage = calculate_percentage_position(sorted_extra_points_list, user_input_stock_code)
-                    weighted_extra_points = extra_points_percentage * 1  # 假設加分項本身就是滿分
-                    percentage_results.append({'加分項': {'percentage': extra_points_percentage, 'weighted': weighted_extra_points}})
-                    # 這裡不需要加總
+                    weighted_extra_points = round(extra_points_percentage * 1, 2)  # 假設加分項本身就是滿分
+                    results_dict['加分項'] = round(extra_points_percentage, 2)  # 四捨五入
+                    results_dict['加分項_weighted'] = weighted_extra_points  # 分開存放權重
 
-                    # 現金流量比率
-                    sorted_cash_flow_ratio_list = sorted(cash_flow_ratio_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
-                    cash_flow_ratio_percentage = calculate_percentage_position(sorted_cash_flow_ratio_list, user_input_stock_code)
-                    weighted_cash_flow_ratio = cash_flow_ratio_percentage * 0.1
-                    percentage_results.append({'現金流量比率': {'percentage': cash_flow_ratio_percentage, 'weighted': weighted_cash_flow_ratio}})
-                    sum_part3 += weighted_cash_flow_ratio  # 加到第三部分
+                    results_dict['資產負債表分數'] = round(sum_part1, 2)  # 資產負債表，四捨五入
+                    results_dict['綜合損益表分數'] = round(sum_part2, 2)  # 綜合損益表，四捨五入
 
-                    # 現金允當比率
-                    sorted_cash_adequacy_ratio_list = sorted(cash_adequacy_ratio_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
-                    cash_adequacy_ratio_percentage = calculate_percentage_position(sorted_cash_adequacy_ratio_list, user_input_stock_code)
-                    weighted_cash_adequacy_ratio = cash_adequacy_ratio_percentage * 0.7
-                    percentage_results.append({'現金允當比率': {'percentage': cash_adequacy_ratio_percentage, 'weighted': weighted_cash_adequacy_ratio}})
-                    sum_part3 += weighted_cash_adequacy_ratio  # 加到第三部分
-
-                    # 現金再投資比率
-                    sorted_cash_reinvestment_ratio_list = sorted(cash_reinvestment_ratio_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
-                    cash_reinvestment_ratio_percentage = calculate_percentage_position(sorted_cash_reinvestment_ratio_list, user_input_stock_code)
-                    weighted_cash_reinvestment_ratio = cash_reinvestment_ratio_percentage * 0.2
-                    percentage_results.append({'現金再投資比率': {'percentage': cash_reinvestment_ratio_percentage, 'weighted': weighted_cash_reinvestment_ratio}})
-                    sum_part3 += weighted_cash_reinvestment_ratio  # 加到第三部分
 
                     # 輸出結果
-                    for result in percentage_results:
-                        print(result)
+                    for key, value in results_dict.items():
+                        if isinstance(value, dict):
+                            print(f"{key}: 百分比 = {value['percentage']:.2f}, 加權 = {value['weighted']:.2f}")
+                        else:
+                            print(f"{key}: {value:.2f}")
 
-                    # 輸出加總結果
-                    print("Part 1 Total:", sum_part1)
-                    print("Part 2 Total:", sum_part2)
-                    print("Part 3 Total:", sum_part3)
+
 
 
                     # 輸出排序結果和百分比
@@ -848,10 +753,134 @@ def query_report(request):
                     # print("Sorted AR Days:", sorted_ar_days_list, "Percentage Position:", ar_days_percentage)
                     # print("Sorted Sales Days:", sorted_sales_days_list, "Percentage Position:", sales_days_percentage)
                     # print("Sorted Extra Points:", sorted_extra_points_list, "Percentage Position:", extra_points_percentage)
-                    # print("Sorted Cash Flow Ratio:", sorted_cash_flow_ratio_list, "Percentage Position:", cash_flow_ratio_percentage)
-                    # print("Sorted Cash Adequacy Ratio:", sorted_cash_adequacy_ratio_list, "Percentage Position:", cash_adequacy_ratio_percentage)
-                    # print("Sorted Cash Reinvestment Ratio:", sorted_cash_reinvestment_ratio_list, "Percentage Position:", cash_reinvestment_ratio_percentage)
 
+
+
+                    
+                    # 目標網站的 URL
+                    url = 'https://mops.twse.com.tw/mops/web/ajax_t05st22'
+
+                    # 固定公司代號
+                    co_id = stock_code  # 假設 stock_code 是事先定義好的變量
+
+                    # POST 請求的資料
+                    data = {
+                        'encodeURIComponent': '1',
+                        'run': '',
+                        'step': '1',
+                        'TYPEK': 'sii',
+                        'year': '', 
+                        'isnew': 'true',
+                        'co_id': co_id, 
+                        'firstin': '1',
+                        'off': '1',
+                        'ifrs': 'Y',  
+                    }
+
+                    # 發送 POST 請求
+                    response = requests.post(url, data=data)
+
+                    # 確認請求是否成功
+                    if response.status_code == 200:
+                        # 解析返回的 HTML 內容
+                        soup = BeautifulSoup(response.text, 'html.parser')
+                        
+                        # 找到具有 id="div01" 的 div
+                        target_div = soup.find('div', id='div01')
+                        
+                        if target_div:
+                            # 初始化結果字典
+                            results = {}
+
+                            # 定義需要查找的標題
+                            target_titles = [
+                                '存貨週轉率(次)',
+                                "現金流量比率(%)",
+                                "現金流量允當比率(%)",
+                                "現金再投資比率(%)"
+                            ]
+                            
+                            # 尋找所有表格行
+                            rows = target_div.find_all('tr')
+
+                            for row in rows:
+                                # 提取所有標題和數據
+                                headers = row.find_all('th')
+                                data_cells = row.find_all('td')
+                                
+                                # 檢查是否有標題
+                                for header in headers:
+                                    header_text = header.get_text(strip=True)
+                                    
+                                    if header_text in target_titles:
+                                        # 獲取對應的第三個 td
+                                        third_td = data_cells[2].get_text(strip=True) if len(data_cells) > 2 else "NA"
+                                        # 將鍵替換為不包含特殊字符的名稱
+                                        safe_key = header_text.replace('(', '').replace(')', '').replace('%', '_percent')
+                                        results[safe_key] = third_td
+
+                            # 輸出結果到字典並替換 NA 為 0
+                            for title, value in results.items():
+                                if value == "NA":
+                                    results[title] = 0  # 當 value 是 "NA" 時，設為 0
+                                else:
+                                    try:
+                                        results[title] = float(value)  # 將 value 轉換為浮點數
+                                    except ValueError:
+                                        results[title] = 0  
+
+                            # 現金流量比率_10 計算
+                            if results.get('現金流量比率_percent'):
+                                if results['現金流量比率_percent'] > 100:
+                                    現金流量比率_10 = 10
+                                else:
+                                    現金流量比率_10 = results['現金流量比率_percent'] * 0.1
+                                score_data['現金流量比率_10'] = round(現金流量比率_10, 2)   # 保持為數值類型
+                            else:
+                                score_data['現金流量比率_10'] = 0
+                            # 現金允當比率_70 計算
+                            if results.get('現金流量允當比率_percent'):
+                                if results['現金流量允當比率_percent'] > 100:
+                                    現金允當比率_70 = 70
+                                else:
+                                    現金允當比率_70 = results['現金流量允當比率_percent'] * 0.7
+                                score_data['現金允當比率_70'] = round(現金允當比率_70, 2)  # 保持為數值類型
+                            else:
+                                score_data['現金允當比率_70'] = 0
+                            # 現金再投資比率_20 計算
+                            if results.get('現金再投資比率_percent') > 0:
+                                if results['現金再投資比率_percent'] > 10:
+                                    現金再投資比率_20 = 20
+                                else:
+                                    現金再投資比率_20 = results['現金再投資比率_percent'] * 2
+                                score_data['現金再投資比率_20'] = round(現金再投資比率_20, 2)  # 保持為數值類型
+                            else:
+                                score_data['現金再投資比率_20'] = 0
+
+                            # 提取存貨週轉率並存入 calculations
+                            if results.get('存貨週轉率次'):
+                                calculations['存貨週轉率次'] = round(results['存貨週轉率次'], 2)  # 保持為數值類型
+                                calculations['銷貨天數'] = round(365 / calculations['存貨週轉率次'] , 2)  # 計算銷貨天數
+                            else:
+                                calculations['存貨週轉率次'] = 0
+                                calculations['銷貨天數'] = 0  # 若沒有存貨週轉率則銷貨天數也設為0
+
+                            # 計算現金流量表分數
+                            print("計算現金流量表分數:")
+
+                            # 確保每個值都是數字類型，非數字類型（如 None 或 "NA"）則設為 0
+                            score_data['現金流量表分數'] = round(
+                                (score_data.get('現金流量比率_10', 0) or 0) + 
+                                (score_data.get('現金允當比率_70', 0) or 0) + 
+                                (score_data.get('現金再投資比率_20', 0) or 0), 2
+                            )
+
+
+                            print(f"現金流量表分數: {score_data['現金流量表分數']:.2f}\n")
+
+
+                            # 輸出最終結果字典
+                            print("結果字典:", results)
 
 
                 except ValueError as e:
@@ -880,6 +909,11 @@ def query_report(request):
                     'reports': reports,
                     'score_data': score_data,
                     'stock_code': stock_code, 
+                    'results' : results,
+                    'results_dict' : results_dict,
+                    'calculations' : calculations,
+
+
                 })
 
             
@@ -1105,22 +1139,32 @@ def update_reports(request):
                             print("CSV 檔案不存在")
 
                     # 損益表
-                    if 毛利率 != 0:
+                    if 毛利率 :
                         毛利率_20 = 毛利率 * 0.2
                         score_data['毛利率_20'] = f'{毛利率_20:.2f}'
+                    else:
+                        毛利率 = 0
+                        score_data['毛利率_20'] = 0
 
-                    if 營業利益率 != 0:
+                    if 營業利益率 :
                         營業利益率_20 = 營業利益率 * 0.2
-                        score_data['營業利益率_20'] = f'{營業利益率_20:.2f}'                    
+                        score_data['營業利益率_20'] = f'{營業利益率_20:.2f}' 
+                    else:
+                        營業利益率 = 0
+                        score_data['營業利益率_20'] = 0                   
 
-                    if (毛利率 != 0) and (營業利益率 != 0):
-                        經營安全邊際 = 毛利率 / 營業利益率
+                    if 毛利率 :
+                        經營安全邊際 = 營業利益率 / 毛利率
                         if 經營安全邊際 > 0.6:
                             經營安全邊際_20 = 20
                         else:
                             經營安全邊際_20 = 經營安全邊際 * (100 / 3)
                         calculations['經營安全邊際'] = f'{經營安全邊際:.2f}'
                         score_data['經營安全邊際_20'] = f'{經營安全邊際_20:.2f}'
+                    else:
+                        經營安全邊際 = 0
+                        calculations['經營安全邊際'] = 0
+                        score_data['經營安全邊際_20'] = 0
 
                     if 淨利率 != 0:
                         淨利率_10 = 淨利率 * 0.1
@@ -1320,12 +1364,86 @@ def update_reports(request):
                     score_data['現金流量表分數'] = f'{C:.2f}'
                     print(f"現金流量表分數: {score_data['現金流量表分數']}\n")
 
+
+                    co_id = stock_code  # 假設 stock_code 是事先定義好的變量
+
+                    # POST 請求的資料
+                    data = {
+                        'encodeURIComponent': '1',
+                        'run': '',
+                        'step': '1',
+                        'TYPEK': 'sii',
+                        'year': '', 
+                        'isnew': 'true',
+                        'co_id': co_id, 
+                        'firstin': '1',
+                        'off': '1',
+                        'ifrs': 'Y',  
+                    }
+
+                    # 發送 POST 請求
+                    response = requests.post('https://mops.twse.com.tw/mops/web/ajax_t05st22', data=data)
+
+                    # 確認請求是否成功
+                    if response.status_code == 200:
+                        # 解析返回的 HTML 內容
+                        soup = BeautifulSoup(response.text, 'html.parser')
+                        
+                        # 找到具有 id="div01" 的 div
+                        target_div = soup.find('div', id='div01')
+                        
+                        if target_div:
+                            # 初始化結果字典
+                            results = {}
+
+                            # 定義需要查找的標題
+                            target_titles = [
+                                '存貨週轉率(次)',
+                            ]
+                            
+                            # 尋找所有表格行
+                            rows = target_div.find_all('tr')
+
+                            for row in rows:
+                                # 提取所有標題和數據
+                                headers = row.find_all('th')
+                                data_cells = row.find_all('td')
+                                
+                                # 檢查是否有標題
+                                for header in headers:
+                                    header_text = header.get_text(strip=True)
+                                    
+                                    if header_text in target_titles:
+                                        # 獲取對應的第三個 td
+                                        third_td = data_cells[2].get_text(strip=True) if len(data_cells) > 2 else "NA"
+                                        # 將鍵替換為不包含特殊字符的名稱
+                                        safe_key = header_text.replace('(', '').replace(')', '')
+                                        results[safe_key] = third_td
+
+                            # 輸出結果到字典並替換 NA 為 0
+                            for title, value in results.items():
+                                if value == "NA":
+                                    results[title] = 0  # 當 value 是 "NA" 時，設為 0
+                                else:
+                                    try:
+                                        results[title] = float(value)  # 將 value 轉換為浮點數
+                                    except ValueError:
+                                        results[title] = 0  
+                            
+                        
+                            if '存貨週轉率次' in results and results['存貨週轉率次'] != 0:
+                                results['存貨週轉天數'] = 365 / results['存貨週轉率次']
+                            else:
+                                results['存貨週轉天數'] = 0
+
+
+
                     StockMetrics.objects.update_or_create(
                         stock_code=stock_code,  
                         defaults={              
                             '財務槓桿': 財務槓桿,
                             '應收帳款收現日': 應收帳款收現日,
-                            '銷貨天數': day,
+                            '銷貨天數': results['存貨週轉天數'],
                             '加分項': 現金及約當現金_資產總額,
                             '毛利率': 毛利率,
                             '營業利益率': 營業利益率,
