@@ -5,7 +5,7 @@ import sqlite3
 import requests
 from bs4 import BeautifulSoup
 import time
-
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
 import csv
 import re
 from selenium import webdriver
@@ -106,14 +106,17 @@ def extract_final_url(google_news_url):
     return google_news_url
 
 def fetch_article_content(driver, source_name, url):
+    content = ''
+    
     try:
         driver.get(url)
 
-        WebDriverWait(driver, 10).until(
+        # 等待段落元素出現
+        WebDriverWait(driver, 5).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, 'p'))
         )
 
-        content = ''
+        # 根據來源獲取內容
         if source_name == '經濟日報':
             paragraphs = driver.find_elements(By.CSS_SELECTOR, 'section.article-body__editor p')
             content = '\n'.join([p.text for p in paragraphs])
@@ -127,75 +130,99 @@ def fetch_article_content(driver, source_name, url):
             paragraphs = driver.find_elements(By.CSS_SELECTOR, 'p')
             content = '\n'.join([p.text.strip() for p in paragraphs])
 
+        # 檢查是否找到內容
         if not content.strip():
             content = '未找到內容'
 
-        return content
-
+    except TimeoutException:
+        print(f"抓取內容超時，無法訪問: {url}")
+        content = '超時錯誤'
+    except NoSuchElementException:
+        print(f"在該網址上未找到段落元素: {url}")
+        content = '未找到內容'
     except Exception as e:
         print(f"抓取內容失敗: {e}")
-        return '錯誤'
+        content = '錯誤'
+
+    return content
 
 def main():
     start_time = time.time()
     urls = [
-            #all in one
-            'https://news.google.com/search?q=%22%E5%9C%8B%E9%9A%9B*%22%20(%E5%A4%A7%E9%9B%A8%20OR%20%E8%B1%AA%E9%9B%A8%20OR%20%E6%9A%B4%E9%9B%A8%20OR%20%E6%B7%B9%E6%B0%B4%20OR%20%E6%B4%AA%E6%B0%B4%20OR%20%E6%B0%B4%E7%81%BD%20OR%20%E9%A2%B1%E9%A2%A8%20OR%20%E9%A2%B6%E9%A2%A8%20OR%20%E9%A2%A8%E7%81%BD%20OR%20%E6%B5%B7%E5%98%AF%20OR%20%E5%9C%B0%E9%9C%87%20OR%20%E4%B9%BE%E6%97%B1%20OR%20%E6%97%B1%E7%81%BD)%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant' 
-        
-         ]
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際大雨 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際豪雨 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際暴雨 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際淹水 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際洪水 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際水災 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際颱風 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際颶風 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際風災 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際海嘯 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際地震 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際乾旱 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'  # 國際旱災 
+    ]
 
     all_news_items = []
     for url in urls:
         news_items = fetch_news(url)
         all_news_items.extend(news_items)
 
-    driver = setup_chrome_driver()
+    # 檢查是否有抓取到新聞資料
+    if all_news_items:
+        # 初始化 DataFrame
+        news_df = pd.DataFrame(all_news_items)
 
-    output_file = 'w.csv'
-    if os.path.exists(output_file):
-        os.remove(output_file)
+        # 去除重複標題的新聞，只保留第一個
+        news_df = news_df.drop_duplicates(subset='標題', keep='first')
 
-    for item in all_news_items:
-        source_name = item['來源']
-        original_url = item['連結']
-        final_url = extract_final_url(original_url)
+        driver = setup_chrome_driver()
 
-        content = fetch_article_content(driver, source_name, final_url)
+        output_file = 'w.csv'
+        if os.path.exists(output_file):
+            os.remove(output_file)
 
-        if content != '未找到內容' and content != '錯誤':
-            result = {
-                '標題': item['標題'],
-                '連結': original_url,
-                '內文': content,
-                '來源': source_name,
-                '時間': item['時間'],
-                '圖片': item['圖片']
+        for index, item in news_df.iterrows():
+            source_name = item['來源']
+            original_url = item['連結']
+            final_url = extract_final_url(original_url)
 
-            }
+            content = fetch_article_content(driver, source_name, final_url)
 
-            skip_keywords = ['台灣', '台北', '新北', '基隆', '新竹市', '桃園', '新竹縣', '宜蘭', 
-                            '台中', '苗栗', '彰化', '南投', '雲林', '高雄', '台南', '嘉義', 
-                            '屏東', '澎湖', '花東','花蓮','台9線', '金門', '馬祖', '綠島', '蘭嶼',
-                            '臺灣','台北','臺中','臺南','臺9縣','全台','全臺']
+            if content != '未找到內容' and content != '錯誤':
+                result = {
+                    '標題': item['標題'],
+                    '連結': original_url,
+                    '內文': content,
+                    '來源': source_name,
+                    '時間': item['時間'],
+                    '圖片': item['圖片']
+                }
 
-            # 在結果中檢查是否包含任一個關鍵字
-            if any(keyword in result['標題'] or keyword in result['內文'] for keyword in skip_keywords):
-                print(f"跳過包含指定關鍵字的文章: {result['標題']}")
-                continue  # 跳過該文章，不儲存
+                skip_keywords = ['台灣', '台北', '新北', '基隆', '新竹市', '桃園', '新竹縣', '宜蘭', 
+                                 '台中', '苗栗', '彰化', '南投', '雲林', '高雄', '台南', '嘉義', 
+                                 '屏東', '澎湖', '花東', '花蓮', '台9線', '金門', '馬祖', '綠島', '蘭嶼',
+                                 '臺灣', '台北', '臺中', '臺南', '臺9縣', '全台', '全臺']
 
-            # 保存到 CSV
-            output_df = pd.DataFrame([result])
-            output_df.to_csv(output_file, mode='a', header=not os.path.exists(output_file), index=False, encoding='utf-8')
+                # 檢查是否包含任一關鍵字
+                if any(keyword in result['標題'] or keyword in result['內文'] for keyword in skip_keywords):
+                    print(f"跳過包含指定關鍵字的文章: {result['標題']}")
+                    continue
 
-            print(f"標題: {result['標題']}")
-            print(f"連結: {result['連結']}")
-            print(f"內文: {result['內文'][:50]}...")
-            print(f"來源: {result['來源']}")
-            print(f"時間: {result['時間']}")
-            print(f"圖片: {result['圖片']}") 
-            print('-' * 80)
+                # 保存到 CSV
+                output_df = pd.DataFrame([result])
+                output_df.to_csv(output_file, mode='a', header=not os.path.exists(output_file), index=False, encoding='utf-8')
 
-    driver.quit()
+                print(f"標題: {result['標題']}")
+                print(f"連結: {result['連結']}")
+                print(f"內文: {result['內文'][:50]}...")
+                print(f"來源: {result['來源']}")
+                print(f"時間: {result['時間']}")
+                print(f"圖片: {result['圖片']}")
+                print('-' * 80)
+
+        driver.quit()
 
     # 從 w.csv 讀取數據並保存到數據庫
     db_name = 'w.db'
