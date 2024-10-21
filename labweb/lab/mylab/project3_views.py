@@ -5,8 +5,6 @@ import sqlite3
 import requests
 from bs4 import BeautifulSoup
 import time
-import os
-
 
 import csv
 import re
@@ -20,7 +18,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime, timedelta
 
 # 爬取新聞的函數
-def fetch_news(url,seen_titles):
+def fetch_news(url):
     try:
         response = requests.get(url)
         response.raise_for_status()
@@ -32,12 +30,6 @@ def fetch_news(url,seen_titles):
         for article in articles:
             title_element = article.find('a', class_='JtKRv')
             title = title_element.get_text(strip=True) if title_element else '未知'
-            # 檢查是否是重複標題
-            if title in seen_titles:
-                print(f"跳過重複標題的文章: {title}")
-                continue  # 跳過該文章
-            # 標題加入已看到的集合
-            seen_titles.add(title)
             link = title_element.get('href', '').strip() if title_element else ''
             full_link = requests.compat.urljoin(url, link)
 
@@ -113,42 +105,36 @@ def extract_final_url(google_news_url):
         return match.group(1)
     return google_news_url
 
-def fetch_article_content(driver, source_name, url, retries=1):  # 將 retries 改為 1
-    for attempt in range(retries):
-        try:
-            driver.get(url)
+def fetch_article_content(driver, source_name, url):
+    try:
+        driver.get(url)
 
-            WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, 'p'))
-            )
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, 'p'))
+        )
 
-            content = ''
-            if source_name == '經濟日報':
-                paragraphs = driver.find_elements(By.CSS_SELECTOR, 'section.article-body__editor p')
-                content = '\n'.join([p.text for p in paragraphs])
-            elif source_name == 'Yahoo奇摩新聞':
-                paragraphs = driver.find_elements(By.CSS_SELECTOR, 'div.caas-body p')
-                content = '\n'.join([p.text for p in paragraphs])
-            elif source_name == 'Newtalk新聞':
-                paragraphs = driver.find_elements(By.CSS_SELECTOR, 'div.articleBody.clearfix p')
-                content = '\n'.join([p.text for p in paragraphs])
-            elif source_name == '自由時報':
-                paragraphs = driver.find_elements(By.CSS_SELECTOR, 'p')
-                content = '\n'.join([p.text.strip() for p in paragraphs])
+        content = ''
+        if source_name == '經濟日報':
+            paragraphs = driver.find_elements(By.CSS_SELECTOR, 'section.article-body__editor p')
+            content = '\n'.join([p.text for p in paragraphs])
+        elif source_name == 'Yahoo奇摩新聞':
+            paragraphs = driver.find_elements(By.CSS_SELECTOR, 'div.caas-body p')
+            content = '\n'.join([p.text for p in paragraphs])
+        elif source_name == 'Newtalk新聞':
+            paragraphs = driver.find_elements(By.CSS_SELECTOR, 'div.articleBody.clearfix p')
+            content = '\n'.join([p.text for p in paragraphs])
+        elif source_name == '自由時報':
+            paragraphs = driver.find_elements(By.CSS_SELECTOR, 'p')
+            content = '\n'.join([p.text.strip() for p in paragraphs])
 
-            if not content.strip():
-                content = '未找到內容'
+        if not content.strip():
+            content = '未找到內容'
 
-            return content
+        return content
 
-        except Exception as e:
-            print(f"第 {attempt + 1} 次嘗試抓取內容失敗")
-            #print(f"第 {attempt + 1} 次嘗試抓取內容失敗: {e}")
-
-            return '錯誤'
-
-    return '錯誤'
-
+    except Exception as e:
+        print(f"抓取內容失敗: {e}")
+        return '錯誤'
 
 def main():
     start_time = time.time()
@@ -167,12 +153,10 @@ def main():
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際乾旱 
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'  # 國際旱災 
     ]
-    seen_titles = set()  # 用來跟蹤已處理的新聞標題
-
 
     all_news_items = []
     for url in urls:
-        news_items = fetch_news(url, seen_titles)  # 傳入 seen_titles
+        news_items = fetch_news(url)
         all_news_items.extend(news_items)
 
     driver = setup_chrome_driver()
@@ -186,7 +170,7 @@ def main():
         original_url = item['連結']
         final_url = extract_final_url(original_url)
 
-        content = fetch_article_content(driver, source_name, final_url, retries=3)
+        content = fetch_article_content(driver, source_name, final_url)
 
         if content != '未找到內容' and content != '錯誤':
             result = {
