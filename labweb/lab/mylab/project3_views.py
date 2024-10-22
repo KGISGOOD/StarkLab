@@ -5,7 +5,6 @@ import sqlite3
 import requests
 from bs4 import BeautifulSoup
 import time
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
 import csv
 import re
 from selenium import webdriver
@@ -134,14 +133,9 @@ def fetch_article_content(driver, source_name, url):
         if not content.strip():
             content = '未找到內容'
 
-    except TimeoutException:
-        print(f"抓取內容超時，無法訪問: {url}")
-        content = '超時錯誤'
-    except NoSuchElementException:
-        print(f"在該網址上未找到段落元素: {url}")
-        content = '未找到內容'
+
     except Exception as e:
-        print(f"抓取內容失敗: {e}")
+       # print(f"抓取內容失敗: {e}")
         content = '錯誤'
 
     return content
