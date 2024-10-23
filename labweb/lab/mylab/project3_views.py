@@ -20,57 +20,27 @@ from datetime import datetime, timedelta
 def fetch_news(url):
     try:
         response = requests.get(url)
-        response.raise_for_status()
+        response.raise_for_status()  # 檢查請求是否成功
         soup = BeautifulSoup(response.text, 'html.parser')
 
-        articles = soup.find_all('article', class_='IFHyqb')
+        articles = soup.find_all('article', class_='IFHyqb')  # 查找所有文章
 
         news_list = []
         for article in articles:
-            title_element = article.find('a', class_='JtKRv')
+            title_element = article.find('a', class_='JtKRv')  # 查找標題元素
             title = title_element.get_text(strip=True) if title_element else '未知'
             link = title_element.get('href', '').strip() if title_element else ''
-            full_link = requests.compat.urljoin(url, link)
+            full_link = requests.compat.urljoin(url, link)  # 獲取完整連結
 
-            news_source = article.find('div', class_='vr1PYe')
+            news_source = article.find('div', class_='vr1PYe')  # 查找來源元素
             source_name = news_source.get_text(strip=True) if news_source else '未知'
 
             time_element = article.find('div', class_='UOVeFe').find('time', class_='hvbAAd') if article.find('div', 'UOVeFe') else None
             date_str = time_element.get_text(strip=True) if time_element else '未知'
 
-            # 日期解析邏輯
-            if '天前' in date_str:
-                days_ago = int(re.search(r'\d+', date_str).group())  # 提取數字
-                date = datetime.now() - timedelta(days=days_ago)
-            elif '小時前' in date_str:
-                hours_ago = int(re.search(r'\d+', date_str).group())
-                date = datetime.now() - timedelta(hours=hours_ago)
-            elif '分鐘前' in date_str:
-                minutes_ago = int(re.search(r'\d+', date_str).group())
-                date = datetime.now() - timedelta(minutes=minutes_ago)
-            elif '昨天' in date_str:
-                date = datetime.now() - timedelta(days=1)
-            else:
-                # 解析 '月日' 的日期格式
-                try:
-                    date = datetime.strptime(f'{datetime.now().year}年{date_str}', '%Y年%m月%d日')
-                except ValueError:
-                    date = '未知'
+            date = parse_date(date_str)  # 解析時間
 
-            date = date.strftime('%Y-%m-%d') if isinstance(date, datetime) else date
-
-            image_urls = []
-            image_elements = article.find_all('img', class_='Quavad')
-            base_url = 'https://news.google.com'
-
-            for image_element in image_elements:
-                srcset = image_element.get('srcset')
-                if srcset:
-                    image_url = srcset.split(' ')[0]
-                    full_image_url = requests.compat.urljoin(base_url, image_url)
-                    image_urls.append(full_image_url)
-
-            image_urls = ', '.join(image_urls) if image_urls else 'null'
+            image_urls = extract_image_urls(article)  # 獲取圖片網址
 
             news_list.append({
                 '標題': title,
@@ -85,6 +55,40 @@ def fetch_news(url):
     except Exception as e:
         print(f"抓取新聞時發生錯誤: {e}")
         return []
+    
+def parse_date(date_str):
+    if '天前' in date_str:
+        days_ago = int(re.search(r'\d+', date_str).group())
+        date = datetime.now() - timedelta(days=days_ago)
+    elif '小時前' in date_str:
+        hours_ago = int(re.search(r'\d+', date_str).group())
+        date = datetime.now() - timedelta(hours=hours_ago)
+    elif '分鐘前' in date_str:
+        minutes_ago = int(re.search(r'\d+', date_str).group())
+        date = datetime.now() - timedelta(minutes=minutes_ago)
+    elif '昨天' in date_str:
+        date = datetime.now() - timedelta(days=1)
+    else:
+        try:
+            date = datetime.strptime(f'{datetime.now().year}年{date_str}', '%Y年%m月%d日')
+        except ValueError:
+            date = '未知'
+
+    return date.strftime('%Y-%m-%d') if isinstance(date, datetime) else date
+
+def extract_image_urls(article):
+    image_urls = []
+    image_elements = article.find_all('img', class_='Quavad')
+    base_url = 'https://news.google.com'
+
+    for image_element in image_elements:
+        srcset = image_element.get('srcset')
+        if srcset:
+            image_url = srcset.split(' ')[0]
+            full_image_url = requests.compat.urljoin(base_url, image_url)
+            image_urls.append(full_image_url)
+
+    return ', '.join(image_urls) if image_urls else 'null'
 
 # 設置 Chrome 的選項
 def setup_chrome_driver():
