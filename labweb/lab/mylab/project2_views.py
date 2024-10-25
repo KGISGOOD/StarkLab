@@ -617,26 +617,27 @@ def query_report(request):
                     user_input_stock_code = stock_code  # 假設這是用戶輸入的代號
 
                     def calculate_percentage_position(sorted_list, stock_code):
-                        total_stocks = len(sorted_list)
+                        # 計算不同名次的數量
+                        unique_values = sorted(set(list(item.values())[0] for item in sorted_list))
+                        total_unique_stocks = len(unique_values)
 
-                        # 計算每個值對應的百分比位置，處理相同值共享相同百分比的情況
-                        value_to_percent = defaultdict(list)
-                        
-                        for i, item in enumerate(sorted_list):
-                            stock_value = list(item.values())[0]
-                            value_to_percent[stock_value].append(i + 1)  # 索引 +1
+                        # 計算每個值對應的名次，處理相同值共享相同名次的情況
+                        value_to_rank = {}
+                        rank = 1
 
-                        # 計算平均百分比位置，對應相同的數值
-                        for value, positions in value_to_percent.items():
-                            avg_position = sum(positions) / len(positions)
-                            percent_position = (avg_position / total_stocks) * 100
-                            value_to_percent[value] = percent_position
+                        for value in unique_values:
+                            value_to_rank[value] = rank
+                            rank += 1
 
-                        # 根據股票代號，找到相應的百分比
+                        # 獲取用戶股票的毛利率
                         user_stock_position = next((item for item in sorted_list if stock_code in item), None)
                         if user_stock_position is not None:
                             stock_value = list(user_stock_position.values())[0]
-                            return value_to_percent[stock_value]
+                            # 獲取該股票的名次
+                            user_rank = value_to_rank[stock_value]
+                            # 計算百分比位置，分母為不同名次的數量
+                            percent_position = (user_rank / total_unique_stocks) * 100
+                            return percent_position
                         else:
                             return None
 
