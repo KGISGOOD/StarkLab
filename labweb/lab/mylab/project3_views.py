@@ -16,6 +16,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime, timedelta
 
+
 # 爬取新聞的函數
 def fetch_news(url):
     headers = {
@@ -44,7 +45,8 @@ def fetch_news(url):
 
             date = parse_date(date_str)  # 解析時間
 
-            image_urls = extract_image_urls(article)  # 獲取圖片網址
+            # 獲取圖片網址
+            image_urls = extract_image_urls(article, full_link)
 
             news_list.append({
                 '標題': title,
@@ -59,46 +61,42 @@ def fetch_news(url):
     except Exception as e:
         print(f"抓取新聞時發生錯誤: {e}")
         return []
+
+# 統一圖片提取函數
+def extract_image_urls(article, article_url):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36"
+    }
+    response = requests.get(article_url, headers=headers)
+    soup = BeautifulSoup(response.text, 'html.parser')
     
-# 定義不同新聞來源的爬取邏輯
-def extract_udn_image(soup):
-    container_div = soup.find('section', class_='article-body__editor')
-    if container_div:
-        img_tag = container_div.find('img', src=lambda x: x and 'pgw.udn.com.tw' in x)
-        return img_tag['src'] if img_tag else '找不到符合條件的圖片。'
-    return '找不到圖片區域。'
+    # 定義不同新聞來源的提取邏輯
+    if "udn.com" in article_url:
+        container_div = soup.find('section', class_='article-body__editor')
+        if container_div:
+            img_tag = container_div.find('img', src=lambda x: x and 'pgw.udn.com.tw' in x)
+            return img_tag['src'] if img_tag else '找不到符合條件的圖片。'
 
-def extract_newtalk_image(soup):
-    image_divs = soup.find_all('div', class_='news_img')
-    img_urls = []
-    for div in image_divs:
-        img_tag = div.find('img', itemprop="image")
-        if img_tag:
-            img_urls.append(img_tag['src'])
-    return img_urls if img_urls else '找不到圖片。'
+    elif "newtalk.tw" in article_url:
+        image_divs = soup.find_all('div', class_='news_img')
+        img_urls = [img_tag['src'] for div in image_divs if (img_tag := div.find('img', itemprop="image"))]
+        return img_urls if img_urls else '找不到圖片。'
 
-def extract_yahoo_image(soup):
-    img_div = soup.find("div", class_="caas-body")
-    if img_div:
-        figure_tag = img_div.find("figure", class_="caas-figure")
-        if figure_tag:
-            img_tag = figure_tag.find("img", class_="caas-img")
-            if img_tag:
-                return img_tag.get("data-src")  # 獲取圖片的 data-src 屬性
+    elif "tw.news.yahoo.com" in article_url:
+        img_div = soup.find("div", class_="caas-body")
+        if img_div:
+            figure_tag = img_div.find("figure", class_="caas-figure")
+            if figure_tag:
+                img_tag = figure_tag.find("img", class_="caas-img")
+                return img_tag.get("data-src") if img_tag else '找不到圖片。'
+
+    elif "ltn.com.tw" in article_url:
+        image_divs = soup.find_all('div', class_='image-popup-vertical-fit')
+        img_urls = [img_tag['src'] for div in image_divs if (img_tag := div.find('img'))]
+        return img_urls if img_urls else '找不到圖片。'
+
+    # 默認返回
     return '找不到圖片。'
-
-def extract_ltn_image(soup):
-    image_divs = soup.find_all('div', class_='image-popup-vertical-fit')
-    img_urls = []
-    for div in image_divs:
-        img_tag = div.find('img')
-        if img_tag and 'src' in img_tag.attrs:
-            img_urls.append(img_tag['src'])
-    return img_urls if img_urls else '找不到圖片。'
-
-def extract_image_urls(article):
-    # 這個函數可以根據需要進行修改，如果不再使用，則可以刪除
-    return 'null'  # 可以根據需求進行調整
     
 def parse_date(date_str):
     if '天前' in date_str:
@@ -177,16 +175,16 @@ def fetch_article_content(driver, source_name, url):
 def main():
     start_time = time.time()
     urls = [
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際大雨 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際豪雨 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際暴雨 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際淹水 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際洪水 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際水災 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際颱風 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際颶風 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際風災 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際海嘯 
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際大雨 
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際豪雨 
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際暴雨 
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際淹水 
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際洪水 
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際水災 
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際颱風 
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際颶風 
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際風災 
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際海嘯 
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際地震 
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際乾旱 
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'  # 國際旱災
