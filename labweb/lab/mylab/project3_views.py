@@ -18,8 +18,12 @@ from datetime import datetime, timedelta
 
 # 爬取新聞的函數
 def fetch_news(url):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36"
+    }
+
     try:
-        response = requests.get(url)
+        response = requests.get(url, headers=headers)  # 加入 headers
         response.raise_for_status()  # 檢查請求是否成功
         soup = BeautifulSoup(response.text, 'html.parser')
 
@@ -56,6 +60,46 @@ def fetch_news(url):
         print(f"抓取新聞時發生錯誤: {e}")
         return []
     
+# 定義不同新聞來源的爬取邏輯
+def extract_udn_image(soup):
+    container_div = soup.find('section', class_='article-body__editor')
+    if container_div:
+        img_tag = container_div.find('img', src=lambda x: x and 'pgw.udn.com.tw' in x)
+        return img_tag['src'] if img_tag else '找不到符合條件的圖片。'
+    return '找不到圖片區域。'
+
+def extract_newtalk_image(soup):
+    image_divs = soup.find_all('div', class_='news_img')
+    img_urls = []
+    for div in image_divs:
+        img_tag = div.find('img', itemprop="image")
+        if img_tag:
+            img_urls.append(img_tag['src'])
+    return img_urls if img_urls else '找不到圖片。'
+
+def extract_yahoo_image(soup):
+    img_div = soup.find("div", class_="caas-body")
+    if img_div:
+        figure_tag = img_div.find("figure", class_="caas-figure")
+        if figure_tag:
+            img_tag = figure_tag.find("img", class_="caas-img")
+            if img_tag:
+                return img_tag.get("data-src")  # 獲取圖片的 data-src 屬性
+    return '找不到圖片。'
+
+def extract_ltn_image(soup):
+    image_divs = soup.find_all('div', class_='image-popup-vertical-fit')
+    img_urls = []
+    for div in image_divs:
+        img_tag = div.find('img')
+        if img_tag and 'src' in img_tag.attrs:
+            img_urls.append(img_tag['src'])
+    return img_urls if img_urls else '找不到圖片。'
+
+def extract_image_urls(article):
+    # 這個函數可以根據需要進行修改，如果不再使用，則可以刪除
+    return 'null'  # 可以根據需求進行調整
+    
 def parse_date(date_str):
     if '天前' in date_str:
         days_ago = int(re.search(r'\d+', date_str).group())
@@ -75,20 +119,6 @@ def parse_date(date_str):
             date = '未知'
 
     return date.strftime('%Y-%m-%d') if isinstance(date, datetime) else date
-
-def extract_image_urls(article):
-    image_urls = []
-    image_elements = article.find_all('img', class_='Quavad')
-    base_url = 'https://news.google.com'
-
-    for image_element in image_elements:
-        srcset = image_element.get('srcset')
-        if srcset:
-            image_url = srcset.split(' ')[0]
-            full_image_url = requests.compat.urljoin(base_url, image_url)
-            image_urls.append(full_image_url)
-
-    return ', '.join(image_urls) if image_urls else 'null'
 
 # 設置 Chrome 的選項
 def setup_chrome_driver():
