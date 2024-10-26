@@ -248,6 +248,10 @@ def main():
     )
 ''')
 
+    # 清空表格內容，確保數據庫和CSV文件保持一致
+    cursor.execute(f'DELETE FROM {table_name}')
+    conn.commit()
+
     # 讀取 w.csv 並按照日期進行排序，從近到遠
     w_df = pd.read_csv('w.csv')
     
