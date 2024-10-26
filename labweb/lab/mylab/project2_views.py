@@ -649,7 +649,7 @@ def query_report(request):
 
                     # 初始化結果字典
                     results_dict = {}
-
+                    
                     # 毛利率
                     sorted_gross_margin_list = sorted(gross_margin_list, key=lambda x: list(x.values())[0], reverse=False)  # 由小到大
                     gross_margin_percentage = calculate_percentage_position(sorted_gross_margin_list, user_input_stock_code)
@@ -732,7 +732,6 @@ def query_report(request):
                     results_dict['資產負債表分數'] = round(sum_part1, 2)  # 資產負債表，四捨五入
                     results_dict['綜合損益表分數'] = round(sum_part2, 2)  # 綜合損益表，四捨五入
 
-
                     # 輸出結果
                     for key, value in results_dict.items():
                         if isinstance(value, dict):
@@ -740,10 +739,7 @@ def query_report(request):
                         else:
                             print(f"{key}: {value:.2f}")
 
-
-
-
-                    # 輸出排序結果和百分比
+                    #輸出排序結果和百分比
                     # print("Sorted Gross Margin:", sorted_gross_margin_list, "Percentage Position:", gross_margin_percentage)
                     # print("Sorted Operating Margin:", sorted_operating_margin_list, "Percentage Position:", operating_margin_percentage)
                     # print("Sorted Net Margin:", sorted_net_margin_list, "Percentage Position:", net_margin_percentage)
@@ -754,6 +750,84 @@ def query_report(request):
                     # print("Sorted AR Days:", sorted_ar_days_list, "Percentage Position:", ar_days_percentage)
                     # print("Sorted Sales Days:", sorted_sales_days_list, "Percentage Position:", sales_days_percentage)
                     # print("Sorted Extra Points:", sorted_extra_points_list, "Percentage Position:", extra_points_percentage)
+
+                    def assign_rank(sorted_list, stock_code):
+                        # 提取所有值並計算唯一值
+                        values = [list(item.values())[0] for item in sorted_list]
+                        unique_values = sorted(set(values), reverse=True)  # 由大到小排序
+
+                        # 計算每個值對應的名次，處理相同值共享相同名次的情況
+                        value_to_rank = {}
+                        rank = 1
+
+                        for value in unique_values:
+                            value_to_rank[value] = rank
+                            rank += values.count(value)  # 跳過相同值的數量
+
+                        # 獲取用戶股票的排名
+                        user_stock_position = next((item for item in sorted_list if stock_code in item), None)
+                        if user_stock_position is not None:
+                            stock_value = list(user_stock_position.values())[0]
+                            # 獲取該股票的名次
+                            user_rank = value_to_rank[stock_value]
+                            return user_rank  # 返回用戶股票的排名
+                        else:
+                            return None  # 如果找不到該股票，返回 None
+
+                    # 假設 user_input_stock_code 是用戶輸入的股票代號
+                    # 毛利率
+                    sorted_gross_margin = sorted(gross_margin_list, key=lambda x: list(x.values())[0], reverse=True)  # 由大到小
+                    gross_margin_rank = assign_rank(sorted_gross_margin, user_input_stock_code)
+
+                    # 營業利益率
+                    sorted_operating_margin = sorted(operating_margin_list, key=lambda x: list(x.values())[0], reverse=True)  # 由大到小
+                    operating_margin_rank = assign_rank(sorted_operating_margin, user_input_stock_code)
+
+                    # 淨利率
+                    sorted_net_margin = sorted(net_margin_list, key=lambda x: list(x.values())[0], reverse=True)  # 由大到小
+                    net_margin_rank = assign_rank(sorted_net_margin, user_input_stock_code)
+
+                    # EPS
+                    sorted_eps = sorted(eps_list, key=lambda x: list(x.values())[0], reverse=True)  # 由大到小
+                    eps_rank = assign_rank(sorted_eps, user_input_stock_code)
+
+                    # 經營安全邊際
+                    sorted_safety_margin = sorted(safety_margin_list, key=lambda x: list(x.values())[0], reverse=True)  # 由大到小
+                    safety_margin_rank = assign_rank(sorted_safety_margin, user_input_stock_code)
+
+                    # ROE
+                    sorted_roe = sorted(roe_list, key=lambda x: list(x.values())[0], reverse=True)  # 由大到小
+                    roe_rank = assign_rank(sorted_roe, user_input_stock_code)
+
+                    # 財務槓桿
+                    sorted_financial_leverage = sorted(financial_leverage_list, key=lambda x: list(x.values())[0], reverse=True)  # 由大到小
+                    financial_leverage_rank = assign_rank(sorted_financial_leverage, user_input_stock_code)
+
+                    # 應收帳款收現日
+                    sorted_ar_days = sorted(ar_days_list, key=lambda x: list(x.values())[0], reverse=True)  # 由大到小
+                    ar_days_rank = assign_rank(sorted_ar_days, user_input_stock_code)
+
+                    # 銷貨天數
+                    sorted_sales_days = sorted(sales_days_list, key=lambda x: list(x.values())[0], reverse=True)  # 由大到小
+                    sales_days_rank = assign_rank(sorted_sales_days, user_input_stock_code)
+
+
+                    rank = {}
+
+                    # 將排名結果存入字典
+                    rank["毛利率排名"] = gross_margin_rank
+                    rank["營業利益率排名"] = operating_margin_rank
+                    rank["淨利率排名"] = net_margin_rank
+                    rank["EPS排名"] = eps_rank
+                    rank["經營安全邊際排名"] = safety_margin_rank
+                    rank["ROE排名"] = roe_rank
+                    rank["財務槓桿排名"] = financial_leverage_rank
+                    rank["應收帳款收現日排名"] = ar_days_rank
+                    rank["銷貨天數排名"] = sales_days_rank
+
+                    # 輸出排名結果
+                    for key, value in rank.items():
+                        print(f"{key}: {value}")
 
 
 
@@ -913,6 +987,7 @@ def query_report(request):
                     'results' : results,
                     'results_dict' : results_dict,
                     'calculations' : calculations,
+                    'rank' : rank,
 
 
                 })

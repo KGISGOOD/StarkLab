@@ -275,6 +275,60 @@
             
             <p>現金再投資比率(20%) = 淨現金流量 / (固定資產 + 其他資產 + 營業資金) > 10% : <span style="color: blue;font-weight: bold;">值 : {{ results.現金再投資比率_percent }}&emsp;分數 : {{ score_data.現金再投資比率_20 }}</span></p>
             <br>
+            <br>
+            <table id="rankTable" style="width: 100%; margin: 0 auto; border-collapse: collapse; font-size: 1.6em;">
+                <thead>
+                    <tr>
+                        <th colspan="2" style="text-align: center; padding: 10px; color: white; cursor: pointer;" onclick="toggleTable()">點擊展開或收起排名列表</th>
+                    </tr>
+
+                </thead>
+
+                <tbody id="rankContent" style="display: none;">
+                    <tr>
+                        <th style="padding: 10px; background-color: #004d99; color: white;">項目</th>
+                        <th style="padding: 10px; background-color: #004d99; color: white;">排名</th>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">財務槓桿</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{{ rank.財務槓桿排名 }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">應收帳款收現日</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{{ rank.應收帳款收現日排名 }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">銷貨天數</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{{ rank.銷貨天數排名 }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">毛利率</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{{ rank.毛利率排名 }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">營業利益率</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{{ rank.營業利益率排名 }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">經營安全邊際</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{{ rank.經營安全邊際排名 }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">淨利率</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{{ rank.淨利率排名 }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">EPS</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{{ rank.EPS排名 }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">ROE</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{{ rank.ROE排名 }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <br>
+            <br>
             <strong style="font-size: 1.2em;color: red;">在資產負債表和綜合損益表中，每一個細項都會與其他公司進行比較，擁有較大值的項目會獲得較高的分數。接著，將各項分數依照權重進行加權，最終將所有加權後的分數加總。</strong><br>
 
             <strong style="font-size: 1.2em;color: red;">若計算過程中某項數據缺失或無法計算，該項目計為 0</strong>
@@ -322,6 +376,15 @@
         function topFunction() {
             document.body.scrollTop = 0;
             document.documentElement.scrollTop = 0;
+        }
+
+        function toggleTable() {
+            const tableBody = document.getElementById("rankContent");
+            if (tableBody.style.display === "none") {
+                tableBody.style.display = "table-row-group"; // Show the table rows
+            } else {
+                tableBody.style.display = "none"; // Hide the table rows
+            }
         }
     </script>
 </body>
