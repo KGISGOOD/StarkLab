@@ -16,31 +16,41 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime, timedelta
 
-# 爬取新聞的函數
-def fetch_news(url):
-    try:
-        response = requests.get(url)
-        response.raise_for_status()  # 檢查請求是否成功
-        soup = BeautifulSoup(response.text, 'html.parser')
 
-        articles = soup.find_all('article', class_='IFHyqb')  # 查找所有文章
+# 爬取新聞的函數
+import requests
+from bs4 import BeautifulSoup
+from dateutil.parser import parse as parse_date
+import time
+import random
+
+def fetch_news(url):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36"
+    }
+
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, 'html.parser')
+        articles = soup.find_all('article', class_='IFHyqb')
 
         news_list = []
         for article in articles:
-            title_element = article.find('a', class_='JtKRv')  # 查找標題元素
+            title_element = article.find('a', class_='JtKRv')
             title = title_element.get_text(strip=True) if title_element else '未知'
             link = title_element.get('href', '').strip() if title_element else ''
-            full_link = requests.compat.urljoin(url, link)  # 獲取完整連結
+            full_link = requests.compat.urljoin(url, link)
 
-            news_source = article.find('div', class_='vr1PYe')  # 查找來源元素
+            news_source = article.find('div', class_='vr1PYe')
             source_name = news_source.get_text(strip=True) if news_source else '未知'
 
             time_element = article.find('div', class_='UOVeFe').find('time', class_='hvbAAd') if article.find('div', 'UOVeFe') else None
             date_str = time_element.get_text(strip=True) if time_element else '未知'
+            date = parse_date(date_str) if date_str != '未知' else None
 
-            date = parse_date(date_str)  # 解析時間
-
-            image_urls = extract_image_urls(article)  # 獲取圖片網址
+            # 獲取圖片網址
+            image_urls = extract_image_urls(full_link, headers)
 
             news_list.append({
                 '標題': title,
@@ -55,6 +65,58 @@ def fetch_news(url):
     except Exception as e:
         print(f"抓取新聞時發生錯誤: {e}")
         return []
+
+def extract_image_urls(article_url, headers):
+    try:
+        response = requests.get(article_url, headers=headers)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, 'html.parser')
+        image_urls = []
+
+        # 首先嘗試從元標籤抓取社交媒體縮圖（更通用）
+        meta_image = soup.find("meta", property="og:image")
+        if meta_image and meta_image.get("content"):
+            image_urls.append(meta_image["content"])
+
+        # 若無法從 meta 抓取，則嘗試不同網站的圖片抓取策略
+        if "udn.com" in article_url:
+            container_div = soup.find('section', class_='article-body__editor')
+            if container_div:
+                img_tag = container_div.find('img', src=lambda x: x and 'pgw.udn.com.tw' in x)
+                if img_tag:
+                    image_urls.append(img_tag['src'])
+
+        elif "newtalk.tw" in article_url:
+            image_divs = soup.find_all('div', class_='news_img')
+            for div in image_divs:
+                img_tag = div.find('img', itemprop="image")
+                if img_tag:
+                    image_urls.append(img_tag['src'])
+
+        elif "tw.news.yahoo.com" in article_url:
+            img_div = soup.find("div", class_="caas-body")
+            if img_div:
+                figure_tag = img_div.find("figure", class_="caas-figure")
+                if figure_tag:
+                    img_tag = figure_tag.find("img", class_="caas-img")
+                    if img_tag:
+                        image_urls.append(img_tag.get("data-src"))
+
+        elif "ltn.com.tw" in article_url:
+            image_divs = soup.find_all('div', class_='image-popup-vertical-fit')
+            for div in image_divs:
+                img_tag = div.find('img')
+                if img_tag:
+                    image_urls.append(img_tag['src'])
+
+        # 返回最終的圖片 URL 集合
+        return image_urls if image_urls else '找不到圖片。'
+
+    except requests.exceptions.RequestException as e:
+        print(f"抓取圖片時發生錯誤 ({article_url}): {e}")
+        time.sleep(random.uniform(1, 3))  # 隨機延遲以避免 429 錯誤
+        return '找不到圖片。'
+
     
 def parse_date(date_str):
     if '天前' in date_str:
@@ -75,20 +137,6 @@ def parse_date(date_str):
             date = '未知'
 
     return date.strftime('%Y-%m-%d') if isinstance(date, datetime) else date
-
-def extract_image_urls(article):
-    image_urls = []
-    image_elements = article.find_all('img', class_='Quavad')
-    base_url = 'https://news.google.com'
-
-    for image_element in image_elements:
-        srcset = image_element.get('srcset')
-        if srcset:
-            image_url = srcset.split(' ')[0]
-            full_image_url = requests.compat.urljoin(base_url, image_url)
-            image_urls.append(full_image_url)
-
-    return ', '.join(image_urls) if image_urls else 'null'
 
 # 設置 Chrome 的選項
 def setup_chrome_driver():
