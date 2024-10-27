@@ -15,23 +15,17 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime, timedelta
-from dateutil.parser import parse as parse_date
-
 
 # 爬取新聞的函數
 def fetch_news(url):
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36"
-    }
-
     try:
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
+        response = requests.get(url)
+        response.raise_for_status()  # 檢查請求是否成功
         soup = BeautifulSoup(response.text, 'html.parser')
 
         articles = soup.find_all('article', class_='IFHyqb')  # 查找所有文章
-        news_list = []
 
+        news_list = []
         for article in articles:
             title_element = article.find('a', class_='JtKRv')  # 查找標題元素
             title = title_element.get_text(strip=True) if title_element else '未知'
@@ -46,58 +40,14 @@ def fetch_news(url):
 
             date = parse_date(date_str)  # 解析時間
 
-            # 抓取文章內的圖片，依不同網站的 HTML 結構處理
-            image_urls = []
-            article_response = requests.get(full_link, headers=headers)
-            article_soup = BeautifulSoup(article_response.text, 'html.parser')
-            
-            # udn.com 的圖片提取邏輯
-            if "udn.com" in full_link:
-                container_div = article_soup.find('section', class_='article-body__editor')
-                if container_div:
-                    img_tag = container_div.find('img', src=lambda x: x and 'pgw.udn.com.tw' in x)
-                    if img_tag:
-                        image_urls.append(img_tag['src'])
-
-            # newtalk.tw 的圖片提取邏輯
-            elif "newtalk.tw" in full_link:
-                image_divs = article_soup.find_all('div', class_='news_img')
-                for div in image_divs:
-                    img_tag = div.find('img', itemprop="image")
-                    if img_tag:
-                        image_urls.append(img_tag['src'])
-
-            # tw.news.yahoo.com 的圖片提取邏輯
-            elif "tw.news.yahoo.com" in full_link:
-                img_div = article_soup.find("div", class_="caas-body")
-                if img_div:
-                    figure_tag = img_div.find("figure", class_="caas-figure")
-                    if figure_tag:
-                        img_tag = figure_tag.find("img", class_="caas-img")
-                        if img_tag:
-                            image_urls.append(img_tag.get("data-src"))
-
-            # ltn.com.tw 的圖片提取邏輯
-            elif "ltn.com.tw" in full_link:
-                image_divs = article_soup.find_all('div', class_='image-popup-vertical-fit')
-                for div in image_divs:
-                    img_tag = div.find('img')
-                    if img_tag:
-                        image_urls.append(img_tag['src'])
-
-            # 若無特定網站的圖片邏輯，使用通用提取
-            if not image_urls:
-                for img_tag in article_soup.find_all('img', src=True):
-                    img_src = img_tag['src']
-                    if img_src:
-                        image_urls.append(img_src)
+            image_urls = extract_image_urls(article)  # 獲取圖片網址
 
             news_list.append({
                 '標題': title,
                 '連結': full_link,
                 '來源': source_name,
                 '時間': date,
-                '圖片': image_urls if image_urls else '找不到圖片。'
+                '圖片': image_urls
             })
 
         return news_list
@@ -105,7 +55,6 @@ def fetch_news(url):
     except Exception as e:
         print(f"抓取新聞時發生錯誤: {e}")
         return []
-
     
 def parse_date(date_str):
     if '天前' in date_str:
@@ -126,6 +75,20 @@ def parse_date(date_str):
             date = '未知'
 
     return date.strftime('%Y-%m-%d') if isinstance(date, datetime) else date
+
+def extract_image_urls(article):
+    image_urls = []
+    image_elements = article.find_all('img', class_='Quavad')
+    base_url = 'https://news.google.com'
+
+    for image_element in image_elements:
+        srcset = image_element.get('srcset')
+        if srcset:
+            image_url = srcset.split(' ')[0]
+            full_image_url = requests.compat.urljoin(base_url, image_url)
+            image_urls.append(full_image_url)
+
+    return ', '.join(image_urls) if image_urls else 'null'
 
 # 設置 Chrome 的選項
 def setup_chrome_driver():
