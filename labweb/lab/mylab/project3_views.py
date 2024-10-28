@@ -29,6 +29,14 @@ def fetch_url(url, session):
         print(f"錯誤抓取 {url}: {e}")
         return None
 
+def process_html(html):
+    # 此處根據需求解析 HTML（例如使用 BeautifulSoup）
+    if html:
+        soup = BeautifulSoup(html, 'html.parser')
+        # 假設你需要解析文章標題
+        title = soup.title.string if soup.title else "無標題"
+        print(f"標題: {title}")
+
 # 爬取新聞的函數
 def fetch_news(url):
     headers = {
