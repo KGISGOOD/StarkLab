@@ -42,12 +42,10 @@ def fetch_news(url):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36"
     }
-    #爬蟲過程
     try:
         print(f"正在抓取網址: {url}...")
         response = requests.get(url, headers=headers)
         
-        # 檢查 HTTP 狀態碼
         if response.status_code == 429:
             print("錯誤: 429 Too Many Requests - 伺服器拒絕了請求。")
             return []
@@ -55,66 +53,34 @@ def fetch_news(url):
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
         
-        articles = soup.find_all('article', class_='IFHyqb')  # 查找所有文章
+        articles = soup.find_all('article', class_='IFHyqb')
         news_list = []
 
         for article in articles:
-            title_element = article.find('a', class_='JtKRv')  # 查找標題元素
+            title_element = article.find('a', class_='JtKRv')
             title = title_element.get_text(strip=True) if title_element else '未知'
             link = title_element.get('href', '').strip() if title_element else ''
-            full_link = requests.compat.urljoin(url, link)  # 獲取完整連結
+            full_link = requests.compat.urljoin(url, link)
 
-            news_source = article.find('div', class_='vr1PYe')  # 查找來源元素
+            news_source = article.find('div', class_='vr1PYe')
             source_name = news_source.get_text(strip=True) if news_source else '未知'
 
             time_element = article.find('div', class_='UOVeFe').find('time', class_='hvbAAd') if article.find('div', 'UOVeFe') else None
             date_str = time_element.get_text(strip=True) if time_element else '未知'
+            date = parse_date(date_str)
 
-            date = parse_date(date_str)  # 解析時間
-
-            # 抓取文章內的圖片，依不同網站的 HTML 結構處理
-            image_urls = []
+            # 抓取圖片
             article_response = requests.get(full_link, headers=headers)
             article_soup = BeautifulSoup(article_response.text, 'html.parser')
-            
-            if "money.udn.com" in url:
-                container_div = soup.find('section', class_='article-body__editor')
-                if container_div:
-                    img_tag = container_div.find('img', src=lambda x: x and 'pgw.udn.com.tw' in x)
-                    if img_tag:
-                        img_url = img_tag.get('src')
+            img_url = extract_image_url(article_soup, full_link)
 
-            elif "newtalk.tw" in url:
-                image_divs = soup.find_all('div', class_='news_img')
-                for div in image_divs:
-                    img_tag = div.find('img', itemprop="image")
-                    if img_tag:
-                        img_url = img_tag['src']
-                        break  # 找到第一個圖片後就可以退出
-
-            elif "tw.news.yahoo.com" in url:
-                img_div = soup.find("div", class_="caas-body")
-                if img_div:
-                    figure_tag = img_div.find("figure", class_="caas-figure")
-                    if figure_tag:
-                        img_tag = figure_tag.find("img", class_="caas-img")
-                        if img_tag and img_tag.get("data-src"):
-                            img_url = img_tag.get("data-src")
-
-            elif "news.ltn.com.tw" in url:
-                image_divs = soup.find_all('div', class_='image-popup-vertical-fit')
-                for div in image_divs:
-                    img_tag = div.find('img')
-                    if img_tag and 'src' in img_tag.attrs:
-                        img_url = img_tag['src']
-                        break  # 找到第一個圖片後就可以退出
-
+            # 將新聞資訊附加到 news_list
             news_list.append({
                 '標題': title,
                 '連結': full_link,
                 '來源': source_name,
                 '時間': date,
-                '圖片': image_urls if image_urls else '找不到圖片。'
+                '圖片': img_url if img_url else '找不到圖片。'
             })
 
         return news_list
@@ -122,6 +88,40 @@ def fetch_news(url):
     except Exception as e:
         print(f"抓取新聞時發生錯誤: {e}")
         return []
+
+def extract_image_url(soup, url):
+    # 根據不同網站的結構抓取圖片連結
+    if "money.udn.com" in url:
+        container_div = soup.find('section', class_='article-body__editor')
+        if container_div:
+            img_tag = container_div.find('img', src=lambda x: x and 'pgw.udn.com.tw' in x)
+            if img_tag:
+                return img_tag.get('src')
+
+    elif "newtalk.tw" in url:
+        image_divs = soup.find_all('div', class_='news_img')
+        for div in image_divs:
+            img_tag = div.find('img', itemprop="image")
+            if img_tag:
+                return img_tag['src']  # 找到第一個圖片後返回
+
+    elif "tw.news.yahoo.com" in url:
+        img_div = soup.find("div", class_="caas-body")
+        if img_div:
+            figure_tag = img_div.find("figure", class_="caas-figure")
+            if figure_tag:
+                img_tag = figure_tag.find("img", class_="caas-img")
+                if img_tag and img_tag.get("data-src"):
+                    return img_tag.get("data-src")
+
+    elif "news.ltn.com.tw" in url:
+        image_divs = soup.find_all('div', class_='image-popup-vertical-fit')
+        for div in image_divs:
+            img_tag = div.find('img')
+            if img_tag and 'src' in img_tag.attrs:
+                return img_tag['src']  # 找到第一個圖片後返回
+
+    return None  # 若未找到圖片則返回 None
 
     
 def parse_date(date_str):
@@ -204,16 +204,16 @@ def main():
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際大雨 
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際豪雨 
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際暴雨 
-    #     'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際淹水 
-    #     'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際洪水 
-    #     'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際水災 
-    #     'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際颱風 
-    #     'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際颶風 
-    #     'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際風災 
-    #     'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際海嘯 
-    #     'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際地震 
-    #     'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際乾旱 
-    #     'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'  # 國際旱災
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際淹水 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際洪水 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際水災 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際颱風 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際颶風 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際風災 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際海嘯 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際地震 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際乾旱 
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'  # 國際旱災
     ]
 
     # 設定 Session 的 headers
