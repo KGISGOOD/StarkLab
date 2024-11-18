@@ -29,6 +29,23 @@ def setup_chrome_driver():
     driver = webdriver.Chrome(service=service, options=chrome_options)
     return driver
 
+def fetch_url(url, session):
+    try:
+        response = session.get(url)
+        response.raise_for_status()  # 確保請求成功
+        print(f"成功抓取: {url}")
+        return response.text
+    except requests.RequestException as e:
+        print(f"錯誤抓取 {url}: {e}")
+        return None
+
+def process_html(html):
+    # 此處根據需求解析 HTML（例如使用 BeautifulSoup）
+    if html:
+        soup = BeautifulSoup(html, 'html.parser')
+        # 假設你需要解析文章標題
+        title = soup.title.string if soup.title else "無標題"
+        print(f"標題: {title}")
 
 # 時間解析函數
 def parse_date(date_str):
