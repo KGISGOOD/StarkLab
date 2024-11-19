@@ -16,11 +16,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime, timedelta
 
-# 爬取新聞的函數
 def fetch_news(url):
     try:
         response = requests.get(url)
-        response.raise_for_status()  # 檢查請求是否成功
+        response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
 
         articles = soup.find_all('article', class_='IFHyqb')  # 查找所有文章
@@ -40,14 +39,11 @@ def fetch_news(url):
 
             date = parse_date(date_str)  # 解析時間
 
-            image_urls = extract_image_urls(article)  # 獲取圖片網址
-
             news_list.append({
                 '標題': title,
                 '連結': full_link,
                 '來源': source_name,
-                '時間': date,
-                '圖片': image_urls
+                '時間': date
             })
 
         return news_list
@@ -72,43 +68,10 @@ def parse_date(date_str):
         try:
             date = datetime.strptime(f'{datetime.now().year}年{date_str}', '%Y年%m月%d日')
         except ValueError:
-            date = '未知'
+            date = datetime.now()
 
-    return date.strftime('%Y-%m-%d') if isinstance(date, datetime) else date
+    return date.strftime('%Y-%m-%d')
 
-def extract_image_urls(url):
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"
-    }
-
-    try:
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()  # 檢查是否返回 200
-    except requests.RequestException:
-        return 'null'  # 如果請求失敗，返回 'null'，不顯示錯誤訊息
-
-    soup = BeautifulSoup(response.text, 'html.parser')
-
-    # 定義抓取圖片的規則
-    rules = [
-        {"site": "money.udn.com", "find": ('section', {'class': 'article-body__editor'}), "img_find": ('img', lambda x: x and 'pgw.udn.com.tw' in x)},
-        {"site": "newtalk.tw", "find": ('div', {'class': 'news_img'}), "img_find": ('img', {'itemprop': 'image'})},
-        {"site": "tw.news.yahoo.com", "find": ('div', {'class': 'caas-body'}), "img_find": ('img', {'class': 'caas-img', 'data-src': True})},
-        {"site": "news.ltn.com.tw", "find": ('div', {'class': 'image-popup-vertical-fit'}), "img_find": ('img', {'src': True})}
-    ]
-
-    for rule in rules:
-        if rule["site"] in url:
-            container = soup.find(*rule["find"])
-            if container:
-                img_tag = container.find(*rule["img_find"])
-                if img_tag:
-                    return img_tag.get('src') or img_tag.get('data-src', 'null')
-
-    return 'null'  # 若無圖片，返回 'null'
-
-
-# 設置 Chrome 的選項
 def setup_chrome_driver():
     chrome_options = Options()
     chrome_options.add_argument('--headless')
@@ -132,29 +95,25 @@ def fetch_article_content(driver, source_name, url):
     try:
         driver.get(url)
 
-        # 等待段落元素出現
         WebDriverWait(driver, 5).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, 'p'))
         )
 
-        # 根據來源獲取內容
-        if source_name == '經濟日報':
-            paragraphs = driver.find_elements(By.CSS_SELECTOR, 'section.article-body__editor p')
-            content = '\n'.join([p.text for p in paragraphs])
-        elif source_name == 'Yahoo奇摩新聞':
-            paragraphs = driver.find_elements(By.CSS_SELECTOR, 'div.caas-body p')
-            content = '\n'.join([p.text for p in paragraphs])
-        elif source_name == 'Newtalk新聞':
-            paragraphs = driver.find_elements(By.CSS_SELECTOR, 'div.articleBody.clearfix p')
-            content = '\n'.join([p.text for p in paragraphs])
-        elif source_name == '自由時報':
-            paragraphs = driver.find_elements(By.CSS_SELECTOR, 'p')
-            content = '\n'.join([p.text.strip() for p in paragraphs])
+        content_selectors = {
+            'Newtalk新聞': 'div.articleBody.clearfix p',
+            'Yahoo奇摩新聞': 'div.caas-body p',
+            '經濟日報': 'section.article-body__editor p',
+            '自由時報': 'div.text p',
+            '中時新聞': 'div.article-body p'
+        }
 
-        # 檢查是否找到內容
-        if not content.strip():
+        selector = content_selectors.get(source_name, 'p')
+        paragraphs = driver.find_elements(By.CSS_SELECTOR, selector)
+        
+        content = '\n'.join([p.text.strip() for p in paragraphs if p.text.strip()])
+
+        if not content:
             content = '未找到內容'
-
 
     except Exception as e:
         print(f"抓取內容失敗: {e}")
@@ -162,22 +121,49 @@ def fetch_article_content(driver, source_name, url):
 
     return content
 
+def extract_image_url(driver, source_name, url):
+    image_url = 'null'
+    try:
+        driver.get(url)
+        
+        image_selectors = {
+            'Newtalk新聞': "div.news_img img",
+            'Yahoo奇摩新聞': "div.caas-img-container img",
+            '經濟日報': "section.article-body__editor img",
+            '自由時報': "div.image-popup-vertical-fit img",
+            '中時新聞': "div.article-body img"
+        }
+
+        if source_name in image_selectors:
+            try:
+                image_element = WebDriverWait(driver, 5).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, image_selectors[source_name]))
+                )
+                image_url = image_element.get_attribute('src') or image_element.get_attribute('data-src')
+            except:
+                pass
+
+    except Exception as e:
+        print(f"圖片擷取錯誤: {e}")
+
+    return image_url or 'null'
+
 def main():
     start_time = time.time()
     urls = [
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際大雨 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際豪雨 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際暴雨 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際淹水 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際洪水 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際水災 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際颱風 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際颶風 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際風災 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際海嘯 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際地震 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 國際乾旱 
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'  # 國際旱災
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
     ]
 
     all_news_items = []
@@ -185,12 +171,8 @@ def main():
         news_items = fetch_news(url)
         all_news_items.extend(news_items)
 
-    # 檢查是否有抓取到新聞資料
     if all_news_items:
-        # 初始化 DataFrame
         news_df = pd.DataFrame(all_news_items)
-
-        # 去除重複標題的新聞，只保留第一個
         news_df = news_df.drop_duplicates(subset='標題', keep='first')
 
         driver = setup_chrome_driver()
@@ -205,6 +187,7 @@ def main():
             final_url = extract_final_url(original_url)
 
             content = fetch_article_content(driver, source_name, final_url)
+            image_url = extract_image_url(driver, source_name, final_url)
 
             if content != '未找到內容' and content != '錯誤':
                 result = {
@@ -213,25 +196,22 @@ def main():
                     '內文': content,
                     '來源': source_name,
                     '時間': item['時間'],
-                    '圖片': item['圖片']
+                    '圖片': image_url
                 }
 
-                skip_keywords = ['票','戰爭','GDP']
+                skip_keywords = ['票', '戰爭', 'GDP']
                 
-                desired_keywords = ['大雨', '豪雨', '暴雨', '淹水', '洪水', '水災', '颱風', '颶風', '風災', 
-                                    '海嘯', '地震', '乾旱', '旱災']
+                desired_keywords = ['大雨', '豪雨', '暴雨', '淹水', '洪水', '水災', 
+                                    '颱風', '颶風', '風災', '海嘯', '地震', '乾旱', '旱災']
 
-                # 檢查是否包含跳過的關鍵字
                 if any(keyword in result['標題'] or keyword in result['內文'] for keyword in skip_keywords):
                     print(f"跳過包含指定關鍵字的文章: {result['標題']}")
                     continue
 
-                # 檢查是否包含所需的關鍵字
                 if not any(keyword in result['標題'] or keyword in result['內文'] for keyword in desired_keywords):
                     print(f"文章不包含所需的關鍵字: {result['標題']}")
                     continue
 
-                # 保存到 CSV
                 output_df = pd.DataFrame([result])
                 output_df.to_csv(output_file, mode='a', header=not os.path.exists(output_file), index=False, encoding='utf-8')
 
@@ -245,7 +225,6 @@ def main():
 
         driver.quit()
 
-    # 從 w.csv 讀取數據並保存到數據庫
     db_name = 'w.db'
     table_name = 'news'
 
@@ -263,31 +242,25 @@ def main():
     )
 ''')
 
-    # 清空表格內容，確保數據庫和CSV文件保持一致
     cursor.execute(f'DELETE FROM {table_name}')
     conn.commit()
 
-    # 讀取 w.csv 並按照日期進行排序，從近到遠
     w_df = pd.read_csv('w.csv')
     
-    # 將 '時間' 列轉換為 datetime 格式
-    w_df['時間'] = pd.to_datetime(w_df['時間'], format='%Y-%m-%d', errors='coerce')  # 指定日期格式
-
-    w_df = w_df.sort_values(by='時間', ascending=False)  # 修改為 ascending=True
+    w_df['時間'] = pd.to_datetime(w_df['時間'], format='%Y-%m-%d', errors='coerce')
+    w_df = w_df.sort_values(by='時間', ascending=False)
     
-    # 將排序後的資料直接插入資料庫
     for _, row in w_df.iterrows():
-        # 檢查資料是否已存在
         cursor.execute(f'''
         SELECT COUNT(*) FROM {table_name} WHERE title = ? AND link = ?
         ''', (row['標題'], row['連結']))
         exists = cursor.fetchone()[0]
 
-        if exists == 0:  # 如果不存在，則插入
+        if exists == 0:
             cursor.execute(f'''
             INSERT INTO {table_name} (title, link, content, source, date, image)
             VALUES (?, ?, ?, ?, ?, ?)
-        ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間'].strftime('%Y-%m-%d'), row['圖片']))  # 將時間轉換為字符串
+        ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間'].strftime('%Y-%m-%d'), row['圖片']))
             
     conn.commit()
     conn.close()
