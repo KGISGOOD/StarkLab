@@ -76,19 +76,56 @@ def parse_date(date_str):
 
     return date.strftime('%Y-%m-%d') if isinstance(date, datetime) else date
 
-def extract_image_urls(article):
-    image_urls = []
-    image_elements = article.find_all('img', class_='Quavad')
-    base_url = 'https://news.google.com'
+def extract_image_urls(url):
+    img_url = 'null'  # 初始化圖片連結為 'null'
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"
+    }
+    
+    try:
+        response = requests.get(url, headers=headers)
+    except requests.RequestException as e:
+        return f"請求失敗，錯誤訊息: {e}"
 
-    for image_element in image_elements:
-        srcset = image_element.get('srcset')
-        if srcset:
-            image_url = srcset.split(' ')[0]
-            full_image_url = requests.compat.urljoin(base_url, image_url)
-            image_urls.append(full_image_url)
+    if response.status_code != 200:
+        return f"請求失敗，狀態碼: {response.status_code}"
 
-    return ', '.join(image_urls) if image_urls else 'null'
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    # 根據不同網站的結構提取圖片
+    if "money.udn.com" in url:
+        container_div = soup.find('section', class_='article-body__editor')
+        if container_div:
+            img_tag = container_div.find('img', src=lambda x: x and 'pgw.udn.com.tw' in x)
+            if img_tag:
+                img_url = img_tag.get('src')
+
+    elif "newtalk.tw" in url:
+        image_divs = soup.find_all('div', class_='news_img')
+        for div in image_divs:
+            img_tag = div.find('img', itemprop="image")
+            if img_tag:
+                img_url = img_tag['src']
+                break  # 找到第一個圖片後就可以退出
+
+    elif "tw.news.yahoo.com" in url:
+        img_div = soup.find("div", class_="caas-body")
+        if img_div:
+            figure_tag = img_div.find("figure", class_="caas-figure")
+            if figure_tag:
+                img_tag = figure_tag.find("img", class_="caas-img")
+                if img_tag and img_tag.get("data-src"):
+                    img_url = img_tag.get("data-src")
+
+    elif "news.ltn.com.tw" in url:
+        image_divs = soup.find_all('div', class_='image-popup-vertical-fit')
+        for div in image_divs:
+            img_tag = div.find('img')
+            if img_tag and 'src' in img_tag.attrs:
+                img_url = img_tag['src']
+                break  # 找到第一個圖片後就可以退出
+
+    return img_url  # 返回圖片連結
 
 # 設置 Chrome 的選項
 def setup_chrome_driver():
