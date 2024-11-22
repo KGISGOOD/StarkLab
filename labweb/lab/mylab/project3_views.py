@@ -89,81 +89,98 @@ def extract_final_url(google_news_url):
         return match.group(1)
     return google_news_url
 
-def fetch_article_content(driver, source_name, url):
-    content = ''
-    
-    try:
-        driver.get(url)
+# 定義允許的新聞來源
+ALLOWED_SOURCES = {
+    'Newtalk新聞',
+    'Yahoo奇摩新聞',
+    '經濟日報',
+    '自由時報',
+    '中時新聞'
+}
 
-        WebDriverWait(driver, 5).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, 'p'))
-        )
+def fetch_article_content(driver, sources_urls):
+    results = {}
+    for source_name, url in sources_urls.items():
+        if source_name not in ALLOWED_SOURCES:
+            continue
+            
+        try:
+            driver.get(url)
+            WebDriverWait(driver, 5).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, 'p'))
+            )
+            
+            content_selectors = {
+                'Newtalk新聞': 'div.articleBody.clearfix p',
+                # 'Yahoo奇摩新聞': 'div.caas-body p',
+                '經濟日報': 'section.article-body__editor p',
+                '自由時報': 'div.text p',
+                '中時新聞': 'div.article-body p'
+            }
+            
+            selector = content_selectors.get(source_name, 'p')
+            paragraphs = driver.find_elements(By.CSS_SELECTOR, selector)
+            content = '\n'.join([p.text.strip() for p in paragraphs if p.text.strip()])
+            
+            results[source_name] = content if content else '未找到內容'
+            
+        except Exception as e:
+            print(f"抓取內容失敗: {e}")
+            results[source_name] = '錯誤'
+            
+    return results
 
-        content_selectors = {
-            'Newtalk新聞': 'div.articleBody.clearfix p',
-            'Yahoo奇摩新聞': 'div.caas-body p',
-            '經濟日報': 'section.article-body__editor p',
-            '自由時報': 'div.text p',
-            '中時新聞': 'div.article-body p'
-        }
-
-        selector = content_selectors.get(source_name, 'p')
-        paragraphs = driver.find_elements(By.CSS_SELECTOR, selector)
-        
-        content = '\n'.join([p.text.strip() for p in paragraphs if p.text.strip()])
-
-        if not content:
-            content = '未找到內容'
-
-    except Exception as e:
-        print(f"抓取內容失敗: {e}")
-        content = '錯誤'
-
-    return content
-
-def extract_image_url(driver, source_name, url):
-    image_url = 'null'
-    try:
-        driver.get(url)
-        
-        image_selectors = {
-            'Newtalk新聞': "div.news_img img",
-            'Yahoo奇摩新聞': "div.caas-img-container img",
-            '經濟日報': "section.article-body__editor img",
-            '自由時報': "div.image-popup-vertical-fit img",
-            '中時新聞': "div.article-body img"
-        }
-
-        if source_name in image_selectors:
-            try:
-                image_element = WebDriverWait(driver, 5).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, image_selectors[source_name]))
-                )
-                image_url = image_element.get_attribute('src') or image_element.get_attribute('data-src')
-            except:
-                pass
-
-    except Exception as e:
-        print(f"圖片擷取錯誤: {e}")
-
-    return image_url or 'null'
+def extract_image_url(driver, sources_urls):
+    results = {}
+    for source_name, url in sources_urls.items():
+        if source_name not in ALLOWED_SOURCES:
+            continue
+            
+        try:
+            driver.get(url)
+            image_selectors = {
+                'Newtalk新聞': "div.news_img img",
+                # 'Yahoo奇摩新聞': "div.caas-img-container img",
+                '經濟日報': "section.article-body__editor img",
+                '自由時報': "div.image-popup-vertical-fit img",
+                '中時新聞': "div.article-body img"
+            }
+            
+            if source_name in image_selectors:
+                try:
+                    image_element = WebDriverWait(driver, 5).until(
+                        EC.presence_of_element_located((By.CSS_SELECTOR, image_selectors[source_name]))
+                    )
+                    image_url = image_element.get_attribute('src') or image_element.get_attribute('data-src')
+                    results[source_name] = image_url or 'null'
+                except Exception as e:
+                    print(f"圖片擷取失敗: {e}")
+                    results[source_name] = 'null'
+            else:
+                results[source_name] = 'null'
+                
+        except Exception as e:
+            print(f"圖片擷取錯誤: {e}")
+            results[source_name] = 'null'
+            
+    return results
 
 def main():
     start_time = time.time()
     urls = [
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
     ]
 
     all_news_items = []
@@ -186,8 +203,16 @@ def main():
             original_url = item['連結']
             final_url = extract_final_url(original_url)
 
-            content = fetch_article_content(driver, source_name, final_url)
-            image_url = extract_image_url(driver, source_name, final_url)
+            # 創建包含單一來源和URL的字典
+            sources_urls = {source_name: final_url}
+            
+            # 使用新的函數格式來獲取內容和圖片
+            content_results = fetch_article_content(driver, sources_urls)
+            image_results = extract_image_url(driver, sources_urls)
+            
+            # 從結果字典中獲取內容和圖片URL
+            content = content_results.get(source_name, '未找到內容')
+            image_url = image_results.get(source_name, 'null')
 
             if content != '未找到內容' and content != '錯誤':
                 result = {
