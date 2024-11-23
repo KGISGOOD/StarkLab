@@ -92,7 +92,7 @@ def extract_final_url(google_news_url):
 # 定義允許的新聞來源
 ALLOWED_SOURCES = {
     'Newtalk新聞',
-    'Yahoo奇摩新聞',
+    #'Yahoo奇摩新聞',
     '經濟日報',
     '自由時報',
     '中時新聞'
@@ -183,6 +183,15 @@ def main():
         # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
     ]
 
+    # 定義關鍵字
+    domestic_keywords = [
+        '台灣', '台北', '新北', '基隆', '新竹市', '桃園', '新竹縣', '宜蘭', 
+        '台中', '苗栗', '彰化', '南投', '雲林', '高雄', '台南', '嘉義', 
+        '屏東', '澎湖', '花東', '花蓮', '台9線', '金門', '馬祖', '綠島', '蘭嶼',
+        '臺灣', '台北', '臺中', '臺南', '臺9縣', '全台', '全臺'
+    ]
+
+
     all_news_items = []
     for url in urls:
         news_items = fetch_news(url)
@@ -214,6 +223,9 @@ def main():
             content = content_results.get(source_name, '未找到內容')
             image_url = image_results.get(source_name, 'null')
 
+
+            region = '國內' if any(keyword in item['標題'] or keyword in content for keyword in domestic_keywords) else '國外'
+
             if content != '未找到內容' and content != '錯誤':
                 result = {
                     '標題': item['標題'],
@@ -221,7 +233,8 @@ def main():
                     '內文': content,
                     '來源': source_name,
                     '時間': item['時間'],
-                    '圖片': image_url
+                    '圖片': image_url,
+                    'region': region
                 }
 
                 skip_keywords = ['票', '戰爭', 'GDP']
@@ -246,6 +259,7 @@ def main():
                 print(f"來源: {result['來源']}")
                 print(f"時間: {result['時間']}")
                 print(f"圖片: {result['圖片']}")
+                print(f"地區: {result['region']}")
                 print('-' * 80)
 
         driver.quit()
@@ -282,12 +296,12 @@ def main():
         ''', (row['標題'], row['連結']))
         exists = cursor.fetchone()[0]
 
-        if exists == 0:
-            cursor.execute(f'''
-            INSERT INTO {table_name} (title, link, content, source, date, image)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間'].strftime('%Y-%m-%d'), row['圖片']))
-            
+    if exists == 0:
+        cursor.execute(f'''
+        INSERT INTO {table_name} (title, link, content, source, date, image, region)
+        VALUES (?, ?, ?, ?, ?, ?, ?) 
+        ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間'].strftime('%Y-%m-%d'), row['圖片'], row['region'])) 
+                
     conn.commit()
     conn.close()
 
