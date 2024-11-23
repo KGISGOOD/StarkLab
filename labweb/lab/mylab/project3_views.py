@@ -323,7 +323,6 @@ def main():
     print('新聞更新已完成！')
     print('爬取後的內容已成功儲存到 CSV 和 SQLite 資料庫中')
 
-    print(w_df) 
 
 def fetch_news_data():
     db_name = 'w.db'
