@@ -188,8 +188,7 @@ def main():
         '台灣', '台北', '新北', '基隆', '新竹市', '桃園', '新竹縣', '宜蘭', 
         '台中', '苗栗', '彰化', '南投', '雲林', '高雄', '台南', '嘉義', 
         '屏東', '澎湖', '花東', '花蓮', '台9線', '金門', '馬祖', '綠島', '蘭嶼',
-        '臺灣', '台北', '臺中', '臺南', '臺9縣', '全台', '全臺'
-    ]
+        '臺灣', '台北', '臺中', '臺南', '臺9縣', '全台', '全臺']
 
 
     all_news_items = []
@@ -234,7 +233,7 @@ def main():
                     '來源': source_name,
                     '時間': item['時間'],
                     '圖片': image_url,
-                    'region': region
+                    '地區': region
                 }
 
                 skip_keywords = ['票', '戰爭', 'GDP']
@@ -259,7 +258,7 @@ def main():
                 print(f"來源: {result['來源']}")
                 print(f"時間: {result['時間']}")
                 print(f"圖片: {result['圖片']}")
-                print(f"地區: {result['region']}")
+                print(f"地區: {result['地區']}")
                 print('-' * 80)
 
         driver.quit()
@@ -300,7 +299,7 @@ def main():
         cursor.execute(f'''
         INSERT INTO {table_name} (title, link, content, source, date, image, region)
         VALUES (?, ?, ?, ?, ?, ?, ?) 
-        ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間'].strftime('%Y-%m-%d'), row['圖片'], row['region'])) 
+        ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間'].strftime('%Y-%m-%d'), row['圖片'], row['地區'])) 
                 
     conn.commit()
     conn.close()
@@ -328,7 +327,7 @@ def fetch_news_data():
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
 
-    cursor.execute(f'SELECT id, title, link, content, source, date, image FROM {table_name}')
+    cursor.execute(f'SELECT id, title, link, content, source, date, image, region FROM {table_name}')
     news_data = cursor.fetchall()
 
     conn.close()
@@ -342,7 +341,8 @@ def fetch_news_data():
             'content': row[3],
             'source': row[4],
             'date': row[5],
-            'image': row[6] 
+            'image': row[6],
+            'region': row[7] 
         })
     
     return news_list
@@ -392,7 +392,8 @@ def news_view(request):
             'content': row[3],
             'source': row[4],
             'date': row[5],
-            'image': row[6] 
+            'image': row[6],
+            'region': row[7] 
         })
 
     # 將新聞列表傳遞給模板
@@ -403,7 +404,7 @@ def news_view(request):
 def news_list(request):
     if request.method == 'GET':
         # 查詢所有新聞記錄，並返回標題、連結、內容、來源和日期
-        news = News.objects.all().values('title', 'link', 'content', 'source', 'date','image')
+        news = News.objects.all().values('title', 'link', 'content', 'source', 'date', 'image', 'region') 
         return JsonResponse(list(news), safe=False)
 
 # RESTful API 新增新聞資料
@@ -417,7 +418,8 @@ def news_create(request):
             content=data['content'],
             source=data['source'],
             date=data['date'],
-            image=data.get('image', 'null')
+            image=data.get('image', 'null'),
+            region=data.get('region', '未知')
         )
         return JsonResponse({"message": "News created", "news_id": news.id}, status=201)
     
@@ -430,8 +432,8 @@ def news_api(request):
         conn = sqlite3.connect('w.db')
         cursor = conn.cursor()
 
-        # 執行查詢，確保包含 'image' 欄位
-        cursor.execute("SELECT id, title, link, content, source, date, image FROM news")
+        
+        cursor.execute("SELECT id, title, link, content, source, date, image, region FROM news")
         news_data = cursor.fetchall()
 
         # 關閉資料庫連接
@@ -444,10 +446,11 @@ def news_api(request):
                 'id': row[0],
                 'title': row[1],
                 'link': row[2],
-                'content': row[3][:50] + '...' if len(row[3]) > 50 else row[3],  # 限制內容為50字
+                'content': row[3][:50] + '...' if len(row[3]) > 50 else row[3],  
                 'source': row[4],
                 'date': row[5],
-                'image': row[6]  # 確保 image 欄位存在於查詢中
+                'image': row[6],
+                'region': row[7]
             })
 
         return JsonResponse(news_list, safe=False)
