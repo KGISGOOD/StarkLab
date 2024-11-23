@@ -41,7 +41,8 @@
             </div>
             {% endif %}
             <p>{{ news.content }}</p>
-            <small>Source: {{ news.source }} | Date: {{ news.date }}</small>
+            <small>Source: {{ news.source }} | Date: {{ news.date }} | Region: {{ news.region }}</small>
+            
         </li>
         {% empty %}
         <p>No news found.</p>
