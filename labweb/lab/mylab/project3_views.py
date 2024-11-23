@@ -295,12 +295,15 @@ def main():
         ''', (row['標題'], row['連結']))
         exists = cursor.fetchone()[0]
 
-    if exists == 0:
-        cursor.execute(f'''
-        INSERT INTO {table_name} (title, link, content, source, date, image, region)
-        VALUES (?, ?, ?, ?, ?, ?, ?) 
-        ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間'].strftime('%Y-%m-%d'), row['圖片'], row['地區'])) 
-                
+        print(f"Checking existence for: {row['標題']} - {row['連結']}, Exists: {exists}")
+
+        if exists == 0:
+            cursor.execute(f'''
+            INSERT INTO {table_name} (title, link, content, source, date, image, region)
+            VALUES (?, ?, ?, ?, ?, ?, ?) 
+            ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間'].strftime('%Y-%m-%d'), row['圖片'], row['地區'])) 
+            print(f"Inserted: {row['標題']}")  
+
     conn.commit()
     conn.close()
 
@@ -319,6 +322,8 @@ def main():
     print(f'爬取新聞並儲存資料共耗時 {time_str}')
     print('新聞更新已完成！')
     print('爬取後的內容已成功儲存到 CSV 和 SQLite 資料庫中')
+
+    print(w_df) 
 
 def fetch_news_data():
     db_name = 'w.db'
