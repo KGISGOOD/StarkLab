@@ -16,6 +16,7 @@ class News(models.Model):
     content = models.TextField()
     source = models.CharField(max_length=100)
     date = models.CharField(max_length=100)
+    region = models.CharField(max_length=2, default='未知')
     class Meta:
         db_table = "news"
         

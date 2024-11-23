@@ -263,7 +263,8 @@ def main():
         image TEXT,
         content TEXT,
         source TEXT,
-        date TEXT
+        date TEXT,
+        region TEXT 
     )
 ''')
 
