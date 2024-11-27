@@ -5,7 +5,6 @@ import sqlite3
 import requests
 from bs4 import BeautifulSoup
 import time
-
 import csv
 import re
 from selenium import webdriver
