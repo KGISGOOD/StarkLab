@@ -166,7 +166,7 @@ def extract_image_url(driver, sources_urls):
     return results
 
 
-# 加載 CSV 資料
+# 加載 CSV 資料，檢查必要欄位
 def load_csv():
     file_path = "w.csv"
     try:
@@ -178,46 +178,37 @@ def load_csv():
     except Exception as e:
         return str(e)  # 返回錯誤訊息
 
-
-
-
-# 與 X.AI 聊天功能互動
+# 與 AI 模型進行互動，處理摘要、地點與災害類型
 def chat_with_xai(message, api_key, model_name, csv_summary):
-    api_key = "xai-3c7OxxEEZTabZVirHYe7MYICvZL2yVKO6TaMUTSYKM7C9qC4efroqp5UZGJfNpjlENe0I6TiJVpwkD21"  
-    model_name = "grok-beta"
-    try:
-        url = 'https://api.x.ai/v1/chat/completions'
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': f'Bearer {api_key}'
-        }
+    url = 'https://api.x.ai/v1/chat/completions'
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {api_key}'
+    }
 
-        messages = [
-            {"role": "system", "content": "You are a disaster analysis assistant."},
-            {"role": "user", "content": f"使用者提問：{message}\n\n摘要資料：\n{csv_summary}"}
-        ]
+    messages = [
+        {"role": "system", "content": "You are a disaster analysis assistant."},
+        {"role": "user", "content": f"使用者提問：{message}\n\n摘要資料：\n{csv_summary}"}
+    ]
 
-        data = {
-            "messages": messages,
-            "model": model_name,
-            "temperature": 0,
-            "stream": False
-        }
+    data = {
+        "messages": messages,
+        "model": model_name,
+        "temperature": 0,
+        "stream": False
+    }
 
-        response = requests.post(url, headers=headers, json=data)
+    response = requests.post(url, headers=headers, json=data)
 
-        if response.status_code == 200:
-            result = response.json()
-            return result['choices'][0]['message']['content']
-        else:
-            return f"發生錯誤: {response.status_code} - {response.text}"
-
-    except Exception as e:
-        return f"發生錯誤: {str(e)}"
+    if response.status_code == 200:
+        result = response.json()
+        return result['choices'][0]['message']['content']
+    else:
+        return f"發生錯誤: {response.status_code} - {response.text}"
 
 # 問問題並獲得回應的通用函數
 def get_xai_responses(title, content, xai_api_key, model_name):
-    # 將標題和內文組合成一個訊息
+    # 將標題和內文組合成訊息
     combined_content = f"標題：{title}\n內文：{content}"
 
     question_summary = f"請簡要總結以下內文，限20字內：\n{combined_content}"
@@ -244,6 +235,7 @@ def main():
     api_key = "xai-3c7OxxEEZTabZVirHYe7MYICvZL2yVKO6TaMUTSYKM7C9qC4efroqp5UZGJfNpjlENe0I6TiJVpwkD21"  
     model_name = "grok-beta"
     start_time = time.time()
+    
     urls = [
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
@@ -260,13 +252,15 @@ def main():
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
     ]
 
-    # 定義關鍵字
+    # 定義國內關鍵字
     domestic_keywords = [
         '台灣', '台北', '新北', '基隆', '新竹市', '桃園', '新竹縣', '宜蘭', 
         '台中', '苗栗', '彰化', '南投', '雲林', '高雄', '台南', '嘉義', 
         '屏東', '澎湖', '花東', '花蓮', '台9線', '金門', '馬祖', '綠島', '蘭嶼',
-        '臺灣', '台北', '臺中', '臺南', '臺9縣', '全台', '全臺']
+        '臺灣', '臺北', '臺中', '臺南', '臺9縣', '全台', '全臺'
+    ]
 
+    # 爬取新聞
     all_news_items = []
     for url in urls:
         news_items = fetch_news(url)
@@ -290,14 +284,14 @@ def main():
             # 創建包含單一來源和URL的字典
             sources_urls = {source_name: final_url}
 
-            # 使用新的函數格式來獲取內容和圖片
+            # 使用函數獲取內容與圖片
             content_results = fetch_article_content(driver, sources_urls)
             image_results = extract_image_url(driver, sources_urls)
 
-            # 從結果字典中獲取內容和圖片URL
             content = content_results.get(source_name, '未找到內容')
             image_url = image_results.get(source_name, 'null')
 
+            # 判斷地區（國內或國外）
             region = '國內' if any(keyword in item['標題'] or keyword in content for keyword in domestic_keywords) else '國外'
 
             if content != '未找到內容' and content != '錯誤':
@@ -311,8 +305,8 @@ def main():
                     '地區': region
                 }
 
+                # 過濾關鍵字
                 skip_keywords = ['票', '戰爭', 'GDP']
-                
                 desired_keywords = ['大雨', '豪雨', '暴雨', '淹水', '洪水', '水災', 
                                     '颱風', '颶風', '風災', '海嘯', '地震', '乾旱', '旱災']
 
@@ -324,18 +318,21 @@ def main():
                     print(f"文章不包含所需的關鍵字: {result['標題']}")
                     continue
 
-                # 從標題和內文獲得模型分析結果
-                summary_answer, location_answer, disaster_answer = get_xai_responses(result['標題'], result['內文'], "api_key", "model_name")
+                # 使用模型進行分析
+                summary_answer, location_answer, disaster_answer = get_xai_responses(
+                    result['標題'], result['內文'], api_key, model_name
+                )
 
-                # 把結果新增到資料框中
+                # 更新結果
                 result['摘要'] = summary_answer
                 result['災害地點'] = location_answer
                 result['災害類型'] = disaster_answer
 
-                # 儲存結果到 CSV
+                # 寫入 CSV
                 output_df = pd.DataFrame([result])
                 output_df.to_csv(output_file, mode='a', header=not os.path.exists(output_file), index=False, encoding='utf-8')
 
+                # 印出結果
                 print(f"標題: {result['標題']}")
                 print(f"連結: {result['連結']}")
                 print(f"內文: {result['內文'][:50]}...")  # 顯示前50字
@@ -350,11 +347,13 @@ def main():
 
         driver.quit()
 
+    # 計算執行時間
     end_time = time.time()
     elapsed_time = int(end_time - start_time)
     hours, remainder = divmod(elapsed_time, 3600)
     minutes, seconds = divmod(remainder, 60)
     print(f"爬蟲程式執行完成，總共花費時間: {hours}小時{minutes}分鐘{seconds}秒")
+
 
 
 
