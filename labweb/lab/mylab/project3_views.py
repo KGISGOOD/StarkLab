@@ -188,7 +188,7 @@ def chat_with_xai(message, api_key, model_name, csv_summary):
         # 傳遞災害摘要與使用者訊息
         messages = [
             {"role": "system", "content": "You are a disaster analysis assistant."},
-            {"role": "user", "content": f"使用者提問：{message}\n\n摘要資料：\n{csv_summary}"}
+            {"role": "user", "content": f"使用者提問：{message}摘要資料：{csv_summary}"}
         ]
 
         data = {
@@ -216,7 +216,7 @@ def main():
     
     # Google News 搜尋 URL
     urls = [
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
@@ -282,9 +282,9 @@ def main():
                 csv_summary = content
 
                 # 提問並取得摘要、地點與災害
-                question_summary = f"請簡要總結以下內文，限20字內：\n{csv_summary}"
-                question_location = f"請從以下內文中提取災害發生的國家和地點，只需顯示國家和地點即可，限10字內：\n{csv_summary}"
-                question_disaster = f"請從以下內文中提取所有災害，只需顯示災害即可，若有相同的災害則存一個即可，限10字內：\n{csv_summary}"
+                question_summary = f"請簡要總結以下內文，限20字內：{csv_summary}"
+                question_location = f"請從以下內文中提取災害發生的國家和地點，只需顯示國家和地點即可，限10字內：{csv_summary}"
+                question_disaster = f"請從以下內文中提取所有災害，只需顯示災害即可，若有相同的災害則存一個即可，限10字內：{csv_summary}"
 
                 summary_answer = chat_with_xai(question_summary, xai_api_key, model_name, csv_summary)
                 location_answer = chat_with_xai(question_location, xai_api_key, model_name, csv_summary)
