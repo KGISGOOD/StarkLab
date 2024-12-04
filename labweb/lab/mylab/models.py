@@ -9,6 +9,7 @@ class Stock(models.Model):
     class Meta:
         db_table = "stock"
 
+
 class News(models.Model):
     title = models.CharField(max_length=255)
     image = models.URLField(max_length=500, blank=True, null=True)  # 新增圖片欄位
@@ -17,6 +18,9 @@ class News(models.Model):
     source = models.CharField(max_length=100)
     date = models.CharField(max_length=100)
     region = models.CharField(max_length=2, default='未知')
+    summary = models.TextField(blank=True, null=True)  # 摘要
+    location = models.CharField(max_length=255, blank=True, null=True)  # 地點
+    disaster = models.CharField(max_length=255, blank=True, null=True)  # 災害
     class Meta:
         db_table = "news"
         
