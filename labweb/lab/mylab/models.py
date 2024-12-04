@@ -10,15 +10,19 @@ class Stock(models.Model):
         db_table = "stock"
 
 class News(models.Model):
-    title = models.CharField(max_length=255)
-    image = models.URLField(max_length=500, blank=True, null=True)  # 新增圖片欄位
-    link = models.URLField(max_length=500)
-    content = models.TextField()
-    source = models.CharField(max_length=100)
-    date = models.CharField(max_length=100)
-    region = models.CharField(max_length=2, default='未知')
+    title = models.CharField(max_length=255)  # 新聞標題
+    summary = models.TextField(blank=True, null=True)  # 新增摘要欄位，允許為空
+    image = models.URLField(max_length=500, blank=True, null=True)  # 新增圖片欄位，允許為空
+    link = models.URLField(max_length=500)  # 新聞來源的連結
+    content = models.TextField()  # 新聞內容
+    source = models.CharField(max_length=100)  # 新聞來源
+    date = models.DateField()  # 優化為日期格式，方便存儲和查詢
+    region = models.CharField(max_length=2, default='未知')  # 地區代碼，默認為 '未知'
+    location = models.CharField(max_length=255, blank=True, null=True)  # 新增地點欄位，允許為空
+    disaster_type = models.CharField(max_length=100, blank=True, null=True)  # 新增災害類型欄位，允許為空
+
     class Meta:
-        db_table = "news"
+        db_table = "news"  # 資料表名稱
         
 
 class StockMetrics(models.Model):
