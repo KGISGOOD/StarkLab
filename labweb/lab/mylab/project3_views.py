@@ -165,102 +165,80 @@ def extract_image_url(driver, sources_urls):
             
     return results
 
-
-# 加載 CSV 資料，檢查必要欄位
-def load_csv():
-    file_path = "w.csv"
+# 加載並摘要 CSV 資料
+def load_and_summarize_csv(file_path):
     try:
         data = pd.read_csv(file_path)
-        if "標題" in data.columns and "內文" in data.columns:
+        if "內文" in data.columns:
             return data  # 成功讀取時返回資料
         else:
-            raise ValueError("CSV 檔案中缺少必要的欄位：標題或內文。")
+            raise ValueError("CSV 檔案中缺少必要的欄位：內文。")  # 若缺少必要欄位則拋出錯誤
     except Exception as e:
         return str(e)  # 返回錯誤訊息
 
-# 與 AI 模型進行互動，處理摘要、地點與災害類型
+# X.AI 聊天功能
 def chat_with_xai(message, api_key, model_name, csv_summary):
-    url = 'https://api.x.ai/v1/chat/completions'
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {api_key}'
-    }
-
-    messages = [
-        {"role": "system", "content": "You are a disaster analysis assistant."},
-        {"role": "user", "content": f"使用者提問：{message}\n\n摘要資料：\n{csv_summary}"}
-    ]
-
-    data = {
-        "messages": messages,
-        "model": model_name,
-        "temperature": 0,
-        "stream": False
-    }
-
-    response = requests.post(url, headers=headers, json=data)
-
-    if response.status_code == 200:
-        result = response.json()
-        return result['choices'][0]['message']['content']
-    else:
-        return f"發生錯誤: {response.status_code} - {response.text}"
-
-# 問問題並獲得回應的通用函數
-def get_xai_responses(title, content, xai_api_key, model_name):
-    # 將標題和內文組合成訊息
-    combined_content = f"標題：{title}\n內文：{content}"
-
-    question_summary = f"請簡要總結以下內文，限20字內：\n{combined_content}"
-    question_location = f"請從以下內文中提取災害發生的國家和地點，只需顯示國家和地點即可，限10字內：\n{combined_content}"
-    question_disaster = f"請從以下內文中提取所有災害，只需顯示災害即可，限10字內：\n{combined_content}"
-
-    summary_answer = chat_with_xai(question_summary, xai_api_key, model_name, combined_content)
-    location_answer = chat_with_xai(question_location, xai_api_key, model_name, combined_content)
-    disaster_answer = chat_with_xai(question_disaster, xai_api_key, model_name, combined_content)
-
-    return summary_answer, location_answer, disaster_answer
-
-# 更新 CSV 資料並儲存
-def update_and_save_csv(data):
-    file_path = "w.csv"
     try:
-        data.to_csv(file_path, index=False, encoding='utf-8-sig')
-        print("摘要、地點和災害已成功儲存到 CSV 檔案中。")
+        url = 'https://api.x.ai/v1/chat/completions'
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {api_key}'
+        }
+
+        # 傳遞災害摘要與使用者訊息
+        messages = [
+            {"role": "system", "content": "You are a disaster analysis assistant."},
+            {"role": "user", "content": f"使用者提問：{message}\n\n摘要資料：\n{csv_summary}"}
+        ]
+
+        data = {
+            "messages": messages,
+            "model": model_name,
+            "temperature": 0,
+            "stream": False
+        }
+
+        # 發送 POST 請求到 API
+        response = requests.post(url, headers=headers, json=data)
+
+        if response.status_code == 200:
+            result = response.json()
+            return result['choices'][0]['message']['content']
+        else:
+            return f"發生錯誤: {response.status_code} - {response.text}"
+
     except Exception as e:
-        print(f"儲存 CSV 檔案時發生錯誤：{str(e)}")
+        return f"發生錯誤: {str(e)}"
 
-
+# 主程式
 def main():
-    api_key = "xai-3c7OxxEEZTabZVirHYe7MYICvZL2yVKO6TaMUTSYKM7C9qC4efroqp5UZGJfNpjlENe0I6TiJVpwkD21"  
-    model_name = "grok-beta"
     start_time = time.time()
     
+    # Google News 搜尋 URL
     urls = [
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B8%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
     ]
-
-    # 定義國內關鍵字
+    
+    # 關鍵字設定
     domestic_keywords = [
         '台灣', '台北', '新北', '基隆', '新竹市', '桃園', '新竹縣', '宜蘭', 
         '台中', '苗栗', '彰化', '南投', '雲林', '高雄', '台南', '嘉義', 
         '屏東', '澎湖', '花東', '花蓮', '台9線', '金門', '馬祖', '綠島', '蘭嶼',
-        '臺灣', '臺北', '臺中', '臺南', '臺9縣', '全台', '全臺'
+        '臺灣', '台北', '臺中', '臺南', '臺9縣', '全台', '全臺'
     ]
-
-    # 爬取新聞
+    
     all_news_items = []
     for url in urls:
         news_items = fetch_news(url)
@@ -276,25 +254,47 @@ def main():
         if os.path.exists(output_file):
             os.remove(output_file)
 
+        # X.AI 的 API Key 和模型名稱
+        xai_api_key = "xai-3c7OxxEEZTabZVirHYe7MYICvZL2yVKO6TaMUTSYKM7C9qC4efroqp5UZGJfNpjlENe0I6TiJVpwkD21"  # 請填入你的 API 密鑰
+        model_name = "grok-beta"
+
+        # 新增欄位：摘要、地點、災害
+        summaries = []
+        locations = []
+        disasters = []
+
         for index, item in news_df.iterrows():
             source_name = item['來源']
             original_url = item['連結']
             final_url = extract_final_url(original_url)
-
-            # 創建包含單一來源和URL的字典
             sources_urls = {source_name: final_url}
 
-            # 使用函數獲取內容與圖片
+            # 擷取內容和圖片
             content_results = fetch_article_content(driver, sources_urls)
             image_results = extract_image_url(driver, sources_urls)
 
             content = content_results.get(source_name, '未找到內容')
             image_url = image_results.get(source_name, 'null')
 
-            # 判斷地區（國內或國外）
             region = '國內' if any(keyword in item['標題'] or keyword in content for keyword in domestic_keywords) else '國外'
 
-            if content != '未找到內容' and content != '錯誤':
+            if content != '未找到內容':
+                csv_summary = content
+
+                # 提問並取得摘要、地點與災害
+                question_summary = f"請簡要總結以下內文，限20字內：\n{csv_summary}"
+                question_location = f"請從以下內文中提取災害發生的國家和地點，只需顯示國家和地點即可，限10字內：\n{csv_summary}"
+                question_disaster = f"請從以下內文中提取所有災害，只需顯示災害即可，若有相同的災害則存一個即可，限10字內：\n{csv_summary}"
+
+                summary_answer = chat_with_xai(question_summary, xai_api_key, model_name, csv_summary)
+                location_answer = chat_with_xai(question_location, xai_api_key, model_name, csv_summary)
+                disaster_answer = chat_with_xai(question_disaster, xai_api_key, model_name, csv_summary)
+
+                # 收集結果
+                summaries.append(summary_answer)
+                locations.append(location_answer)
+                disasters.append(disaster_answer)
+
                 result = {
                     '標題': item['標題'],
                     '連結': original_url,
@@ -302,11 +302,15 @@ def main():
                     '來源': source_name,
                     '時間': item['時間'],
                     '圖片': image_url,
-                    '地區': region
+                    '地區': region,
+                    '摘要': summary_answer,
+                    '地點': location_answer,
+                    '災害': disaster_answer
                 }
 
-                # 過濾關鍵字
+
                 skip_keywords = ['票', '戰爭', 'GDP','設計','精神','中國抗議','中鋼','聯合國','友','政治','生活','業者','獎']
+                
                 desired_keywords = ['大雨', '豪雨', '暴雨', '淹水', '洪水', '水災', 
                                     '颱風', '颶風', '風災', '海嘯', '地震', '乾旱', '旱災']
 
@@ -318,50 +322,89 @@ def main():
                     print(f"文章不包含所需的關鍵字: {result['標題']}")
                     continue
 
-                # 使用模型進行分析
-                summary_answer, location_answer, disaster_answer = get_xai_responses(
-                    result['標題'], result['內文'], api_key, model_name
-                )
-
-                # 更新結果
-                result['摘要'] = summary_answer
-                result['災害地點'] = location_answer
-                result['災害類型'] = disaster_answer
-
-                # 寫入 CSV
+                # 儲存資料到 CSV
                 output_df = pd.DataFrame([result])
                 output_df.to_csv(output_file, mode='a', header=not os.path.exists(output_file), index=False, encoding='utf-8')
 
-                # 印出結果
                 print(f"標題: {result['標題']}")
                 print(f"連結: {result['連結']}")
-                print(f"內文: {result['內文'][:50]}...")  # 顯示前50字
-                print(f"摘要: {result['摘要']}")
-                print(f"災害地點: {result['災害地點']}")
-                print(f"災害類型: {result['災害類型']}")
+                print(f"內文: {result['內文'][:50]}...")
                 print(f"來源: {result['來源']}")
                 print(f"時間: {result['時間']}")
                 print(f"圖片: {result['圖片']}")
                 print(f"地區: {result['地區']}")
+                print(f"摘要: {result['摘要']}")
+                print(f"地點: {result['地點']}")
+                print(f"災害: {result['災害']}")
                 print('-' * 80)
 
         driver.quit()
 
-    # 計算執行時間
-    end_time = time.time()
-    elapsed_time = int(end_time - start_time)
-    hours, remainder = divmod(elapsed_time, 3600)
-    minutes, seconds = divmod(remainder, 60)
-    print(f"爬蟲程式執行完成，總共花費時間: {hours}小時{minutes}分鐘{seconds}秒")
+        # 儲存資料到 SQLite
+        db_name = 'w.db'
+        table_name = 'news'
 
+        conn = sqlite3.connect(db_name)
+        cursor = conn.cursor()
+        cursor.execute(f'''
+        CREATE TABLE IF NOT EXISTS {table_name} (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT,
+            link TEXT,
+            image TEXT,
+            content TEXT,
+            source TEXT,
+            date TEXT,
+            region TEXT,
+            summary TEXT,
+            location TEXT,
+            disaster TEXT
+        )
+        ''')
 
+        cursor.execute(f'DELETE FROM {table_name}')
+        conn.commit()
 
+        w_df = pd.read_csv('w.csv')
+        w_df['時間'] = pd.to_datetime(w_df['時間'], format='%Y-%m-%d', errors='coerce')
+        w_df = w_df.sort_values(by='時間', ascending=False)
 
-import sqlite3
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_GET
-import json
+        for _, row in w_df.iterrows():
+            cursor.execute(f'''
+            SELECT COUNT(*) FROM {table_name} WHERE title = ? AND link = ?
+            ''', (row['標題'], row['連結']))
+            exists = cursor.fetchone()[0]
+            print(f"Checking existence for: {row['標題']} - {row['連結']}, Exists: {exists}")
+
+            if exists == 0:
+                cursor.execute(f'''
+                INSERT INTO {table_name} (title, link, content, source, date, image, region, summary, location, disaster)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間'].strftime('%Y-%m-%d'), row['圖片'], row['地區'], row['摘要'], row['地點'], row['災害']))
+                print(f"Inserted: {row['標題']}")
+
+        conn.commit()
+        conn.close()
+
+        end_time = time.time()
+        elapsed_time = int(end_time - start_time)
+        hours, remainder = divmod(elapsed_time, 3600)
+        minutes, seconds = divmod(remainder, 60)
+
+        time_str = ''
+        if hours > 0:
+            time_str += f'{hours} 小時 '
+        if minutes > 0 or hours > 0:
+            time_str += f'{minutes} 分 '
+        time_str += f'{seconds} 秒'
+
+        print(f'爬取新聞並儲存資料共耗時 {time_str}')
+        print('新聞更新已完成！')
+        print('爬取後的內容已成功儲存到 CSV 和 SQLite 資料庫中')
+
+if __name__ == "__main__":
+    main()
+
 
 def fetch_news_data():
     db_name = 'w.db'
@@ -370,7 +413,7 @@ def fetch_news_data():
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
 
-    cursor.execute(f"SELECT id, title, link, content, source, date, image, region, location, summary, disaster FROM {table_name}") 
+    cursor.execute(f'SELECT id, title, link, content, source, date, image, region, summary, location, disaster FROM {table_name}')    
     news_data = cursor.fetchall()
 
     conn.close()
@@ -378,32 +421,39 @@ def fetch_news_data():
     news_list = []
     for row in news_data:
         news_list.append({
-            'id': row[0],        # ID
-            'title': row[1],     # 標題
-            'link': row[2],      # 連結
-            'content': row[3],   # 內文
-            'summary': row[9],   # 摘要
-            'source': row[4],    # 來源
-            'date': row[5],      # 日期
-            'image': row[6],     # 圖片
-            'region': row[7],    # 地區
-            'location': row[8],  # 地點
-            'disaster': row[10]  # 災害
+            'id': row[0],
+            'title': row[1],
+            'link': row[2],
+            'content': row[3],
+            'source': row[4],
+            'date': row[5],
+            'image': row[6],
+            'region': row[7],
+            'summary': row[8],
+            'location': row[9],
+            'disaster': row[10]
         })
-
+    
     return news_list
+
+from django.http import JsonResponse
 
 def update_news(request):
     main()  # 執行爬取新聞的函數
     return JsonResponse({'message': '新聞更新成功！'})
 
+
 # views.py
+from django.http import JsonResponse
 from django.shortcuts import render
 from .models import News
+import json
+from django.views.decorators.csrf import csrf_exempt
 
 # 處理新聞列表及搜尋功能
 def news_view(request):
-    query = request.GET.get('search', '')  # 取得搜尋關鍵字
+    # 取得搜尋關鍵字
+    query = request.GET.get('search', '')
 
     # 連接到 SQLite 資料庫
     conn = sqlite3.connect('w.db')
@@ -424,29 +474,29 @@ def news_view(request):
     # 將結果轉換為字典列表
     news_list = []
     for row in news_data:
-        summary = row[3][:50] + '...' if len(row[3]) > 50 else row[3]  # 摘要：前50個字
-        disaster_type = '災害類型待補充'  # 假設災害類型，根據實際情況可進行更改
-        
         news_list.append({
-            'id': row[0],  
-            'title': row[1], 
-            'link': row[2],  
-            'content': row[3],  
-            'summary': row[9], 
-            'source': row[4], 
-            'date': row[5],  
-            'image': row[6],  
-            'region': row[7],  
-            'location': row[8],  
-            'disaster': row[10]  
+            'id': row[0],
+            'title': row[1],
+            'link': row[2],
+            'content': row[3],
+            'source': row[4],
+            'date': row[5],
+            'image': row[6],
+            'region': row[7],
+            'summary': row[8],   # 新增 summary 欄位
+            'location': row[9],  # 新增 location 欄位
+            'disaster': row[10]  # 新增 disaster 欄位
         })
 
+    # 將新聞列表傳遞給模板
     return render(request, 'news.html', {'news_list': news_list})
+
 
 # RESTful API 查詢所有新聞資料並以JSON格式返回
 def news_list(request):
     if request.method == 'GET':
-        news = News.objects.all().values('id', 'title', 'link', 'content', 'source', 'date', 'image', 'region', 'location', 'summary', 'disaster')
+        # 查詢所有新聞記錄，並返回標題、連結、內容、來源和日期
+        news = News.objects.all().values('title', 'link', 'content', 'source', 'date', 'image', 'region', 'summary', 'location', 'disaster')        
         return JsonResponse(list(news), safe=False)
 
 # RESTful API 新增新聞資料
@@ -455,18 +505,20 @@ def news_create(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         news = News.objects.create(
-                title=data['title'],
-                link=data['link'],
-                content=data['content'],
-                source=data['source'],
-                date=data['date'],
-                image=data.get('image', 'null'),
-                region=data.get('region', '未知'),
-                location=data.get('location', '未知'),  # 新增地點欄位
-                summary=data.get('summary', '無摘要'),  # 新增摘要欄位
-                disaster=data.get('disaster', '無災害')  # 新增災害欄位
-            )
+            title=data['title'],
+            link=data['link'],
+            content=data['content'],
+            source=data['source'],
+            date=data['date'],
+            image=data.get('image', 'null'),
+            region=data.get('region', '未知'),
+            summary=data.get('summary', ''),  # 新增 summary 欄位，預設值為空字串
+            location=data.get('location', ''),  # 新增 location 欄位，預設值為空字串
+            disaster=data.get('disaster', '')  # 新增 disaster 欄位，預設值為空字串
+        )
         return JsonResponse({"message": "News created", "news_id": news.id}, status=201)
+    
+from django.views.decorators.http import require_GET
 
 @require_GET
 def news_api(request):
@@ -475,7 +527,8 @@ def news_api(request):
         conn = sqlite3.connect('w.db')
         cursor = conn.cursor()
 
-        cursor.execute("SELECT id, title, link, content, source, date, image, region, location, summary, disaster FROM news")
+        
+        cursor.execute("SELECT id, title, link, content, source, date, image, region, summary, location, disaster FROM news")        
         news_data = cursor.fetchall()
 
         # 關閉資料庫連接
@@ -488,17 +541,17 @@ def news_api(request):
                 'id': row[0],
                 'title': row[1],
                 'link': row[2],
-                'content': row[3][:50] + '...' if len(row[3]) > 50 else row[3],  # 縮短內容顯示
+                'content': row[3][:50] + '...' if len(row[3]) > 50 else row[3],  
                 'source': row[4],
                 'date': row[5],
                 'image': row[6],
                 'region': row[7],
-                'summary': row[8],  # 新增摘要
-                'location': row[9],  # 新增地點
-                'disaster': row[10]  # 新增災害
+                'summary': row[8],  # 新增摘要欄位
+                'location': row[9],  # 新增地點欄位
+                'disaster': row[10]  # 新增災害欄位
             })
 
         return JsonResponse(news_list, safe=False)
-
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
