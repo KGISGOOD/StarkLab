@@ -17,6 +17,17 @@ from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime, timedelta
 import json
 
+xai_api_key = os.getenv("API_KEY")
+model_name = "grok-beta"
+
+# 修改 ALLOWED_SOURCES 為只包含四家報社
+ALLOWED_SOURCES = {
+    'Newtalk新聞',
+    '經濟日報',
+    '自由時報',
+    '中時新聞'
+}
+
 def fetch_news(url):
     try:
         response = requests.get(url)
@@ -34,6 +45,10 @@ def fetch_news(url):
 
             news_source = article.find('div', class_='vr1PYe')  # 查找來源元素
             source_name = news_source.get_text(strip=True) if news_source else '未知'
+
+            # 只處理允許的新聞來源
+            if source_name not in ALLOWED_SOURCES:
+                continue
 
             time_element = article.find('div', class_='UOVeFe').find('time', class_='hvbAAd') if article.find('div', 'UOVeFe') else None
             date_str = time_element.get_text(strip=True) if time_element else '未知'
@@ -90,15 +105,6 @@ def extract_final_url(google_news_url):
         return match.group(1)
     return google_news_url
 
-# 定義允許的新聞來源
-ALLOWED_SOURCES = {
-    'Newtalk新聞',
-    #'Yahoo奇摩新聞',
-    '經濟日報',
-    '自由時報',
-    '中時新聞'
-}
-
 def fetch_article_content(driver, sources_urls):
     results = {}
     summaries = {}
@@ -112,6 +118,7 @@ def fetch_article_content(driver, sources_urls):
                 EC.presence_of_element_located((By.CSS_SELECTOR, 'p'))
             )
             
+            # 更新選擇器以只包含四家報社
             content_selectors = {
                 'Newtalk新聞': 'div.articleBody.clearfix p',
                 '經濟日報': 'section.article-body__editor p',
@@ -119,7 +126,10 @@ def fetch_article_content(driver, sources_urls):
                 '中時新聞': 'div.article-body p'
             }
             
-            selector = content_selectors.get(source_name, 'p')
+            selector = content_selectors.get(source_name)
+            if not selector:  # 如果沒有對應的選擇器，跳過
+                continue
+                
             paragraphs = driver.find_elements(By.CSS_SELECTOR, selector)
             content = '\n'.join([p.text.strip() for p in paragraphs if p.text.strip()])
             
@@ -144,25 +154,26 @@ def extract_image_url(driver, sources_urls):
             
         try:
             driver.get(url)
+            # 更新圖片選擇器以只包含四家報社
             image_selectors = {
                 'Newtalk新聞': "div.news_img img",
-                # 'Yahoo奇摩新聞': "div.caas-img-container img",
                 '經濟日報': "section.article-body__editor img",
                 '自由時報': "div.image-popup-vertical-fit img",
                 '中時新聞': "div.article-body img"
             }
             
-            if source_name in image_selectors:
-                try:
-                    image_element = WebDriverWait(driver, 5).until(
-                        EC.presence_of_element_located((By.CSS_SELECTOR, image_selectors[source_name]))
-                    )
-                    image_url = image_element.get_attribute('src') or image_element.get_attribute('data-src')
-                    results[source_name] = image_url or 'null'
-                except Exception as e:
-                    print(f"圖片擷取失敗: {e}")
-                    results[source_name] = 'null'
-            else:
+            selector = image_selectors.get(source_name)
+            if not selector:  # 如果沒有對應的選擇器，跳過
+                continue
+                
+            try:
+                image_element = WebDriverWait(driver, 5).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, selector))
+                )
+                image_url = image_element.get_attribute('src') or image_element.get_attribute('data-src')
+                results[source_name] = image_url or 'null'
+            except Exception as e:
+                print(f"圖片擷取失敗: {e}")
                 results[source_name] = 'null'
                 
         except Exception as e:
@@ -183,7 +194,7 @@ def load_and_summarize_csv(file_path):
         return str(e)  # 返回錯誤訊息
 
 # X.AI 聊天功能
-def chat_with_xai(message, api_key, model_name, csv_summary):
+def chat_with_xai(prompt, api_key, model_name, context=""):
     try:
         url = 'https://api.x.ai/v1/chat/completions'
         headers = {
@@ -191,10 +202,9 @@ def chat_with_xai(message, api_key, model_name, csv_summary):
             'Authorization': f'Bearer {api_key}'
         }
 
-        # 傳遞災害摘要與使用者訊息
         messages = [
-            {"role": "system", "content": "You are a disaster analysis assistant."},
-            {"role": "user", "content": f"使用者提問：{message}摘要資料：{csv_summary}"}
+            {"role": "system", "content": "你是一個新聞分析助手，專門判斷新聞是否屬於同一事件。"},
+            {"role": "user", "content": prompt}
         ]
 
         data = {
@@ -204,23 +214,23 @@ def chat_with_xai(message, api_key, model_name, csv_summary):
             "stream": False
         }
 
-        # 發送 POST 請求到 API
         response = requests.post(url, headers=headers, json=data)
 
         if response.status_code == 200:
             result = response.json()
             return result['choices'][0]['message']['content']
         else:
-            return f"發生錯誤: {response.status_code} - {response.text}"
+            return "false"  # 如果 API 調用失敗，預設返回 false
 
     except Exception as e:
-        return f"發生錯誤: {str(e)}"
+        print(f"X.AI API 錯誤: {str(e)}")
+        return "false"  # 發生錯誤時預設返回 false
 
 # 主程式
 def main():
     start_time = time.time()
     
-    # Google News 搜�� URL
+    # Google News 搜 URL
     urls = [
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
@@ -260,7 +270,7 @@ def main():
         if os.path.exists(output_file):
             os.remove(output_file)
 
-        # X.AI 的 API Key 和模��名稱
+        # X.AI 的 API Key 和模型名稱
         xai_api_key =os.getenv("API_KEY") # 請填入你的 API 密鑰
         model_name = "grok-beta"
 
@@ -296,7 +306,7 @@ def main():
                 location_answer = chat_with_xai(question_location, xai_api_key, model_name, csv_summary)
                 disaster_answer = chat_with_xai(question_disaster, xai_api_key, model_name, csv_summary)
 
-                # 收集���果
+                # 收集結果
                 summaries.append(summary_answer)
                 locations.append(location_answer)
                 disasters.append(disaster_answer)
@@ -562,67 +572,94 @@ def news_api(request):
             return value.replace("\n", " ").replace("-", "").strip() if value else ""
 
         def parse_location(location_str):
-            # 將位置字串轉換為列表
             if not location_str:
                 return []
             locations = [loc.strip() for loc in location_str.split(',')]
             return list(filter(None, locations))
 
-        news_list = []
+        def is_same_event(event1, event2):
+            # 使用 X.AI 判斷兩則新聞是否屬於同一事件
+            prompt = f"""
+            請判斷以下兩則新聞是否屬於同一事件，只需回答 true 或 false：
+            新聞1：{event1}
+            新聞2：{event2}
+            """
+            response = chat_with_xai(prompt, xai_api_key, model_name, "")
+            return 'true' in response.lower()
+
+        # 用於存儲合併後的新聞
+        merged_news = {}
+        processed_events = set()
+
         for row in news_data:
-            # 解析每日記錄
-            daily_records = []
-            if row[12]:  # daily_records
-                try:
-                    records = json.loads(row[12])
-                    for record in records:
-                        daily_records.append({
-                            "date": record.get("date", ""),
-                            "content": record.get("content", ""),
-                            "location": parse_location(record.get("location", ""))
-                        })
-                except json.JSONDecodeError:
-                    daily_records = []
+            if row[1] in processed_events:  # 如果新聞標題已經處理過，跳過
+                continue
 
-            # 解析新聞連結
-            news_links = []
-            if row[13]:  # links
-                try:
-                    links = json.loads(row[13])
-                    for link in links:
-                        if isinstance(link, dict):
-                            news_links.append({
-                                "source": link.get("source", ""),
-                                "url": link.get("url", ""),
-                                "title": link.get("title", ""),
-                                "publish_date": link.get("publish_date", ""),
-                                "location": parse_location(link.get("location", "")),
-                                "summary": link.get("summary", "")
-                            })
-                        elif isinstance(link, str):
-                            # 如果是簡單的URL字串，創建基本的連結對象
-                            news_links.append({
-                                "source": row[5] or "",  # 使用新聞來源
-                                "url": link,
-                                "title": row[1] or "",  # 使用事件名稱
-                                "publish_date": row[6] or "",  # 使用發布日期
-                                "location": parse_location(row[9] or ""),  # 使用位置
-                                "summary": safe_process(row[11] or "")  # 使用摘要
-                            })
-                except json.JSONDecodeError:
-                    news_links = []
+            current_event = row[1]
+            location = parse_location(row[9])
+            disaster = safe_process(row[10])
+            
+            news_item = {
+                "source": row[5] or "",
+                "url": row[3] or "",
+                "title": row[1] or "",
+                "publish_date": row[6] or "",
+                "location": location,
+                "summary": safe_process(row[11] or "")
+            }
 
-            news_list.append({
-                'event': safe_process(row[1]),
-                'region': row[8] or "未知",
-                'cover': row[2] or "",  # image URL
-                'date': row[6] or "",
-                'recent_update': row[7] or row[6] or "",  # 如果沒有最新更新日期，使用發布日期
-                'location': parse_location(row[9]),
-                'overview': safe_process(row[11]),  # summary作為overview
-                'daily_records': daily_records,
-                'links': news_links
-            })
+            # 尋找相關事件
+            event_key = None
+            for existing_key in merged_news.keys():
+                if is_same_event(current_event, merged_news[existing_key]["event"]):
+                    event_key = existing_key
+                    break
+
+            if event_key:
+                # 將新聞添加到現有事件
+                merged_news[event_key]["links"].append(news_item)
+                
+                # 更新最近更新日期
+                current_date = row[7] or row[6] or ""
+                if current_date > merged_news[event_key]["recent_update"]:
+                    merged_news[event_key]["recent_update"] = current_date
+                
+                # 如果當前新聞有圖片且主事件沒有圖片，則更新圖片
+                if row[2] and not merged_news[event_key]["cover"]:
+                    merged_news[event_key]["cover"] = row[2]
+            else:
+                # 創建新的事件
+                daily_records = []
+                if row[12]:
+                    try:
+                        records = json.loads(row[12])
+                        for record in records:
+                            daily_records.append({
+                                "date": record.get("date", ""),
+                                "content": record.get("content", ""),
+                                "location": parse_location(record.get("location", ""))
+                            })
+                    except json.JSONDecodeError:
+                        daily_records = []
+
+                new_key = f"{disaster}_{','.join(sorted(location))}_{len(merged_news)}"
+                merged_news[new_key] = {
+                    "event": current_event,
+                    "region": row[8] or "未知",
+                    "cover": row[2] or "",
+                    "date": row[6] or "",
+                    "recent_update": row[7] or row[6] or "",
+                    "location": location,
+                    "overview": safe_process(row[11]),
+                    "daily_records": daily_records,
+                    "links": [news_item]
+                }
+
+            processed_events.add(current_event)
+
+        # 將字典轉換為列表並按日期排序
+        news_list = list(merged_news.values())
+        news_list.sort(key=lambda x: x["recent_update"], reverse=True)
 
         return JsonResponse(news_list, safe=False)
     except Exception as e:
