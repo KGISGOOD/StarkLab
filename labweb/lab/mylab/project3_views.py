@@ -101,6 +101,7 @@ ALLOWED_SOURCES = {
 
 def fetch_article_content(driver, sources_urls):
     results = {}
+    summaries = {}
     for source_name, url in sources_urls.items():
         if source_name not in ALLOWED_SOURCES:
             continue
@@ -113,7 +114,6 @@ def fetch_article_content(driver, sources_urls):
             
             content_selectors = {
                 'Newtalk新聞': 'div.articleBody.clearfix p',
-                # 'Yahoo奇摩新聞': 'div.caas-body p',
                 '經濟日報': 'section.article-body__editor p',
                 '自由時報': 'div.text p',
                 '中時新聞': 'div.article-body p'
@@ -123,13 +123,18 @@ def fetch_article_content(driver, sources_urls):
             paragraphs = driver.find_elements(By.CSS_SELECTOR, selector)
             content = '\n'.join([p.text.strip() for p in paragraphs if p.text.strip()])
             
+            # 提取摘要（取前100字）
+            summary = content[:100] if content else '未找到內容'
+            
             results[source_name] = content if content else '未找到內容'
+            summaries[source_name] = summary
             
         except Exception as e:
             print(f"抓取內容失敗: {e}")
             results[source_name] = '錯誤'
+            summaries[source_name] = '錯誤'
             
-    return results
+    return results, summaries
 
 def extract_image_url(driver, sources_urls):
     results = {}
@@ -255,7 +260,7 @@ def main():
         if os.path.exists(output_file):
             os.remove(output_file)
 
-        # X.AI 的 API Key 和模型名稱
+        # X.AI 的 API Key 和模��名稱
         xai_api_key =os.getenv("API_KEY") # 請填入你的 API 密鑰
         model_name = "grok-beta"
 
@@ -271,7 +276,7 @@ def main():
             sources_urls = {source_name: final_url}
 
             # 擷取內容和圖片
-            content_results = fetch_article_content(driver, sources_urls)
+            content_results, summary_results = fetch_article_content(driver, sources_urls)
             image_results = extract_image_url(driver, sources_urls)
 
             content = content_results.get(source_name, '未找到內容')
@@ -291,7 +296,7 @@ def main():
                 location_answer = chat_with_xai(question_location, xai_api_key, model_name, csv_summary)
                 disaster_answer = chat_with_xai(question_disaster, xai_api_key, model_name, csv_summary)
 
-                # 收集結果
+                # 收集���果
                 summaries.append(summary_answer)
                 locations.append(location_answer)
                 disasters.append(disaster_answer)
@@ -375,7 +380,7 @@ def main():
 
         for _, row in w_df.iterrows():
             cursor.execute(f'''
-            SELECT COUNT(*) FROM {table_name} WHERE title = ? AND link = ?
+            SELECT COUNT(*) FROM {table_name} WHERE event = ? AND link = ?
             ''', (row['標題'], row['連結']))
             exists = cursor.fetchone()[0]
             print(f"Checking existence for: {row['標題']} - {row['連結']}, Exists: {exists}")
@@ -548,6 +553,7 @@ def news_api(request):
                    recent_update, region, location, disaster, 
                    summary, daily_records, links 
             FROM news
+            ORDER BY date DESC
         """)
         news_data = cursor.fetchall()
         conn.close()
@@ -555,26 +561,109 @@ def news_api(request):
         def safe_process(value):
             return value.replace("\n", " ").replace("-", "").strip() if value else ""
 
+        def parse_location(location_str):
+            # 將位置字串轉換為列表
+            if not location_str:
+                return []
+            locations = [loc.strip() for loc in location_str.split(',')]
+            return list(filter(None, locations))
+
         news_list = []
         for row in news_data:
+            # 解析每日記錄
+            daily_records = []
+            if row[12]:  # daily_records
+                try:
+                    records = json.loads(row[12])
+                    for record in records:
+                        daily_records.append({
+                            "date": record.get("date", ""),
+                            "content": record.get("content", ""),
+                            "location": parse_location(record.get("location", ""))
+                        })
+                except json.JSONDecodeError:
+                    daily_records = []
+
+            # 解析新聞連結
+            news_links = []
+            if row[13]:  # links
+                try:
+                    links = json.loads(row[13])
+                    for link in links:
+                        if isinstance(link, dict):
+                            news_links.append({
+                                "source": link.get("source", ""),
+                                "url": link.get("url", ""),
+                                "title": link.get("title", ""),
+                                "publish_date": link.get("publish_date", ""),
+                                "location": parse_location(link.get("location", "")),
+                                "summary": link.get("summary", "")
+                            })
+                        elif isinstance(link, str):
+                            # 如果是簡單的URL字串，創建基本的連結對象
+                            news_links.append({
+                                "source": row[5] or "",  # 使用新聞來源
+                                "url": link,
+                                "title": row[1] or "",  # 使用事件名稱
+                                "publish_date": row[6] or "",  # 使用發布日期
+                                "location": parse_location(row[9] or ""),  # 使用位置
+                                "summary": safe_process(row[11] or "")  # 使用摘要
+                            })
+                except json.JSONDecodeError:
+                    news_links = []
+
             news_list.append({
-                'id': row[0],
                 'event': safe_process(row[1]),
-                'image': row[2] or "",
-                'link': row[3] or "",
-                'content': safe_process(row[4])[:50] + '...' if row[4] and len(row[4]) > 50 else safe_process(row[4]),
-                'source': row[5] or "",
-                'date': row[6] or "",
-                'recent_update': row[7] or "",
                 'region': row[8] or "未知",
-                'location': safe_process(row[9]),
-                'disaster': safe_process(row[10]),
-                'summary': safe_process(row[11]),
-                'daily_records': json.loads(row[12]) if row[12] else [],
-                'links': json.loads(row[13]) if row[13] else []
+                'cover': row[2] or "",  # image URL
+                'date': row[6] or "",
+                'recent_update': row[7] or row[6] or "",  # 如果沒有最新更新日期，使用發布日期
+                'location': parse_location(row[9]),
+                'overview': safe_process(row[11]),  # summary作為overview
+                'daily_records': daily_records,
+                'links': news_links
             })
 
         return JsonResponse(news_list, safe=False)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+# 新增更新每日記錄的函數
+@csrf_exempt
+def update_daily_records(request, news_id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            conn = sqlite3.connect('w.db')
+            cursor = conn.cursor()
+            
+            # 獲取現有記錄
+            cursor.execute("SELECT daily_records FROM news WHERE id = ?", (news_id,))
+            result = cursor.fetchone()
+            
+            if result:
+                current_records = json.loads(result[0]) if result[0] else []
+                # 添加新記錄
+                current_records.append({
+                    "date": data.get("date"),
+                    "content": data.get("content"),
+                    "location": data.get("location", [])
+                })
+                
+                # 更新資料庫
+                cursor.execute(
+                    "UPDATE news SET daily_records = ?, recent_update = ? WHERE id = ?",
+                    (json.dumps(current_records), data.get("date"), news_id)
+                )
+                conn.commit()
+                conn.close()
+                
+                return JsonResponse({"message": "Daily record updated successfully"})
+            else:
+                return JsonResponse({"error": "News not found"}, status=404)
+                
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+    
+    return JsonResponse({"error": "Method not allowed"}, status=405)
     

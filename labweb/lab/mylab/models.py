@@ -11,15 +11,13 @@ class Stock(models.Model):
 
 
 class News(models.Model):
-    # 基本新聞資訊
-    event = models.CharField(max_length=255)  # 事件名稱，例如"北加州地震"
+    event = models.CharField(max_length=255)  # 事件名稱
     image = models.URLField(max_length=500, blank=True, null=True)  # 事件圖片URL
     link = models.URLField(max_length=500)  # 相關新聞連結
     content = models.TextField()  # 新聞內容
     source = models.CharField(max_length=100)  # 新聞來源
-    date = models.DateField()  # 事件日期，格式：YYYY-MM-DD
+    date = models.DateField()  # 事件日期
     recent_update = models.DateField(blank=True, null=True)  # 最新更新日期
-    # 地理與分類資訊
     region = models.CharField(
         max_length=10,
         choices=[('國內', '國內'), ('國外', '國外')],
@@ -36,12 +34,11 @@ class News(models.Model):
             ('山體滑坡', '山體滑坡'), ('未知', '未知')
         ],
         default='未知'
-    )  # 災害類型分類
-    # 事件摘要與每日進展
+    )  # 災害類型
     summary = models.TextField(blank=True, null=True)  # 事件摘要
     daily_records = models.JSONField(blank=True, null=True)  # 每日進展記錄
-    # 新聞連結（相關新聞）
     links = models.JSONField(blank=True, null=True)  # 新聞連結資料
+
     class Meta:
         db_table = "news"  # 指定資料表名稱為 "news"
 
