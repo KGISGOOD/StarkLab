@@ -15,6 +15,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime, timedelta
+import json
 
 def fetch_news(url):
     try:
@@ -172,7 +173,7 @@ def load_and_summarize_csv(file_path):
         if "內文" in data.columns:
             return data  # 成功讀取時返回資料
         else:
-            raise ValueError("CSV 檔案中缺少必要的欄位：內文。")  # 若缺少必要欄位則拋出錯誤
+            raise ValueError("CSV 檔案中缺少必要的欄位：內文")  # 若缺少必要欄位則拋出錯誤
     except Exception as e:
         return str(e)  # 返回錯誤訊息
 
@@ -214,7 +215,7 @@ def chat_with_xai(message, api_key, model_name, csv_summary):
 def main():
     start_time = time.time()
     
-    # Google News 搜尋 URL
+    # Google News 搜�� URL
     urls = [
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
@@ -349,16 +350,19 @@ def main():
         cursor.execute(f'''
         CREATE TABLE IF NOT EXISTS {table_name} (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT,
-            link TEXT,
-            image TEXT,
-            content TEXT,
-            source TEXT,
-            date TEXT,
-            region TEXT,
-            summary TEXT,
-            location TEXT,
-            disaster TEXT
+            event TEXT,                  -- 事件名稱
+            image TEXT,                  -- 事件圖片URL
+            link TEXT,                   -- 相關新聞連結
+            content TEXT,                -- 新聞內容
+            source TEXT,                 -- 新聞來源
+            date DATE,                   -- 事件日期
+            recent_update DATE,          -- 最新更新日期
+            region TEXT,                 -- 地理範圍
+            location TEXT,               -- 地點
+            disaster TEXT,               -- 災害類型
+            summary TEXT,                -- 事件摘要
+            daily_records TEXT,          -- 每日進展記錄 (JSON)
+            links TEXT                   -- 新聞連結資料 (JSON)
         )
         ''')
 
@@ -378,9 +382,26 @@ def main():
 
             if exists == 0:
                 cursor.execute(f'''
-                INSERT INTO {table_name} (title, link, content, source, date, image, region, summary, location, disaster)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ''', (row['標題'], row['連結'], row['內文'], row['來源'], row['時間'].strftime('%Y-%m-%d'), row['圖片'], row['地區'], row['摘要'], row['地點'], row['災害']))
+                INSERT INTO {table_name} (
+                    event, image, link, content, source, date, recent_update,
+                    region, location, disaster, summary, daily_records, links
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    row['標題'],                # event
+                    row['圖片'],                # image
+                    row['連結'],                # link
+                    row['內文'],                # content
+                    row['來源'],                # source
+                    row['時間'].strftime('%Y-%m-%d'),  # date
+                    row['時間'].strftime('%Y-%m-%d'),  # recent_update (使用相同日期)
+                    row['地區'],                # region
+                    row['地點'],                # location
+                    row['災害'],                # disaster
+                    row['摘要'],                # summary
+                    json.dumps([]),             # daily_records (空陣列)
+                    json.dumps([row['連結']])   # links (包含原始連結)
+                ))
                 print(f"Inserted: {row['標題']}")
 
         conn.commit()
@@ -440,7 +461,7 @@ from django.http import JsonResponse
 
 def update_news(request):
     main()  # 執行爬取新聞的函數
-    return JsonResponse({'message': '新聞更新成功！'})
+    return JsonResponse({'message': '聞更新成功！'})
 
 
 # views.py
@@ -452,43 +473,39 @@ from django.views.decorators.csrf import csrf_exempt
 
 # 處理新聞列表及搜尋功能
 def news_view(request):
-    # 取得搜尋關鍵字
     query = request.GET.get('search', '')
 
-    # 連接到 SQLite 資料庫
     conn = sqlite3.connect('w.db')
     cursor = conn.cursor()
 
-    # 查詢新聞資料，如果有搜尋關鍵字，則過濾標題中包含該關鍵字的新聞
     if query:
-        cursor.execute("SELECT * FROM news WHERE title LIKE ?", ('%' + query + '%',))
+        cursor.execute("SELECT * FROM news WHERE event LIKE ?", ('%' + query + '%',))
     else:
         cursor.execute("SELECT * FROM news")
 
-    # 獲取所有結果
     news_data = cursor.fetchall()
-
-    # 關閉資料庫連接
     conn.close()
 
-    # 將結果轉換為字典列表
     news_list = []
     for row in news_data:
+        # 安全地處理可能為 None 的值
+        def safe_process(value):
+            return value.replace("\n", " ").replace("-", "").strip() if value else ""
+
         news_list.append({
             'id': row[0],
-            'title': row[1],
-            'link': row[2],
-            'content': row[3],
-            'source': row[4],
-            'date': row[5],
-            'image': row[6],
-            'region': row[7],
-            "summary": row[8].replace("\n", " ").replace("-", "").strip(),
-            "location": row[9].replace("\n", " ").replace("-", "").strip(),
-            "disaster": row[10].replace("\n", " ").replace("-", "").strip()
+            'event': safe_process(row[1]),
+            'image': row[2] or "",
+            'link': row[3] or "",
+            'content': safe_process(row[4])[:50] + '...' if row[4] and len(row[4]) > 50 else safe_process(row[4]),
+            'source': row[5] or "",
+            'date': row[6] or "",
+            'region': row[8] or "未知",
+            'summary': safe_process(row[11]),
+            'location': safe_process(row[9]),
+            'disaster': safe_process(row[10])
         })
 
-    # 將新聞列表傳遞給模板
     return render(request, 'news.html', {'news_list': news_list})
 
 
@@ -523,32 +540,38 @@ from django.views.decorators.http import require_GET
 @require_GET
 def news_api(request):
     try:
-        # 連接到 SQLite 資料庫
         conn = sqlite3.connect('w.db')
         cursor = conn.cursor()
-
         
-        cursor.execute("SELECT id, title, link, content, source, date, image, region, summary, location, disaster FROM news")        
+        cursor.execute("""
+            SELECT id, event, image, link, content, source, date, 
+                   recent_update, region, location, disaster, 
+                   summary, daily_records, links 
+            FROM news
+        """)
         news_data = cursor.fetchall()
-
-        # 關閉資料庫連接
         conn.close()
 
-        # 將結果轉換為字典列表
+        def safe_process(value):
+            return value.replace("\n", " ").replace("-", "").strip() if value else ""
+
         news_list = []
         for row in news_data:
             news_list.append({
                 'id': row[0],
-                'title': row[1],
-                'link': row[2],
-                'content': row[3][:50] + '...' if len(row[3]) > 50 else row[3],  
-                'source': row[4],
-                'date': row[5],
-                'image': row[6],
-                'region': row[7],
-                "summary": row[8].replace("\n", " ").replace("-", "").strip(),
-                "location": row[9].replace("\n", " ").replace("-", "").strip(),
-                "disaster": row[10].replace("\n", " ").replace("-", "").strip()
+                'event': safe_process(row[1]),
+                'image': row[2] or "",
+                'link': row[3] or "",
+                'content': safe_process(row[4])[:50] + '...' if row[4] and len(row[4]) > 50 else safe_process(row[4]),
+                'source': row[5] or "",
+                'date': row[6] or "",
+                'recent_update': row[7] or "",
+                'region': row[8] or "未知",
+                'location': safe_process(row[9]),
+                'disaster': safe_process(row[10]),
+                'summary': safe_process(row[11]),
+                'daily_records': json.loads(row[12]) if row[12] else [],
+                'links': json.loads(row[13]) if row[13] else []
             })
 
         return JsonResponse(news_list, safe=False)
