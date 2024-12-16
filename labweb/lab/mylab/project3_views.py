@@ -232,19 +232,19 @@ def main():
     
     # Google News 搜 URL
     urls = [
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
     ]
     
     # 關鍵字設定
@@ -577,80 +577,145 @@ def news_api(request):
             locations = [loc.strip() for loc in location_str.split(',')]
             return list(filter(None, locations))
 
-        def is_same_event(event1, event2):
+        def is_same_event(event1_data, event2_data):
+            """
+            判斷兩個事件是否為同一事件
+            event1_data 和 event2_data 應該包含事件的標題、地點、災害類型等信息
+            """
+            # 提取事件1的信息
+            event1_title = event1_data.get('title', '')
+            event1_location = set(event1_data.get('location', []))
+            event1_disaster = event1_data.get('disaster', '')
+            event1_date = event1_data.get('date', '')
+
+            # 提取事件2的信息
+            event2_title = event2_data.get('title', '')
+            event2_location = set(event2_data.get('location', []))
+            event2_disaster = event2_data.get('disaster', '')
+            event2_date = event2_data.get('date', '')
+
+            # 1. 檢查地點是否有重疊
+            location_overlap = bool(event1_location & event2_location)
+            
+            # 2. 檢查災害類型是否相同
+            disaster_match = event1_disaster == event2_disaster
+            
+            # 3. 檢查日期是否接近（例如在7天內）
+            try:
+                date1 = datetime.strptime(event1_date, '%Y-%m-%d')
+                date2 = datetime.strptime(event2_date, '%Y-%m-%d')
+                date_diff = abs((date1 - date2).days)
+                date_close = date_diff <= 7
+            except:
+                date_close = True  # 如果日期解析失敗，默認為True
+
+            # 4. 使用 X.AI 進行標題相似度判斷
             prompt = f"""
             請判斷以下兩則新聞是否屬於同一事件，只需回答 true 或 false：
-            新聞1：{event1}
-            新聞2：{event2}
+            新聞1標題：{event1_title}
+            地點：{', '.join(event1_location)}
+            災害類型：{event1_disaster}
+            日期：{event1_date}
+
+            新聞2標題：{event2_title}
+            地點：{', '.join(event2_location)}
+            災害類型：{event2_disaster}
+            日期：{event2_date}
             """
-            response = chat_with_xai(prompt, xai_api_key, model_name, "")
-            return 'true' in response.lower()
+            ai_response = chat_with_xai(prompt, xai_api_key, model_name, "")
+            ai_match = 'true' in ai_response.lower()
+
+            # 綜合判斷
+            # 如果地點重疊且災害類型相同，很可能是同一事件
+            if location_overlap and disaster_match and date_close:
+                return True
+            # 如果 AI 判斷為同一事件，且滿足部分條件，也認為是同一事件
+            elif ai_match and (location_overlap or disaster_match) and date_close:
+                return True
+            return False
 
         # 用於存儲合併後的新聞
         merged_news = {}
         processed_events = set()
 
         for row in news_data:
-            if row[1] in processed_events:  # 如果新聞標題已經處理過，跳過
+            if row[1] in processed_events:
                 continue
 
-            current_event = row[1]
-            location = parse_location(row[9])
-            disaster = safe_process(row[10])
-            current_date = row[7] or row[6] or ""
-            
-            # 創建新聞項目
-            news_item = {
-                "source": row[5] or "",
-                "url": row[3] or "",
-                "title": row[1] or "",
-                "publish_date": current_date,
-                "location": location,
-                "summary": safe_process(row[11] or "")
-            }
-
-            # 創建每日記錄項目（格式與 news_item 類似）
-            daily_record = {
-                "date": current_date,
-                "content": safe_process(row[11] or ""),
-                "location": location
+            current_event = {
+                'title': row[1],
+                'location': parse_location(row[9]),
+                'disaster': safe_process(row[10]),
+                'date': row[6] or row[7] or ""
             }
 
             # 尋找相關事件
             event_key = None
             for existing_key in merged_news.keys():
-                if is_same_event(current_event, merged_news[existing_key]["event"]):
+                existing_event = {
+                    'title': merged_news[existing_key]["event"],
+                    'location': merged_news[existing_key]["location"],
+                    'disaster': safe_process(row[10]),  # 假設災害類型存儲在相同位置
+                    'date': merged_news[existing_key]["date"]
+                }
+                if is_same_event(current_event, existing_event):
                     event_key = existing_key
                     break
 
             if event_key:
                 # 將新聞添加到現有事件
-                merged_news[event_key]["links"].append(news_item)
+                merged_news[event_key]["links"].append({
+                    "source": row[5] or "",
+                    "url": row[3] or "",
+                    "title": row[1] or "",
+                    "publish_date": row[6] or row[7] or "",
+                    "location": parse_location(row[9]),
+                    "summary": safe_process(row[11] or "")
+                })
                 
                 # 更新最近更新日期並添加每日記錄
-                if current_date > merged_news[event_key]["recent_update"]:
-                    merged_news[event_key]["recent_update"] = current_date
-                    merged_news[event_key]["daily_records"].append(daily_record)
+                if row[6] or row[7] or "" > merged_news[event_key]["recent_update"]:
+                    merged_news[event_key]["recent_update"] = row[6] or row[7] or ""
+                    merged_news[event_key]["daily_records"].append({
+                        "date": row[6] or row[7] or "",
+                        "content": safe_process(row[11] or ""),
+                        "location": parse_location(row[9])
+                    })
                 
                 # 如果當前新聞有圖片且主事件沒有圖片，則更新圖片
                 if row[2] and not merged_news[event_key]["cover"]:
                     merged_news[event_key]["cover"] = row[2]
             else:
                 # 創建新的事件
-                new_key = f"{disaster}_{','.join(sorted(location))}_{len(merged_news)}"
+                new_key = f"{safe_process(row[10])}_{','.join(sorted(parse_location(row[9])))}_{len(merged_news)}"
                 merged_news[new_key] = {
-                    "event": current_event,
+                    "event": row[1] or "",
                     "region": row[8] or "未知",
                     "cover": row[2] or "",
-                    "date": current_date,
-                    "recent_update": current_date,
-                    "location": location,
-                    "overview": safe_process(row[11]),
-                    "daily_records": [daily_record],  # 初始化包含第一條記錄
-                    "links": [news_item]
+                    "date": row[6] or row[7] or "",
+                    "recent_update": row[6] or row[7] or "",
+                    "location": parse_location(row[9]),
+                    "overview": safe_process(row[11] or ""),
+                    "daily_records": [
+                        {
+                            "date": row[6] or row[7] or "",
+                            "content": safe_process(row[11] or ""),
+                            "location": parse_location(row[9])
+                        }
+                    ],  # 初始化包含第一條記錄
+                    "links": [
+                        {
+                            "source": row[5] or "",
+                            "url": row[3] or "",
+                            "title": row[1] or "",
+                            "publish_date": row[6] or row[7] or "",
+                            "location": parse_location(row[9]),
+                            "summary": safe_process(row[11] or "")
+                        }
+                    ]
                 }
 
-            processed_events.add(current_event)
+            processed_events.add(row[1])
 
         # 將字典轉換為列表並按日期排序
         news_list = list(merged_news.values())
