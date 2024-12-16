@@ -578,7 +578,6 @@ def news_api(request):
             return list(filter(None, locations))
 
         def is_same_event(event1, event2):
-            # 使用 X.AI 判斷兩則新聞是否屬於同一事件
             prompt = f"""
             請判斷以下兩則新聞是否屬於同一事件，只需回答 true 或 false：
             新聞1：{event1}
@@ -598,14 +597,23 @@ def news_api(request):
             current_event = row[1]
             location = parse_location(row[9])
             disaster = safe_process(row[10])
+            current_date = row[7] or row[6] or ""
             
+            # 創建新聞項目
             news_item = {
                 "source": row[5] or "",
                 "url": row[3] or "",
                 "title": row[1] or "",
-                "publish_date": row[6] or "",
+                "publish_date": current_date,
                 "location": location,
                 "summary": safe_process(row[11] or "")
+            }
+
+            # 創建每日記錄項目（格式與 news_item 類似）
+            daily_record = {
+                "date": current_date,
+                "content": safe_process(row[11] or ""),
+                "location": location
             }
 
             # 尋找相關事件
@@ -619,39 +627,26 @@ def news_api(request):
                 # 將新聞添加到現有事件
                 merged_news[event_key]["links"].append(news_item)
                 
-                # 更新最近更新日期
-                current_date = row[7] or row[6] or ""
+                # 更新最近更新日期並添加每日記錄
                 if current_date > merged_news[event_key]["recent_update"]:
                     merged_news[event_key]["recent_update"] = current_date
+                    merged_news[event_key]["daily_records"].append(daily_record)
                 
                 # 如果當前新聞有圖片且主事件沒有圖片，則更新圖片
                 if row[2] and not merged_news[event_key]["cover"]:
                     merged_news[event_key]["cover"] = row[2]
             else:
                 # 創建新的事件
-                daily_records = []
-                if row[12]:
-                    try:
-                        records = json.loads(row[12])
-                        for record in records:
-                            daily_records.append({
-                                "date": record.get("date", ""),
-                                "content": record.get("content", ""),
-                                "location": parse_location(record.get("location", ""))
-                            })
-                    except json.JSONDecodeError:
-                        daily_records = []
-
                 new_key = f"{disaster}_{','.join(sorted(location))}_{len(merged_news)}"
                 merged_news[new_key] = {
                     "event": current_event,
                     "region": row[8] or "未知",
                     "cover": row[2] or "",
-                    "date": row[6] or "",
-                    "recent_update": row[7] or row[6] or "",
+                    "date": current_date,
+                    "recent_update": current_date,
                     "location": location,
                     "overview": safe_process(row[11]),
-                    "daily_records": daily_records,
+                    "daily_records": [daily_record],  # 初始化包含第一條記錄
                     "links": [news_item]
                 }
 
