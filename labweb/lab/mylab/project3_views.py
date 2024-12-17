@@ -28,6 +28,22 @@ ALLOWED_SOURCES = {
     '中時新聞'
 }
 
+# 定義允許的自然災害關鍵字
+DISASTER_KEYWORDS = {
+    '大雨', '豪雨', '暴雨', '淹水', '洪水', '水災',
+    '颱風', '颶風', '風災',
+    '地震', '海嘯',
+    '乾旱', '旱災'
+}
+
+# 關鍵字設定 - 用於判斷國內新聞
+domestic_keywords = [
+    '台灣', '台北', '新北', '基隆', '新竹市', '桃園', '新竹縣', '宜蘭', 
+    '台中', '苗栗', '彰化', '南投', '雲林', '高雄', '台南', '嘉義', 
+    '屏東', '澎湖', '花東', '花蓮', '台9線', '金門', '馬祖', '綠島', '蘭嶼',
+    '臺灣', '台北', '臺中', '臺南', '臺9縣', '全台', '全臺'
+]
+
 def fetch_news(url):
     try:
         response = requests.get(url)
@@ -226,33 +242,61 @@ def chat_with_xai(prompt, api_key, model_name, context=""):
         print(f"X.AI API 錯誤: {str(e)}")
         return "false"  # 發生錯誤時預設返回 false
 
+def is_disaster_news(title, content):
+    """
+    使用 X.AI 判斷新聞是否主要報導自然災害事件
+    """
+    prompt = f"""
+    請判斷以下新聞是否主要在報導自然災害事件本身，只需回答 true 或 false：
+    
+    允許的災害類型：大雨、豪雨、暴雨、淹水、洪水、水災、颱風、颶風、風災、地震、海嘯、乾旱、旱災
+
+    新聞標題：{title}
+    新聞內容：{content[:500]}
+
+    判斷標準：
+    1. 新聞必須主要描述災害事件本身，包括：
+       - 災害的發生過程
+       - 災害造成的直接影響和損失
+       - 災害現場的情況描述
+       
+    2. 必須排除以下類型的新聞：
+       - 災後援助或捐贈活動的報導
+       - 國際救援行動的新聞
+       - 災後重建相關報導
+       - 防災政策討論
+       - 氣候變遷議題
+       - 歷史災害回顧
+       - 以災害為背景但主要報導其他事件的新聞
+       
+    3. 特別注意：
+       - 如果新聞主要在報導救援、捐助、外交等活動，即使提到災害也應該回答 false
+       - 如果新聞只是用災害作為背景，主要報導其他事件，應該回答 false
+       - 新聞的核心主題必須是災害事件本身才回答 true
+    """
+    
+    response = chat_with_xai(prompt, xai_api_key, model_name, "")
+    return 'true' in response.lower()
+
 # 主程式
 def main():
     start_time = time.time()
     
     # Google News 搜 URL
     urls = [
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
-    ]
-    
-    # 關鍵字設定
-    domestic_keywords = [
-        '台灣', '台北', '新北', '基隆', '新竹市', '桃園', '新竹縣', '宜蘭', 
-        '台中', '苗栗', '彰化', '南投', '雲林', '高雄', '台南', '嘉義', 
-        '屏東', '澎湖', '花東', '花蓮', '台9線', '金門', '馬祖', '綠島', '蘭嶼',
-        '臺灣', '台北', '臺中', '臺南', '臺9縣', '全台', '全臺'
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
     ]
     
     all_news_items = []
@@ -292,7 +336,25 @@ def main():
             content = content_results.get(source_name, '未找到內容')
             image_url = image_results.get(source_name, 'null')
 
-            region = '國內' if any(keyword in item['標題'] or keyword in content for keyword in domestic_keywords) else '國外'
+            # 提問並取得摘要、地點與災害
+            question_summary = f"請簡要總結以下內文，限20字內：{content}"
+            question_location = f"請從以下內文中提取災害發生的國家和地點，只需顯示國家和地點即可，限10字內：{content}"
+            question_disaster = f"請從以下內文中提取所有災害，只需顯示災害即可，若有相同的災害則存一個即可，限10字內：{content}"
+
+            summary_answer = chat_with_xai(question_summary, xai_api_key, model_name, content)
+            location_answer = chat_with_xai(question_location, xai_api_key, model_name, content)
+            disaster_answer = chat_with_xai(question_disaster, xai_api_key, model_name, content)
+
+            # 使用災害新聞判斷
+            is_disaster = is_disaster_news(item['標題'], content)
+
+            if not is_disaster:
+                print(f"非災害相關新聞，跳過: {item['標題']}")
+                continue
+
+            # 根據地點判斷是否為國內新聞
+            is_domestic = any(keyword in location_answer for keyword in domestic_keywords)
+            region = '國內' if is_domestic else '國外'
 
             if content != '未找到內容':
                 csv_summary = content
@@ -323,20 +385,6 @@ def main():
                     '地點': location_answer,
                     '災害': disaster_answer
                 }
-
-
-                skip_keywords = ['票', '戰爭', 'GDP','設計','精神','中國抗議','中鋼','聯合國','友','政治','業者','獎','疫','專家','戰區','價']
-                
-                desired_keywords = ['大雨', '豪雨', '暴雨', '淹水', '洪水', '水災', 
-                                    '颱風', '颶風', '風災', '海嘯', '地震', '乾旱', '旱災']
-
-                if any(keyword in result['標題'] or keyword in result['內文'] for keyword in skip_keywords):
-                    print(f"跳過包含指定關鍵字的文章: {result['標題']}")
-                    continue
-
-                if not any(keyword in result['標題'] or keyword in result['內文'] for keyword in desired_keywords):
-                    print(f"文章不包含所需的關鍵字: {result['標題']}")
-                    continue
 
                 # 儲存資料到 CSV
                 output_df = pd.DataFrame([result])
@@ -574,65 +622,11 @@ def news_api(request):
         def parse_location(location_str):
             if not location_str:
                 return []
+            # 確保 location_str 是字符串
+            if isinstance(location_str, (list, dict)):
+                location_str = json.dumps(location_str, ensure_ascii=False)
             locations = [loc.strip() for loc in location_str.split(',')]
             return list(filter(None, locations))
-
-        def is_same_event(event1_data, event2_data):
-            """
-            判斷兩個事件是否為同一事件
-            event1_data 和 event2_data 應該包含事件的標題、地點、災害類型等信息
-            """
-            # 提取事件1的信息
-            event1_title = event1_data.get('title', '')
-            event1_location = set(event1_data.get('location', []))
-            event1_disaster = event1_data.get('disaster', '')
-            event1_date = event1_data.get('date', '')
-
-            # 提取事件2的信息
-            event2_title = event2_data.get('title', '')
-            event2_location = set(event2_data.get('location', []))
-            event2_disaster = event2_data.get('disaster', '')
-            event2_date = event2_data.get('date', '')
-
-            # 1. 檢查地點是否有重疊
-            location_overlap = bool(event1_location & event2_location)
-            
-            # 2. 檢查災害類型是否相同
-            disaster_match = event1_disaster == event2_disaster
-            
-            # 3. 檢查日期是否接近（例如在7天內）
-            try:
-                date1 = datetime.strptime(event1_date, '%Y-%m-%d')
-                date2 = datetime.strptime(event2_date, '%Y-%m-%d')
-                date_diff = abs((date1 - date2).days)
-                date_close = date_diff <= 7
-            except:
-                date_close = True  # 如果日期解析失敗，默認為True
-
-            # 4. 使用 X.AI 進行標題相似度判斷
-            prompt = f"""
-            請判斷以下兩則新聞是否屬於同一事件，只需回答 true 或 false：
-            新聞1標題：{event1_title}
-            地點：{', '.join(event1_location)}
-            災害類型：{event1_disaster}
-            日期：{event1_date}
-
-            新聞2標題：{event2_title}
-            地點：{', '.join(event2_location)}
-            災害類型：{event2_disaster}
-            日期：{event2_date}
-            """
-            ai_response = chat_with_xai(prompt, xai_api_key, model_name, "")
-            ai_match = 'true' in ai_response.lower()
-
-            # 綜合判斷
-            # 如果地點重疊且災害類型相同，很可能是同一事件
-            if location_overlap and disaster_match and date_close:
-                return True
-            # 如果 AI 判斷為同一事件，且滿足部分條件，也認為是同一事件
-            elif ai_match and (location_overlap or disaster_match) and date_close:
-                return True
-            return False
 
         # 用於存儲合併後的新聞
         merged_news = {}
@@ -642,44 +636,46 @@ def news_api(request):
             if row[1] in processed_events:
                 continue
 
-            current_event = {
-                'title': row[1],
-                'location': parse_location(row[9]),
-                'disaster': safe_process(row[10]),
-                'date': row[6] or row[7] or ""
+            current_event = row[1]
+            location = parse_location(row[9])  # 使用數據庫中的 location 欄位
+            disaster = safe_process(row[10])
+            
+            # 根據 location 判斷是否為國內新聞
+            is_domestic = any(keyword in ','.join(location) for keyword in domestic_keywords)
+            region = '國內' if is_domestic else '國外'
+
+            news_item = {
+                "source": row[5] or "",
+                "url": row[3] or "",
+                "title": row[1] or "",
+                "publish_date": row[6] or "",
+                "location": location,
+                "summary": safe_process(row[11] or "")
             }
 
             # 尋找相關事件
             event_key = None
             for existing_key in merged_news.keys():
-                existing_event = {
-                    'title': merged_news[existing_key]["event"],
-                    'location': merged_news[existing_key]["location"],
-                    'disaster': safe_process(row[10]),  # 假設災害類型存儲在相同位置
-                    'date': merged_news[existing_key]["date"]
-                }
-                if is_same_event(current_event, existing_event):
+                if (disaster in merged_news[existing_key]["event"] or 
+                    disaster in merged_news[existing_key]["overview"]) and \
+                   any(loc in merged_news[existing_key]["event"] or 
+                       loc in merged_news[existing_key]["overview"] 
+                       for loc in location):
                     event_key = existing_key
                     break
 
             if event_key:
                 # 將新聞添加到現有事件
-                merged_news[event_key]["links"].append({
-                    "source": row[5] or "",
-                    "url": row[3] or "",
-                    "title": row[1] or "",
-                    "publish_date": row[6] or row[7] or "",
-                    "location": parse_location(row[9]),
-                    "summary": safe_process(row[11] or "")
-                })
+                merged_news[event_key]["links"].append(news_item)
                 
                 # 更新最近更新日期並添加每日記錄
-                if row[6] or row[7] or "" > merged_news[event_key]["recent_update"]:
-                    merged_news[event_key]["recent_update"] = row[6] or row[7] or ""
+                current_date = row[7] or row[6] or ""
+                if current_date > merged_news[event_key]["recent_update"]:
+                    merged_news[event_key]["recent_update"] = current_date
                     merged_news[event_key]["daily_records"].append({
-                        "date": row[6] or row[7] or "",
+                        "date": current_date,
                         "content": safe_process(row[11] or ""),
-                        "location": parse_location(row[9])
+                        "location": location
                     })
                 
                 # 如果當前新聞有圖片且主事件沒有圖片，則更新圖片
@@ -687,35 +683,24 @@ def news_api(request):
                     merged_news[event_key]["cover"] = row[2]
             else:
                 # 創建新的事件
-                new_key = f"{safe_process(row[10])}_{','.join(sorted(parse_location(row[9])))}_{len(merged_news)}"
+                new_key = f"{disaster}_{','.join(sorted(location))}_{len(merged_news)}"
                 merged_news[new_key] = {
-                    "event": row[1] or "",
-                    "region": row[8] or "未知",
+                    "event": current_event,
+                    "region": region,  # 使用根據 location 判斷的結果
                     "cover": row[2] or "",
-                    "date": row[6] or row[7] or "",
-                    "recent_update": row[6] or row[7] or "",
-                    "location": parse_location(row[9]),
-                    "overview": safe_process(row[11] or ""),
-                    "daily_records": [
-                        {
-                            "date": row[6] or row[7] or "",
-                            "content": safe_process(row[11] or ""),
-                            "location": parse_location(row[9])
-                        }
-                    ],  # 初始化包含第一條記錄
-                    "links": [
-                        {
-                            "source": row[5] or "",
-                            "url": row[3] or "",
-                            "title": row[1] or "",
-                            "publish_date": row[6] or row[7] or "",
-                            "location": parse_location(row[9]),
-                            "summary": safe_process(row[11] or "")
-                        }
-                    ]
+                    "date": row[6] or "",
+                    "recent_update": row[7] or row[6] or "",
+                    "location": location,
+                    "overview": safe_process(row[11]),
+                    "daily_records": [{
+                        "date": row[7] or row[6] or "",
+                        "content": safe_process(row[11] or ""),
+                        "location": location
+                    }],
+                    "links": [news_item]
                 }
 
-            processed_events.add(row[1])
+            processed_events.add(current_event)
 
         # 將字典轉換為列表並按日期排序
         news_list = list(merged_news.values())
