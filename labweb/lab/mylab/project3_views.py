@@ -284,19 +284,19 @@ def main():
     
     # Google News 搜 URL
     urls = [
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
     ]
     
     all_news_items = []
@@ -622,13 +622,11 @@ def news_api(request):
         def parse_location(location_str):
             if not location_str:
                 return []
-            # 確保 location_str 是字符串
             if isinstance(location_str, (list, dict)):
                 location_str = json.dumps(location_str, ensure_ascii=False)
             locations = [loc.strip() for loc in location_str.split(',')]
             return list(filter(None, locations))
 
-        # 用於存儲合併後的新聞
         merged_news = {}
         processed_events = set()
 
@@ -638,33 +636,50 @@ def news_api(request):
 
             current_event = row[1]
             location = parse_location(row[9])
-            disaster = safe_process(row[10])
             
-            # 處理 cover 欄位，如果為空則設為 "null"
-            cover = row[2] if row[2] and row[2].strip() else "null"
-            
-            is_domestic = any(keyword in ','.join(location) for keyword in domestic_keywords)
-            region = '國內' if is_domestic else '國外'
-
-            news_item = {
-                "source": row[5] or "",
-                "url": row[3] or "",
-                "title": row[1] or "",
-                "publish_date": row[6] or "",
-                "location": location,
-                "summary": safe_process(row[11] or "")
-            }
+            # 處理 cover 欄位
+            cover = "null"
+            if row[2] and isinstance(row[2], str) and row[2].strip():
+                cover = row[2]
 
             # 尋找相關事件
             event_key = None
             for existing_key in merged_news.keys():
-                if (disaster in merged_news[existing_key]["event"] or 
-                    disaster in merged_news[existing_key]["overview"]) and \
-                   any(loc in merged_news[existing_key]["event"] or 
-                       loc in merged_news[existing_key]["overview"] 
-                       for loc in location):
+                # 使用 X.AI 判斷是否為同一事件
+                prompt = f"""
+                請判斷以下兩則新聞是否報導同一個災害事件，只需回答 true 或 false：
+
+                新聞1：
+                標題：{current_event}
+                地點：{', '.join(location)}
+                日期：{row[6] or row[7] or ""}
+
+                新聞2：
+                標題：{merged_news[existing_key]["event"]}
+                地點：{', '.join(merged_news[existing_key]["location"])}
+                日期：{merged_news[existing_key]["date"]}
+
+                判斷標準：
+                1. 是否為同一災害（地震、颱風等）
+                2. 是否發生在相同或鄰近地區
+                3. 是否在3天內發生
+                4. 如果是地震，同一地區的餘震算同一事件
+                5. 如果是颱風，影響相同地區算同一事件
+                """
+                
+                response = chat_with_xai(prompt, xai_api_key, model_name, "")
+                if 'true' in response.lower():
                     event_key = existing_key
                     break
+
+            news_item = {
+                "source": row[5] or "",
+                "url": row[3] or "",
+                "title": current_event,
+                "publish_date": row[6] or "",
+                "location": location,
+                "summary": safe_process(row[11] or "")
+            }
 
             if event_key:
                 merged_news[event_key]["links"].append(news_item)
@@ -678,15 +693,14 @@ def news_api(request):
                         "location": location
                     })
                 
-                # 修改 cover 的更新邏輯
                 if cover != "null" and merged_news[event_key]["cover"] == "null":
                     merged_news[event_key]["cover"] = cover
             else:
-                new_key = f"{disaster}_{','.join(sorted(location))}_{len(merged_news)}"
+                new_key = f"{current_event}_{len(merged_news)}"
                 merged_news[new_key] = {
                     "event": current_event,
-                    "region": region,
-                    "cover": cover,  # 使用處理過的 cover 值
+                    "region": '國內' if any(keyword in ','.join(location) for keyword in domestic_keywords) else '國外',
+                    "cover": cover,
                     "date": row[6] or "",
                     "recent_update": row[7] or row[6] or "",
                     "location": location,
@@ -701,7 +715,6 @@ def news_api(request):
 
             processed_events.add(current_event)
 
-        # 將字典轉換為列表並按日期排序
         news_list = list(merged_news.values())
         news_list.sort(key=lambda x: x["recent_update"], reverse=True)
 
