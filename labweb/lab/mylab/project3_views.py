@@ -219,14 +219,46 @@ def chat_with_xai(prompt, api_key, model_name, context=""):
         }
 
         messages = [
-            {"role": "system", "content": "你是一個新聞分析助手，專門判斷新聞是否屬於同一事件。"},
+            {"role": "system", "content": """
+            你是一位極其精確的關鍵字判斷師，專門負責判斷新聞文本是否符合災害新聞的標準。
+            你的工作非常重要，必須嚴格按照給定的判斷標準進行評估。
+            每次評估都需要完全符合以下條件：
+            
+            ### 標準
+            1. **檢查是否包含以下災害關鍵字**：
+               - 大雨、豪雨、暴雨
+               - 淹水、洪水、水災
+               - 颱風、颶風、風災
+               - 地震、海嘯
+               - 乾旱、旱災
+
+            2. **判斷新聞重點是否滿足以下條件之一**：
+               a. 災害正在發生或即將發生。
+               b. 描述災害影響範圍和程度。
+               c. 提及災害造成的損失或現場狀況。
+               d. 發布災害警報或預警。
+
+            3. **排除以下內容**：
+               a. 氣象預測（如「大雨特報」「冷氣團來襲」）。
+               b. 災後救援或重建計畫。
+               c. 歷史災害回顧。
+               d. 氣候變遷討論。
+
+            ### 補充說明
+            - 必須同時符合關鍵字與新聞重點的要求，才能判定為災害相關新聞。
+            - 如符合排除條件，則回答 false。
+            - 你不僅需要回答 true 或 false，還需要在內部確認每個關鍵字和判斷邏輯是否準確。 
+            - 特別注意，以下情況應該回答 true，而不是 false：
+              - 雨彈夜襲！3縣市大雨特報
+              - 智利6.4地震首都有感 大樓狂搖畫面曝
+            """},
             {"role": "user", "content": prompt}
         ]
 
         data = {
             "messages": messages,
             "model": model_name,
-            "temperature": 0,
+            "temperature": 0,  # 設為 0 以確保回答的一致性
             "stream": False
         }
 
@@ -234,49 +266,53 @@ def chat_with_xai(prompt, api_key, model_name, context=""):
 
         if response.status_code == 200:
             result = response.json()
-            return result['choices'][0]['message']['content']
+            response_text = result['choices'][0]['message']['content'].lower().strip()
+            # 確保只返回 true 或 false
+            return 'true' if 'true' in response_text else 'false'
         else:
-            return "false"  # 如果 API 調用失敗，預設返回 false
+            return "false"
 
     except Exception as e:
         print(f"X.AI API 錯誤: {str(e)}")
-        return "false"  # 發生錯誤時預設返回 false
-
+        return "false"
 def is_disaster_news(title, content):
     """
     使用 X.AI 判斷新聞是否主要報導自然災害事件
     """
     prompt = f"""
-    請判斷以下新聞是否主要在報導自然災害事件本身，只需回答 true 或 false：
-    
-    允許的災害類型：大雨、豪雨、暴雨、淹水、洪水、水災、颱風、颶風、風災、地震、海嘯、乾旱、旱災
+    嚴格依照以下標準判斷這篇新聞是否為災害相關，只需回答 true 或 false：
 
     新聞標題：{title}
-    新聞內容：{content[:500]}
+    新聞內容：{content[:500]}...
 
-    判斷標準：
-    1. 新聞描述災害事件本身，包括：
-       - 災害的發生過程
-       - 災害造成的直接影響和損失
-       - 災害現場的情況描述
-       
-    2. 留下以下類型的新聞：
-       - 災後援助或捐贈活動的報導
-       - 國際救援行動的新聞
-       - 災後重建相關報導
-       - 防災政策討論
-       - 氣候變遷議題
-       - 歷史災害回顧
-       - 以災害為背景但主要報導其他事件的新聞
-       
-    3. 特別注意：
-       - 如果新聞主要在報導救援、捐助、外交等活動，即使提到災害也應該回答 true
-       - 如果新聞只是用災害作為背景，主要報導其他事件，應該回答 true
-       - 新聞的核心主題必須是災害事件本身才回答 true
+    標準：
+    1. 檢查是否包含以下災害關鍵字：
+       - 大雨、豪雨、暴雨
+       - 淹水、洪水、水災
+       - 颱風、颶風、風災
+       - 地震、海嘯
+       - 乾旱、旱災
+
+    2. 判斷新聞重點是否滿足以下條件之一：
+       a. 災害正在發生或即將發生
+       b. 描述災害影響範圍和程度
+       c. 提及災害造成的損失或現場狀況
+       d. 發布災害警報或預警
+
+    3. 排除以下內容：
+       a. 氣象預測（如「大雨特報」「冷氣團來襲」）
+       b. 災後救援或重建計畫
+       c. 歷史災害回顧
+       d. 氣候變遷討論
+
+    注意：
+    - 必須同時符合關鍵字與新聞重點的要求
+    - 如符合排除條件，回答 false
     """
-    
+    # 傳遞 prompt 給 API 或模型
     response = chat_with_xai(prompt, xai_api_key, model_name, "")
     return 'true' in response.lower()
+    
 
 # 主程式
 def main():
