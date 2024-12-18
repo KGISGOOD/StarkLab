@@ -616,6 +616,56 @@ def news_api(request):
         news_data = cursor.fetchall()
         conn.close()
 
+        def format_event_title(location, content, title):
+            """格式化事件標題為：國家 主要城市 主要災害類型"""
+            prompt = f"""
+            請從以下資訊中提取一個主要的國家、一個主要城市和災害類型，
+            並以「國家 主要城市 主要災害類型」的格式回傳。
+            如果有多個城市，只需選擇最主要或最先提到的城市。
+            請用空格分隔，不要加任何標點符號或換行符號：
+
+            地點：{location}
+            內容：{content}
+            標題：{title}
+
+            範例格式：
+            日本 東京 地震
+            美國 加州 洪水
+            台灣 高雄 豪雨
+            中國 浙江 颱風
+            """
+            
+            response = chat_with_xai(prompt, xai_api_key, model_name, "")
+            return response.strip()
+
+        def is_pure_disaster_news(title, content):
+            """判斷是否為純災害新聞"""
+            prompt = f"""
+            請判斷以下新聞是否為純災害新聞報導，只需回答 true 或 false。
+
+            新聞標題：{title}
+            新聞內容：{content[:500]}
+
+            判斷標準：
+            1. 必須主要報導自然災害本身（如地震、颱風、洪水、乾旱等）
+            2. 不應包含以下內容：
+               - 政治議題或政策討論
+               - 經濟影響或金融市場反應
+               - 救援或援助活動
+               - 災後重建計劃
+               - 防災措施或政策
+               - 氣候變遷討論
+               - 歷史災害回顧
+            3. 內容應該集中在：
+               - 災害發生的情況
+               - 災害的直接影響
+               - 災害造成的損失
+               - 災害的即時狀況
+            """
+            
+            response = chat_with_xai(prompt, xai_api_key, model_name, "")
+            return 'true' in response.lower()
+
         def safe_process(value):
             return value.replace("\n", " ").replace("-", "").strip() if value else ""
 
@@ -631,40 +681,48 @@ def news_api(request):
         processed_events = set()
 
         for row in news_data:
+            # 先判斷是否為純災害新聞
+            if not is_pure_disaster_news(row[1], row[4] or ""):
+                continue
+
             if row[1] in processed_events:
                 continue
 
-            current_event = row[1]
             location = parse_location(row[9])
             
             # 處理 cover 欄位
             cover = "null"
             if row[2] and isinstance(row[2], str) and row[2].strip():
                 cover = row[2]
+            
+            formatted_event = format_event_title(
+                ','.join(location), 
+                safe_process(row[4] or ""),
+                row[1]
+            )
 
             # 尋找相關事件
             event_key = None
             for existing_key in merged_news.keys():
-                # 使用 X.AI 判斷是否為同一事件
                 prompt = f"""
                 請判斷以下兩則新聞是否報導同一個災害事件，只需回答 true 或 false：
 
-                新聞1：
-                標題：{current_event}
+                新聞1：{formatted_event}
                 地點：{', '.join(location)}
                 日期：{row[6] or row[7] or ""}
+                內容：{safe_process(row[4] or "")[:200]}
 
-                新聞2：
-                標題：{merged_news[existing_key]["event"]}
+                新聞2：{merged_news[existing_key]["event"]}
                 地點：{', '.join(merged_news[existing_key]["location"])}
                 日期：{merged_news[existing_key]["date"]}
+                內容：{merged_news[existing_key]["overview"][:200]}
 
                 判斷標準：
-                1. 是否為同一災害（地震、颱風等）
-                2. 是否發生在相同或鄰近地區
-                3. 是否在3天內發生
-                4. 如果是地震，同一地區的餘震算同一事件
-                5. 如果是颱風，影響相同地區算同一事件
+                1. 必須是同一個災害事件
+                2. 發生在相同或直接相關的地區
+                3. 時間必須在3天內
+                4. 災害類型必須完全相同
+                5. 報導的核心災害內容必須一致
                 """
                 
                 response = chat_with_xai(prompt, xai_api_key, model_name, "")
@@ -675,13 +733,18 @@ def news_api(request):
             news_item = {
                 "source": row[5] or "",
                 "url": row[3] or "",
-                "title": current_event,
+                "title": row[1],  # 保留原始標題
                 "publish_date": row[6] or "",
                 "location": location,
                 "summary": safe_process(row[11] or "")
             }
 
             if event_key:
+                # 合併 location，確保不重複
+                all_locations = set(merged_news[event_key]["location"])
+                all_locations.update(location)
+                merged_news[event_key]["location"] = list(all_locations)
+                
                 merged_news[event_key]["links"].append(news_item)
                 
                 current_date = row[7] or row[6] or ""
@@ -693,14 +756,15 @@ def news_api(request):
                         "location": location
                     })
                 
+                # 更新 cover
                 if cover != "null" and merged_news[event_key]["cover"] == "null":
                     merged_news[event_key]["cover"] = cover
             else:
-                new_key = f"{current_event}_{len(merged_news)}"
+                new_key = f"{formatted_event}_{len(merged_news)}"
                 merged_news[new_key] = {
-                    "event": current_event,
+                    "event": formatted_event,
                     "region": '國內' if any(keyword in ','.join(location) for keyword in domestic_keywords) else '國外',
-                    "cover": cover,
+                    "cover": cover,  # 使用處理過的 cover
                     "date": row[6] or "",
                     "recent_update": row[7] or row[6] or "",
                     "location": location,
@@ -713,7 +777,7 @@ def news_api(request):
                     "links": [news_item]
                 }
 
-            processed_events.add(current_event)
+            processed_events.add(row[1])
 
         news_list = list(merged_news.values())
         news_list.sort(key=lambda x: x["recent_update"], reverse=True)
