@@ -656,11 +656,41 @@ def news_api(request):
                - 防災措施或政策
                - 氣候變遷討論
                - 歷史災害回顧
+               - 金錢損失統計
+               - 賠償金額討論
+               - 保險理賠相關
             3. 內容應該集中在：
                - 災害發生的情況
-               - 災害的直接影響
-               - 災害造成的損失
-               - 災害的即時狀況
+               - 災害的規模（如地震規模、雨量）
+               - 受影響的地理範圍
+               - 即時災情描述
+            """
+            
+            response = chat_with_xai(prompt, xai_api_key, model_name, "")
+            return 'true' in response.lower()
+
+        def is_same_event(event1, event2, date1, date2, location1, location2):
+            """判斷是否為同一事件"""
+            prompt = f"""
+            請判斷以下兩則新聞是否報導同一個災害事件，只需回答 true 或 false：
+
+            新聞1：{event1}
+            日期：{date1}
+            地點：{location1}
+
+            新聞2：{event2}
+            日期：{date2}
+            地點：{location2}
+
+            判斷標準：
+            1. 如果是同一個國家發生的同類型災害，且時間相近（3天內），視為同一事件
+            2. 對於地震事件：
+               - 同一國家3天內的地震（包括餘震）視為同一事件
+               - 震央位置相近的地震視為同一事件
+            3. 對於颱風事件：
+               - 同一個颱風影響多個地區視為同一事件
+            4. 對於洪水/豪雨：
+               - 同一國家同一時期的水災視為同一事件
             """
             
             response = chat_with_xai(prompt, xai_api_key, model_name, "")
@@ -670,12 +700,29 @@ def news_api(request):
             return value.replace("\n", " ").replace("-", "").strip() if value else ""
 
         def parse_location(location_str):
+            """處理地點字符串，移除特殊字符並用空格分隔"""
             if not location_str:
                 return []
+            
+            # 如果是列表或字典，轉換為字符串
             if isinstance(location_str, (list, dict)):
                 location_str = json.dumps(location_str, ensure_ascii=False)
-            locations = [loc.strip() for loc in location_str.split(',')]
-            return list(filter(None, locations))
+            
+            # 移除特殊字符和格式
+            location_str = location_str.replace('\n', ' ')  # 換行替換為空格
+            location_str = location_str.replace('- ', '')   # 移除列表符號
+            location_str = location_str.replace('，', ',')  # 統一逗號格式
+            
+            # 分割並清理每個地點
+            locations = []
+            for loc in location_str.split(','):
+                # 清理並添加非空的地點
+                cleaned_loc = loc.strip()
+                if cleaned_loc:
+                    locations.append(cleaned_loc)
+            
+            # 移除重複項並返回
+            return list(dict.fromkeys(locations))
 
         merged_news = {}
         processed_events = set()
@@ -704,29 +751,14 @@ def news_api(request):
             # 尋找相關事件
             event_key = None
             for existing_key in merged_news.keys():
-                prompt = f"""
-                請判斷以下兩則新聞是否報導同一個災害事件，只需回答 true 或 false：
-
-                新聞1：{formatted_event}
-                地點：{', '.join(location)}
-                日期：{row[6] or row[7] or ""}
-                內容：{safe_process(row[4] or "")[:200]}
-
-                新聞2：{merged_news[existing_key]["event"]}
-                地點：{', '.join(merged_news[existing_key]["location"])}
-                日期：{merged_news[existing_key]["date"]}
-                內容：{merged_news[existing_key]["overview"][:200]}
-
-                判斷標準：
-                1. 必須是同一個災害事件
-                2. 發生在相同或直接相關的地區
-                3. 時間必須在3天內
-                4. 災害類型必須完全相同
-                5. 報導的核心災害內容必須一致
-                """
-                
-                response = chat_with_xai(prompt, xai_api_key, model_name, "")
-                if 'true' in response.lower():
+                if is_same_event(
+                    formatted_event,
+                    merged_news[existing_key]["event"],
+                    row[6] or row[7] or "",
+                    merged_news[existing_key]["date"],
+                    ', '.join(location),
+                    ', '.join(merged_news[existing_key]["location"])
+                ):
                     event_key = existing_key
                     break
 
@@ -740,10 +772,10 @@ def news_api(request):
             }
 
             if event_key:
-                # 合併 location，確保不重複
+                # 合併 location，確保不重複且格式正確
                 all_locations = set(merged_news[event_key]["location"])
                 all_locations.update(location)
-                merged_news[event_key]["location"] = list(all_locations)
+                merged_news[event_key]["location"] = sorted(list(all_locations))  # 排序以保持穩定順序
                 
                 merged_news[event_key]["links"].append(news_item)
                 
