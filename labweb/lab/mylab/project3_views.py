@@ -220,37 +220,17 @@ def chat_with_xai(prompt, api_key, model_name, context=""):
 
         messages = [
             {"role": "system", "content": """
-            你是一位極其精確的關鍵字判斷師，專門負責判斷新聞文本是否符合災害新聞的標準。
-            你的工作非常重要，必須嚴格按照給定的判斷標準進行評估。
+            你是一位專門負責判斷新聞文本是否符合災害新聞的標準。
             每次評估都需要完全符合以下條件：
             
             ### 標準
-            1. **檢查是否包含以下災害關鍵字**：
+            1. **檢查標題和內文中是否包含以下災害關鍵字**：
                - 大雨、豪雨、暴雨
                - 淹水、洪水、水災
                - 颱風、颶風、風災
                - 地震、海嘯
                - 乾旱、旱災
-
-            2. **判斷新聞重點是否滿足以下條件之一**：
-               a. 災害正在發生或即將發生。
-               b. 描述災害影響範圍和程度。
-               c. 提及災害造成的損失或現場狀況。
-               d. 發布災害警報或預警。
-
-            3. **排除以下內容**：
-               a. 氣象預測（如「大雨特報」「冷氣團來襲」）。
-               b. 災後救援或重建計畫。
-               c. 歷史災害回顧。
-               d. 氣候變遷討論。
-
-            ### 補充說明
-            - 必須同時符合關鍵字與新聞重點的要求，才能判定為災害相關新聞。
-            - 如符合排除條件，則回答 false。
-            - 你不僅需要回答 true 或 false，還需要在內部確認每個關鍵字和判斷邏輯是否準確。 
-            - 特別注意，以下情況應該回答 true，而不是 false：
-              - 雨彈夜襲！3縣市大雨特報
-              - 智利6.4地震首都有感 大樓狂搖畫面曝
+             
             """},
             {"role": "user", "content": prompt}
         ]
@@ -280,7 +260,7 @@ def is_disaster_news(title, content):
     使用 X.AI 判斷新聞是否主要報導自然災害事件
     """
     prompt = f"""
-    嚴格依照以下標準判斷這篇新聞是否為災害相關，只需回答 true 或 false：
+    依照以下標準判斷這篇新聞是否為災害相關，只需回答 true 或 false：
 
     新聞標題：{title}
     新聞內容：{content[:500]}...
@@ -292,22 +272,7 @@ def is_disaster_news(title, content):
        - 颱風、颶風、風災
        - 地震、海嘯
        - 乾旱、旱災
-
-    2. 判斷新聞重點是否滿足以下條件之一：
-       a. 災害正在發生或即將發生
-       b. 描述災害影響範圍和程度
-       c. 提及災害造成的損失或現場狀況
-       d. 發布災害警報或預警
-
-    3. 排除以下內容：
-       a. 氣象預測（如「大雨特報」「冷氣團來襲」）
-       b. 災後救援或重建計畫
-       c. 歷史災害回顧
-       d. 氣候變遷討論
-
-    注意：
-    - 必須同時符合關鍵字與新聞重點的要求
-    - 如符合排除條件，回答 false
+    如果有包含其一，就是true，否則false
     """
     # 傳遞 prompt 給 API 或模型
     response = chat_with_xai(prompt, xai_api_key, model_name, "")
@@ -322,17 +287,17 @@ def main():
     urls = [
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A7d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
     ]
     
     all_news_items = []
@@ -384,9 +349,8 @@ def main():
             # 使用災害新聞判斷
             is_disaster = is_disaster_news(item['標題'], content)
 
-            if not is_disaster:
-                print(f"非災害相關新聞，跳過: {item['標題']}")
-                continue
+            if is_disaster:
+                print(f"good: {item['標題']}")
 
             # 根據地點判斷是否為國內新聞
             is_domestic = any(keyword in location_answer for keyword in domestic_keywords)
