@@ -325,7 +325,7 @@ def main():
             os.remove(output_file)
 
         # X.AI 的 API Key 和模型名稱
-        xai_api_key =os.getenv("API_KEY") # 請填入你的 API 密鑰
+        xai_api_key = "xai-sEKM3YfLj81l66aMWyXpmasF8Xab7hvpcwtEY4WU0jIeJfEoWDPSjm5VjbH9bq9JDNN5SmAAIrGyjfPN"
         model_name = "grok-beta"
 
         # 新增欄位：摘要、地點、災害
