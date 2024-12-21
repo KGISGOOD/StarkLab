@@ -230,18 +230,27 @@ def chat_with_xai(prompt, api_key, model_name, context=""):
             "stream": False
         }
 
-        response = requests.post(url, headers=headers, json=data)
-
+        # 檢查 API 調用
+        response = requests.post(url, headers=headers, json=data, timeout=30)
+        
+        # 檢查回應狀態
         if response.status_code == 200:
+            print("✅ API 調用成功")
             result = response.json()
-            return result['choices'][0]['message']['content']
+            if result and 'choices' in result and result['choices']:
+                content = result['choices'][0]['message']['content']
+                print("✅ 成功獲取回應內容")
+                return content
+            else:
+                print("❌ API 回應格式異常")
+                return "false"
         else:
-            print("API 調用失敗")  # 在控制台輸出錯誤訊息
-            return None  # 返回 None 表示失敗
+            print(f"❌ API 調用失敗 (狀態碼: {response.status_code})")
+            return "false"
 
     except Exception as e:
-        print(f"X.AI API 錯誤: {str(e)}")  # 打印出詳細的錯誤訊息
-        return None  # 發生錯誤時返回 None
+        print(f"❌ API 錯誤: {str(e)}")
+        return "false"
 
 def is_disaster_news(title, content):
     """
@@ -256,7 +265,24 @@ def is_disaster_news(title, content):
     新聞內容：{content[:500]}
 
     判斷標準：
-        1. 標題中自然災害本身（如地震、颱風、洪水、乾旱等）:true
+    1. 新聞必須主要描述災害事件本身，包括：
+       - 災害的發生過程
+       - 災害造成的直接影響和損失
+       - 災害現場的情況描述
+       
+    2. 必須排除以下類型的新聞：
+       - 災後援助或捐贈活動的報導
+       - 國際救援行動的新聞
+       - 災後重建相關報導
+       - 防災政策討論
+       - 氣候變遷議題
+       - 歷史災害回顧
+       - 以災害為背景但主要報導其他事件的新聞
+       
+    3. 特別注意：
+       - 如果新聞主要在報導救援、捐助、外交等活動，即使提到災害也應該回答 false
+       - 如果新聞只是用災害作為背景，主要報導其他事件，應該回答 false
+       - 新聞的核心主題必須是災害事件本身才回答 true
     """
     
     response = chat_with_xai(prompt, xai_api_key, model_name, "")
@@ -603,10 +629,10 @@ def news_api(request):
         def format_event_title(location, content, title):
             """格式化事件標題為：國家 主要城市 主要災害類型"""
             prompt = f"""
-            請從以下資訊中提取一個主要的國家、一個主要城市和災害類型，
+            請從以下資訊中提取一個主要的��家、一個主要城市和災害類型，
             並以「國家 主要城市 主要災害類型」的格式回傳。
             如果有多個城市，只需選擇最主要或最先提到的城市。
-            請用空格分隔，不要加任何標點符號或換行符號：
+            請用空格分隔不要加任何標點符號或換行符號：
 
             地點：{location}
             內容：{content}
@@ -631,8 +657,23 @@ def news_api(request):
             新聞內容：{content[:500]}
 
             判斷標準：
-            1. 標題中自然災害本身（如地震、颱風、洪水、乾旱等）:true
-
+            1. 必須主要報導自然災害本身（如地震、颱風、洪水、乾旱等）
+            2. 不應包含以下內容：
+               - 政治議題或政策討論
+               - 經濟影響或金融市場反應
+               - 救援或援助活動
+               - 災後重建計劃
+               - 防災措施或政策
+               - 氣候變遷討論
+               - 歷史災害回顧
+               - 金錢損失統計
+               - 賠償金額討論
+               - ��險理賠相關
+            3. 內容應集中在：
+               - 災害發生的情況
+               - 災害的規模（如地震規模、雨量）
+               - 受影響的地理範圍
+               - 即時災情描述
             """
             
             response = chat_with_xai(prompt, xai_api_key, model_name, "")
@@ -690,7 +731,7 @@ def news_api(request):
                 if cleaned_loc:
                     locations.append(cleaned_loc)
             
-            # 移除重複項並返回
+            # 移除重複項���返回
             return list(dict.fromkeys(locations))
 
         merged_news = {}
