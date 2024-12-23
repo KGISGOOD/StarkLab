@@ -59,6 +59,8 @@
             this.disabled = true;
 
             // 透過 AJAX 發送更新新聞的請求
+            // 使用 fetch API 向伺服器的 /update/ 路徑發送一個 GET 請求。
+            // /update/ 是伺服器端設計的 API 路徑，負責處理「更新新聞」的邏輯。
             fetch('/update/', {
                 method: 'GET',
             })

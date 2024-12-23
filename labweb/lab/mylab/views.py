@@ -96,6 +96,7 @@ def run_crawler(request):
                     statusDiv.className = 'running';
                     statusDiv.textContent = '正在執行爬蟲...';
                     
+                    /* 發送 HTTP GET 請求到 /update/ API，這裡用來觸發爬蟲執行 */
                     const response = await fetch('/update/');
                     const data = await response.json();
                     
