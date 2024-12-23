@@ -1,8 +1,9 @@
 from django.shortcuts import render
-from django.http import JsonResponse
-import requests
+from django.http import JsonResponse, HttpResponse
 import logging
-import time
+from .project3_views import main  # 導入原本的爬蟲主函數
+
+logger = logging.getLogger(__name__)
 
 # 現有的視圖
 def home(request):
@@ -41,31 +42,79 @@ def project6(request):
 
 # 新增爬蟲執行的視圖
 def run_crawler(request):
-    logging.info("爬蟲開始執行...")
+    """
+    執行爬蟲的 API 端點
+    訪問 /run_crawler/ 時會觸發爬蟲程序
+    """
+    # try:
+    #     logger.info("開始執行爬蟲...")
+    #     main()  # 執行爬蟲主程序
+    #     logger.info("爬蟲執行完成")
+    #     return JsonResponse({
+    #         "message": "爬蟲執行成功！"
+    #     })
+    # except Exception as e:
+    #     logger.error(f"爬蟲執行失敗：{str(e)}")
+    #     return JsonResponse({
+    #         "message": f"爬蟲執行失敗：{str(e)}"
+    #     }, status=500)
 
-    # 先檢查伺服器是否已經啟動
-    def check_server():
-        try:
-            response = requests.get("http://127.0.0.1:8000/api/news/")
-            return response.status_code == 200
-        except requests.exceptions.RequestException:
-            return False
+    html_content = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>爬蟲狀態</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                text-align: center;
+            }
+            #status {
+                font-size: 18px;
+                margin: 20px;
+                padding: 10px;
+            }
+            .running {
+                color: blue;
+            }
+            .success {
+                color: green;
+            }
+            .error {
+                color: red;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="status" class="running">正在執行爬蟲...</div>
+        
+        <script>
+            async function runCrawler() {
+                const statusDiv = document.getElementById('status');
+                try {
+                    statusDiv.className = 'running';
+                    statusDiv.textContent = '正在執行爬蟲...';
+                    
+                    const response = await fetch('/update/');
+                    const data = await response.json();
+                    
+                    if (data.message.includes('成功')) {
+                        statusDiv.className = 'success';
+                        statusDiv.textContent = data.message;
+                    } else {
+                        throw new Error(data.message);
+                    }
+                } catch (error) {
+                    statusDiv.className = 'error';
+                    statusDiv.textContent = '爬蟲執行失敗：' + error.message;
+                }
+            }
 
-    # 等待伺服器啟動並確保可以連接
-    while not check_server():
-        logging.info("伺服器尚未啟動，等待 3 秒鐘後再試...")
-        time.sleep(3)  # 等待 3 秒後重試
-
-    logging.info("伺服器已啟動，開始執行爬蟲...")
-
-    try:
-        response = requests.get("http://127.0.0.1:8000/api/news/")
-        if response.status_code == 200:
-            logging.info("爬蟲完成！數據已保存。")
-            return JsonResponse({"message": "爬蟲執行完成！數據已保存。"})
-        else:
-            logging.error(f"爬蟲失敗，狀態碼：{response.status_code}")
-            return JsonResponse({"message": f"爬蟲失敗，狀態碼：{response.status_code}"}, status=500)
-    except Exception as e:
-        logging.error(f"爬蟲發生錯誤：{e}")
-        return JsonResponse({"message": f"爬蟲發生錯誤：{e}"}, status=500)
+            // 頁面載入後立即執行爬蟲
+            window.onload = runCrawler;
+        </script>
+    </body>
+    </html>
+    """
+    return HttpResponse(html_content)
