@@ -85,22 +85,28 @@ def fetch_news(url):
         return []
     
 def parse_date(date_str):
+    current_date = datetime.now()
+    
     if '天前' in date_str:
         days_ago = int(re.search(r'\d+', date_str).group())
-        date = datetime.now() - timedelta(days=days_ago)
+        date = current_date - timedelta(days=days_ago)
     elif '小時前' in date_str:
         hours_ago = int(re.search(r'\d+', date_str).group())
-        date = datetime.now() - timedelta(hours=hours_ago)
+        date = current_date - timedelta(hours=hours_ago)
     elif '分鐘前' in date_str:
         minutes_ago = int(re.search(r'\d+', date_str).group())
-        date = datetime.now() - timedelta(minutes=minutes_ago)
+        date = current_date - timedelta(minutes=minutes_ago)
     elif '昨天' in date_str:
-        date = datetime.now() - timedelta(days=1)
+        date = current_date - timedelta(days=1)
     else:
         try:
-            date = datetime.strptime(f'{datetime.now().year}年{date_str}', '%Y年%m月%d日')
+            # 如果日期字符串中沒有年份，添加當前年份
+            if '年' not in date_str:
+                date_str = f'{current_date.year}年{date_str}'
+            date = datetime.strptime(date_str, '%Y年%m月%d日')
         except ValueError:
-            date = datetime.now()
+            # 如果解析失敗，使用當前日期
+            date = current_date
 
     return date.strftime('%Y-%m-%d')
 
@@ -230,27 +236,20 @@ def chat_with_xai(prompt, api_key, model_name, context=""):
             "stream": False
         }
 
-        # 檢查 API 調用
         response = requests.post(url, headers=headers, json=data, timeout=30)
         
-        # 檢查回應狀態
         if response.status_code == 200:
-            print("✅ API 調用成功")
             result = response.json()
             if result and 'choices' in result and result['choices']:
                 content = result['choices'][0]['message']['content']
-                print("✅ 成功獲取回應內容")
                 return content
-            else:
-                print("❌ API 回應格式異常")
-                return "false"
-        else:
-            print(f"❌ API 調用失敗 (狀態碼: {response.status_code})")
-            return "false"
+        
+        print(f"API 調用失敗 (狀態碼: {response.status_code})")
+        return ""  # 返回空字符串而不是 None
 
     except Exception as e:
-        print(f"❌ API 錯誤: {str(e)}")
-        return "false"
+        print(f"API 錯誤: {str(e)}")
+        return ""  # 返回空字符串而不是 None
 
 def is_disaster_news(title, content):
     """
@@ -352,15 +351,17 @@ def main():
             新聞內容：
             {content}
             """
-            content_summary = chat_with_xai(content_prompt, xai_api_key, model_name, "").strip()
+            content_summary = chat_with_xai(content_prompt, xai_api_key, model_name, "").strip() or "無法生成事件描述"
 
             # 提問並取得摘要、地點與災害
             question_summary = f"""
             請從以下內文中萃取出災害相關資訊。只需顯示有資料的項目，並在數值前加上項目名稱。
             如果某項資訊在內文中未提及，則不要顯示該項目。各項目之間用逗號分隔。
+            時間必須是完整的年月日格式（例如：2024-01-15），不要使用「今天」、「昨天」、「前天」等相對時間。
+            如果無法從內文中確定完整時間，則使用 {item['時間']} 作為事件時間。
 
             範例格式：
-            災害種類：地震，死亡人數：3人，受傷人數：12人，撤離人數：50人，受困人數：6人，受災人數：180人，經濟損失：3億元，建物受損：52棟，建物倒塌：13棟，特殊事件：建物搖晃，坍塌事件：2處
+            災害種類：地震，死亡人數：3人，受傷人數：12人，撤離人數：50人，受困人數：6人，受災人數：180人，經濟損失：3億元，建物受損：52棟，建物倒塌：13棟，特殊事件：建物搖晃，坍塌事件：2處，時間：2024-01-15
 
             請依照以下順序檢查並提供資訊：
             災害種類、降雨量、死亡人數、受傷人數、撤離人數、失蹤人數、受困人數、受災人數、經濟損失、建物受損、建物倒塌、淹水高度、淹水範圍、特殊事件、坍塌事件、崩塌事件、國家和地區、農業損失、時間
@@ -393,9 +394,11 @@ def main():
                 question_summary = f"""
                 請從以下內文中萃取出災害相關資訊。只需顯示有資料的項目，並在數值前加上項目名稱。
                 如果某項資訊在內文中未提及，則不要顯示該項目。各項目之間用逗號分隔。
+                時間必須是完整的年月日格式（例如：2024-01-15），不要使用「今天」、「昨天」、「前天」等相對時間。
+                如果無法從內文中確定完整時間，則使用 {item['時間']} 作為事件時間。
 
                 範例格式：
-                災害種類：地震，死亡人數：3人，受傷人數：12人，撤離人數：50人，受困人數：6人，受災人數：180人，經濟損失：3億元，建物受損：52棟，建物倒塌：13棟，特殊事件：建物搖晃，坍塌事件：2處
+                災害種類：地震，死亡人數：3人，受傷人數：12人，撤離人數：50人，受困人數：6人，受災人數：180人，經濟損失：3億元，建物受損：52棟，建物倒塌：13棟，特殊事件：建物搖晃，坍塌事件：2處，時間：2024-01-15
 
                 請依照以下順序檢查並提供資訊：
                 災害種類、降雨量、死亡人數、受傷人數、撤離人數、失蹤人數、受困人數、受災人數、經濟損失、建物受損、建物倒塌、淹水高度、淹水範圍、特殊事件、坍塌事件、崩塌事件、國家和地區、農業損失、時間
