@@ -344,7 +344,18 @@ def main():
             image_url = image_results.get(source_name, 'null')
 
             # 提問並取得摘要、地點與災害
-            question_summary = f"請簡要總結以下內文，限20字內：{content}"
+            question_summary = f"""
+            請從以下內文中萃取出災害相關資訊。若某項資訊在內文中未提及，則填寫「無」。請以下列格式直接回覆結果，用空格分隔，不需要顯示項目名稱：
+
+            範例格式：
+            地震 無 3人 12人 50人 無 6人 180人 3億元 52棟 13棟 無 無 建物搖晃 2處 無 日本東京 無 2024-01-15
+
+            請依照以下順序提供資訊：
+            [災害種類] [降雨量] [死亡人數] [受傷人數] [撤離人數] [失蹤人數] [受困人數] [受災人數] [經濟損失] [建物受損數量] [建物倒塌數量] [淹水高度] [淹水範圍] [特殊事件] [坍塌事件] [崩塌事件] [國家和地區] [農業損失數量] [時間]
+
+            內文內容：
+            {content}
+            """
             question_location = f"請從以下內文中提取災害發生的國家和地點，只需顯示國家和地點即可，限10字內：{content}"
             question_disaster = f"請從以下內文中提取所有災害，只需顯示災害即可，若有相同的災害則存一個即可，限10字內：{content}"
 
@@ -367,7 +378,18 @@ def main():
                 csv_summary = content
 
                 # 提問並取得摘要、地點與災害
-                question_summary = f"請簡要總結以下內文，限20字內：{csv_summary}"
+                question_summary = f"""
+                請從以下內文中萃取出災害相關資訊。若某項資訊在內文中未提及，則填寫「無」。請以下列格式直接回覆結果，用空格分隔，不需要顯示項目名稱：
+
+                範例格式：
+                地震 無 3人 12人 50人 無 6人 180人 3億元 52棟 13棟 無 無 建物搖晃 2處 無 日本東京 無 2024-01-15
+
+                請依照以下順序提供資訊：
+                [災害種類] [降雨量] [死亡人數] [受傷人數] [撤離人數] [失蹤人數] [受困人數] [受災人數] [經濟損失] [建物受損數量] [建物倒塌數量] [淹水高度] [淹水範圍] [特殊事件] [坍塌事件] [崩塌事件] [國家和地區] [農業損失數量] [時間]
+
+                內文內容：
+                {csv_summary}
+                """
                 question_location = f"請從以下內文中提取災害發生的國家和地點，只需顯示國家和地點即可，限10字內：{csv_summary}"
                 question_disaster = f"請從以下內文中提取所有災害，只需顯示災害即可，若有相同的災害則存一個即可，限10字內：{csv_summary}"
 
@@ -624,22 +646,22 @@ def news_api(request):
         conn.close()
 
         def format_event_title(location, content, title):
-            """格式化事件標題為：國家 主要城市 主要災害類型"""
+            """格式化事件標題為：國家主要城市主要災害類型"""
             prompt = f"""
             請從以下資訊中提取一個主要的國家、一個主要城市和災害類型，
-            並以「國家 主要城市 主要災害類型」的格式回傳。
+            並以「國家主要城市主要災害類型」的格式回傳。
+            不要加任何空格、標點符號或換行符號。
             如果有多個城市，只需選擇最主要或最先提到的城市。
-            請用空格分隔不要加任何標點符號或換行符號：
 
             地點：{location}
             內容：{content}
             標題：{title}
 
             範例格式：
-            日本 東京 地震
-            美國 加州 洪水
-            台灣 高雄 豪雨
-            中國 浙江 颱風
+            日本東京地震
+            美國加州洪水
+            台灣高雄豪雨
+            中國浙江颱風
             """
             
             response = chat_with_xai(prompt, xai_api_key, model_name, "")
@@ -663,7 +685,6 @@ def news_api(request):
                - 防災措施或政策
                - 氣候變遷討論
                - 歷史災害回顧
-               - 金錢損失統計
                - 賠償金額討論
                - 保險理賠相關
             3. 內容應集中在：
@@ -671,6 +692,7 @@ def news_api(request):
                - 災害的規模（如地震規模、雨量）
                - 受影響的地理範圍
                - 即時災情描述
+               - 災害造成的損失金額和財產損失統計
             """
             
             response = chat_with_xai(prompt, xai_api_key, model_name, "")
@@ -808,7 +830,27 @@ def news_api(request):
                 # 更新 cover
                 if cover != "null" and merged_news[event_key]["cover"] == "null":
                     merged_news[event_key]["cover"] = cover
+                
+                # 更新 overview，加入新的摘要和內文資訊
+                overview_prompt = f"""
+                請整合以下新的資訊到現有的概述中，避免重複內容，並保持簡潔清晰：
+
+                現有概述：{merged_news[event_key]["overview"]}
+                新的摘要：{safe_process(row[11] or "")}
+                新的內文：{safe_process(row[4] or "")}
+                """
+                merged_news[event_key]["overview"] = chat_with_xai(overview_prompt, xai_api_key, model_name, "").strip()
             else:
+                # 生成初始 overview
+                overview_prompt = f"""
+                請根據以下資訊生成一個完整的災害事件概述，包含災害發生的主要情況、影響和發展：
+
+                事件標題：{formatted_event}
+                事件摘要：{safe_process(row[11] or "")}
+                詳細內文：{safe_process(row[4] or "")}
+                """
+                initial_overview = chat_with_xai(overview_prompt, xai_api_key, model_name, "").strip()
+                
                 new_key = f"{formatted_event}_{len(merged_news)}"
                 merged_news[new_key] = {
                     "event": formatted_event,
@@ -817,7 +859,8 @@ def news_api(request):
                     "date": row[6] or "",
                     "recent_update": row[7] or row[6] or "",
                     "location": location,
-                    "overview": safe_process(row[11]),
+                    "overview": initial_overview,
+                    "summary": safe_process(row[11] or ""),  # 只保留當前新聞的摘要
                     "daily_records": [{
                         "date": row[7] or row[6] or "",
                         "content": safe_process(row[11] or ""),
