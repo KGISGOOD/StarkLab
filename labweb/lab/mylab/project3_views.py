@@ -291,7 +291,7 @@ def is_disaster_news(title, content):
 # 主程式
 def main():
     start_time = time.time()
-    day="7"
+    day="30"
     # Google News 搜 URL
     urls = [
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%xA8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
