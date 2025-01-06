@@ -303,7 +303,7 @@ def is_disaster_news(title, content):
 # 主程式
 def main():
     start_time = time.time()
-    day="30"
+    day="3"
     # Google News 搜 URL
     urls = [
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%xA8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
@@ -933,6 +933,49 @@ def news_api(request):
         return JsonResponse(news_list, safe=False)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+#單純抓取資料庫資料
+@require_GET
+def news_api_sql(request):
+    try:
+        conn = sqlite3.connect('w.db')
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            SELECT id, event, image, link, content, source, date, 
+                   recent_update, region, location, disaster, 
+                   summary, daily_records, links 
+            FROM news
+            ORDER BY date DESC
+        """)
+        news_data = cursor.fetchall()
+        conn.close()
+
+        news_list = []
+        for row in news_data:
+            news_item = {
+                "id": row[0],
+                "event": row[1],
+                "cover": row[2] or "null",
+                "link": row[3],
+                "content": row[4],
+                "source": row[5],
+                "date": row[6],
+                "recent_update": row[7],
+                "region": row[8],
+                "location": row[9],
+                "disaster": row[10],
+                "summary": row[11],
+                "daily_records": json.loads(row[12]) if row[12] else [],
+                "links": json.loads(row[13]) if row[13] else []
+            }
+            news_list.append(news_item)
+
+        return JsonResponse(news_list, safe=False)
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
     
 # 新增更新新聞每日記錄的 API 端點
 # @csrf_exempt  # 關閉 CSRF 保護，允許外部 POST 請求
