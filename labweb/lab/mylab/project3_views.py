@@ -1,4 +1,4 @@
-# 架構：爬蟲 -> 資料清理 -> AI 分析 -> 寫入 CSV -> 寫入資料庫
+# 架構：爬蟲 -> 資料清理 -> AI 分析 -> 寫入 CSV -> 從 CSV寫入資料庫 -> Views展示階段
 
 from django.shortcuts import render
 import pandas as pd
@@ -650,6 +650,7 @@ def news_view(request):
 
 
 # RESTful API 查詢所有新聞資料並以JSON格式返回
+# Views展示階段
 def news_list(request):
     if request.method == 'GET': # GET 方法（讀取資料）
         # 查詢所有新聞記錄，並返回標題、連結、內容、來源和日期
@@ -657,6 +658,7 @@ def news_list(request):
         return JsonResponse(list(news), safe=False)
 
 # RESTful API 新增新聞資料
+# 從 CSV寫入資料庫
 @csrf_exempt
 def news_create(request):
     if request.method == 'POST': # POST 方法（新增資料）
@@ -696,6 +698,7 @@ def news_api(request):
         conn.close()
 
         # 使用 AI 生成標準格式的標題
+        # AI分析階段
         def format_event_title(location, content, title):
             """格式化事件標題為：國家主要城市主要災害類型"""
             prompt = f"""
@@ -786,6 +789,7 @@ def news_api(request):
             response = chat_with_xai(prompt, xai_api_key, model_name, "")
             return 'true' in response.lower()
 
+        # 資料清理階段
         def safe_process(value):
             """安全處理文字，移除特殊字符"""
             return value.replace("\n", " ").replace("-", "").strip() if value else ""
@@ -931,7 +935,8 @@ def news_api(request):
         return JsonResponse({'error': str(e)}, status=500)
     
 # 新增更新新聞每日記錄的 API 端點
-#@csrf_exempt  # 關閉 CSRF 保護，允許外部 POST 請求
+# @csrf_exempt  # 關閉 CSRF 保護，允許外部 POST 請求
+# 從 CSV寫入資料庫
 @csrf_exempt
 def update_daily_records(request, news_id):
     if request.method == 'POST':
