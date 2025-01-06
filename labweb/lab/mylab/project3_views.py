@@ -1,3 +1,5 @@
+# 架構：爬蟲 -> 資料清理 -> AI 分析 -> 寫入 CSV -> 寫入資料庫
+
 from django.shortcuts import render
 import pandas as pd
 import os
@@ -44,6 +46,7 @@ domestic_keywords = [
     '臺灣', '台北', '臺中', '臺南', '臺9縣', '全台', '全臺'
 ]
 
+# 從 Google News 抓取新聞資料的爬蟲功能
 def fetch_news(url):
     try:
         response = requests.get(url)
@@ -83,7 +86,8 @@ def fetch_news(url):
     except Exception as e:
         print(f"抓取新聞時發生錯誤: {e}")
         return []
-    
+
+# 解析和標準化新聞的日期格式
 def parse_date(date_str):
     current_date = datetime.now()
     
@@ -110,6 +114,7 @@ def parse_date(date_str):
 
     return date.strftime('%Y-%m-%d')
 
+# 瀏覽器的無頭模式，讓 Chrome 在背景運行而不需要開啟實際的瀏覽器視窗
 def setup_chrome_driver():
     chrome_options = Options()
     chrome_options.add_argument('--headless')
@@ -121,12 +126,14 @@ def setup_chrome_driver():
     driver = webdriver.Chrome(service=service, options=chrome_options)
     return driver
 
+# 從 Google News 的 URL 中提取最終的 URL
 def extract_final_url(google_news_url):
     match = re.search(r'(https?://[^&]+)', google_news_url)
     if match:
         return match.group(1)
     return google_news_url
 
+# 從新聞網站中擷取內容和摘要
 def fetch_article_content(driver, sources_urls):
     results = {}
     summaries = {}
@@ -140,7 +147,8 @@ def fetch_article_content(driver, sources_urls):
                 EC.presence_of_element_located((By.CSS_SELECTOR, 'p'))
             )
             
-            # 更新選擇器以只包含四家報社
+            # 只處理這四家報社
+            # content_selectors「怎麼抓？」
             content_selectors = {
                 'Newtalk新聞': 'div.articleBody.clearfix p',
                 '經濟日報': 'section.article-body__editor p',
@@ -168,6 +176,7 @@ def fetch_article_content(driver, sources_urls):
             
     return results, summaries
 
+# 從新聞網站中擷取圖片 URL
 def extract_image_url(driver, sources_urls):
     results = {}
     for source_name, url in sources_urls.items():
@@ -204,7 +213,7 @@ def extract_image_url(driver, sources_urls):
             
     return results
 
-# 加載並摘要 CSV 資料
+# 先將爬取到的資料存進csv檔
 def load_and_summarize_csv(file_path):
     try:
         data = pd.read_csv(file_path)
@@ -284,6 +293,10 @@ def is_disaster_news(title, content):
        - 新聞的核心主題必須是災害事件本身才回答 true
     """
     
+    # 呼叫 X.AI API 進行判斷
+    # xai_api_key：API 金鑰
+    # model_name：使用的模型名稱
+    # ""：空的上下文。每次對話都是獨立的，AI 不會記得之前的對話
     response = chat_with_xai(prompt, xai_api_key, model_name, "")
     return 'true' in response.lower()
 
@@ -308,18 +321,19 @@ def main():
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
     ]
     
-    #print(urls)
+    #收集新聞
     all_news_items = []
     for url in urls:
         news_items = fetch_news(url)
         all_news_items.extend(news_items)
 
+    #處理新聞資料
     if all_news_items:
         news_df = pd.DataFrame(all_news_items)
         news_df = news_df.drop_duplicates(subset='標題', keep='first')
 
+        # 設定輸出檔案
         driver = setup_chrome_driver()
-
         output_file = 'w.csv'
         if os.path.exists(output_file):
             os.remove(output_file)
@@ -329,6 +343,7 @@ def main():
         locations = []
         disasters = []
 
+        # 處理每個新聞項目
         for index, item in news_df.iterrows():
             source_name = item['來源']
             original_url = item['連結']
@@ -431,7 +446,7 @@ def main():
                     '災害': disaster_answer
                 }
 
-                # 儲存資料到 CSV
+                # 儲存資料到 CSV。所有處理完成後，一次性寫入 CSV
                 output_df = pd.DataFrame([result])
                 output_df.to_csv(output_file, mode='a', header=not os.path.exists(output_file), index=False, encoding='utf-8')
 
@@ -534,7 +549,7 @@ def main():
 if __name__ == "__main__":
     main()
 
-
+#從資料庫讀取所有新聞資料
 def fetch_news_data():
     db_name = 'w.db'
     table_name = 'news'
@@ -573,6 +588,15 @@ def update_news(request):
 
 
 # views.py
+'''
+負責處理 HTTP 請求並返回 HTTP 響應
+
+接收用戶請求
+處理業務邏輯
+與資料庫互動
+返回適當的響應
+連接前端（模板）和後端（資料庫）
+'''
 from django.http import JsonResponse
 from django.shortcuts import render
 from .models import News
@@ -583,12 +607,14 @@ from django.views.decorators.csrf import csrf_exempt
 def news_view(request):
     query = request.GET.get('search', '')
 
-    conn = sqlite3.connect('w.db')
-    cursor = conn.cursor()
+    conn = sqlite3.connect('w.db')  # 連接到 SQLite 資料庫
+    cursor = conn.cursor()  # 建立資料庫游標
 
     if query:
+        # 如果有搜尋關鍵字，搜尋事件名稱中包含關鍵字的新聞
         cursor.execute("SELECT * FROM news WHERE event LIKE ?", ('%' + query + '%',))
     else:
+        # 如果沒有搜尋關鍵字，取得所有新聞
         cursor.execute("SELECT * FROM news")
 
     news_data = cursor.fetchall()
@@ -597,7 +623,13 @@ def news_view(request):
     news_list = []
     for row in news_data:
         # 安全地處理可能為 None 的值
+
         def safe_process(value):
+        # 如果值不是 None，則：
+        # 1. 將換行符 \n 替換成空格
+        # 2. 移除破折號 -
+        # 3. 移除前後空白
+        # 如果值是 None，則返回空字串
             return value.replace("\n", " ").replace("-", "").strip() if value else ""
 
         news_list.append({
@@ -619,7 +651,7 @@ def news_view(request):
 
 # RESTful API 查詢所有新聞資料並以JSON格式返回
 def news_list(request):
-    if request.method == 'GET':
+    if request.method == 'GET': # GET 方法（讀取資料）
         # 查詢所有新聞記錄，並返回標題、連結、內容、來源和日期
         news = News.objects.all().values('title', 'link', 'content', 'source', 'date', 'image', 'region', 'summary', 'location', 'disaster')        
         return JsonResponse(list(news), safe=False)
@@ -627,7 +659,7 @@ def news_list(request):
 # RESTful API 新增新聞資料
 @csrf_exempt
 def news_create(request):
-    if request.method == 'POST':
+    if request.method == 'POST': # POST 方法（新增資料）
         data = json.loads(request.body)
         news = News.objects.create(
             title=data['title'],
@@ -645,8 +677,10 @@ def news_create(request):
     
 from django.views.decorators.http import require_GET
 
+# 處理 GET 請求
 @require_GET
 def news_api(request):
+    # 資料庫連接
     try:
         conn = sqlite3.connect('w.db')
         cursor = conn.cursor()
@@ -661,6 +695,7 @@ def news_api(request):
         news_data = cursor.fetchall()
         conn.close()
 
+        # 使用 AI 生成標準格式的標題
         def format_event_title(location, content, title):
             """格式化事件標題為：國家主要城市主要災害類型"""
             prompt = f"""
@@ -752,6 +787,7 @@ def news_api(request):
             return 'true' in response.lower()
 
         def safe_process(value):
+            """安全處理文字，移除特殊字符"""
             return value.replace("\n", " ").replace("-", "").strip() if value else ""
 
         def parse_location(location_str):
@@ -894,7 +930,8 @@ def news_api(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
     
-# 新增更新每日記錄的函數
+# 新增更新新聞每日記錄的 API 端點
+#@csrf_exempt  # 關閉 CSRF 保護，允許外部 POST 請求
 @csrf_exempt
 def update_daily_records(request, news_id):
     if request.method == 'POST':

@@ -37,7 +37,11 @@ urlpatterns = [
     path("news/", project3_views.news_view, name='news_list'),  # 新增新聞列表視圖
     path("news/create/", project3_views.news_create, name='news_create'),  # 新增新聞創建視圖 (POST)
     path("update/", project3_views.update_news, name='update_news'),  # 新增更新爬蟲的視圖
+
+    # 新增新聞 API 端點 ，讀取（GET）新聞資料 。對應的視圖函數：@require_GET  
     path('api/news/', project3_views.news_api, name='news_api'),
+
+    # 更新特定新聞每日記錄的 API 端點。對應的視圖函數：@csrf_exempt
     path('api/news/<int:news_id>/daily-records/', project3_views.update_daily_records, name='update_daily_records'),
 
     # 新增爬蟲執行的 URL 路徑
