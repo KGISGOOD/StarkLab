@@ -1,4 +1,4 @@
-# 架構：爬蟲 -> 資料清理 -> AI 分析 -> 寫入 CSV -> 從 CSV寫入資料庫 -> Views展示階段
+# 架構：爬蟲 -> 資料清理 & AI 分析 -> 寫入 CSV -> 從 CSV寫入資料庫 -> Views展示階段
 
 from django.shortcuts import render
 import pandas as pd
@@ -18,9 +18,18 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime, timedelta
 import json
+from django.http import JsonResponse
+from .models import News
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET
+
 
 xai_api_key = "xai-sEKM3YfLj81l66aMWyXpmasF8Xab7hvpcwtEY4WU0jIeJfEoWDPSjm5VjbH9bq9JDNN5SmAAIrGyjfPN"
 model_name = "grok-beta"
+
+'''-------------------------------------------------
+                       設定變數
+----------------------------------------------------'''
 
 # 修改 ALLOWED_SOURCES 為只包含四家報社
 ALLOWED_SOURCES = {
@@ -46,259 +55,9 @@ domestic_keywords = [
     '臺灣', '台北', '臺中', '臺南', '臺9縣', '全台', '全臺'
 ]
 
-# 從 Google News 抓取新聞資料的爬蟲功能
-def fetch_news(url):
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text, 'html.parser')
-
-        articles = soup.find_all('article', class_='IFHyqb')  # 查找所有文章
-
-        news_list = []
-        for article in articles:
-            title_element = article.find('a', class_='JtKRv')  # 查找標題元素
-            title = title_element.get_text(strip=True) if title_element else '未知'
-            link = title_element.get('href', '').strip() if title_element else ''
-            full_link = requests.compat.urljoin(url, link)  # 獲取完整連結
-
-            news_source = article.find('div', class_='vr1PYe')  # 查找來源元素
-            source_name = news_source.get_text(strip=True) if news_source else '未知'
-
-            # 只處理允許的新聞來源
-            if source_name not in ALLOWED_SOURCES:
-                continue
-
-            time_element = article.find('div', class_='UOVeFe').find('time', class_='hvbAAd') if article.find('div', 'UOVeFe') else None
-            date_str = time_element.get_text(strip=True) if time_element else '未知'
-
-            date = parse_date(date_str)  # 解析時間
-
-            news_list.append({
-                '標題': title,
-                '連結': full_link,
-                '來源': source_name,
-                '時間': date
-            })
-
-        return news_list
-
-    except Exception as e:
-        print(f"抓取新聞時發生錯誤: {e}")
-        return []
-
-# 解析和標準化新聞的日期格式
-def parse_date(date_str):
-    current_date = datetime.now()
-    
-    if '天前' in date_str:
-        days_ago = int(re.search(r'\d+', date_str).group())
-        date = current_date - timedelta(days=days_ago)
-    elif '小時前' in date_str:
-        hours_ago = int(re.search(r'\d+', date_str).group())
-        date = current_date - timedelta(hours=hours_ago)
-    elif '分鐘前' in date_str:
-        minutes_ago = int(re.search(r'\d+', date_str).group())
-        date = current_date - timedelta(minutes=minutes_ago)
-    elif '昨天' in date_str:
-        date = current_date - timedelta(days=1)
-    else:
-        try:
-            # 如果日期字符串中沒有年份，添加當前年份
-            if '年' not in date_str:
-                date_str = f'{current_date.year}年{date_str}'
-            date = datetime.strptime(date_str, '%Y年%m月%d日')
-        except ValueError:
-            # 如果解析失敗，使用當前日期
-            date = current_date
-
-    return date.strftime('%Y-%m-%d')
-
-# 瀏覽器的無頭模式，讓 Chrome 在背景運行而不需要開啟實際的瀏覽器視窗
-def setup_chrome_driver():
-    chrome_options = Options()
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    chrome_options.add_argument('--disable-gpu')
-    chrome_options.add_argument('--disable-software-rasterizer')
-    service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=chrome_options)
-    return driver
-
-# 從 Google News 的 URL 中提取最終的 URL
-def extract_final_url(google_news_url):
-    match = re.search(r'(https?://[^&]+)', google_news_url)
-    if match:
-        return match.group(1)
-    return google_news_url
-
-# 從新聞網站中擷取內容和摘要
-def fetch_article_content(driver, sources_urls):
-    results = {}
-    summaries = {}
-    for source_name, url in sources_urls.items():
-        if source_name not in ALLOWED_SOURCES:
-            continue
-            
-        try:
-            driver.get(url)
-            WebDriverWait(driver, 5).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, 'p'))
-            )
-            
-            # 只處理這四家報社
-            # content_selectors「怎麼抓？」
-            content_selectors = {
-                'Newtalk新聞': 'div.articleBody.clearfix p',
-                '經濟日報': 'section.article-body__editor p',
-                '自由時報': 'div.text p',
-                '中時新聞': 'div.article-body p'
-            }
-            
-            selector = content_selectors.get(source_name)
-            if not selector:  # 如果沒有對應的選擇器，跳過
-                continue
-                
-            paragraphs = driver.find_elements(By.CSS_SELECTOR, selector)
-            content = '\n'.join([p.text.strip() for p in paragraphs if p.text.strip()])
-            
-            # 提取摘要（取前100字）
-            summary = content[:100] if content else '未找到內容'
-            
-            results[source_name] = content if content else '未找到內容'
-            summaries[source_name] = summary
-            
-        except Exception as e:
-            print(f"抓取內容失敗: {e}")
-            results[source_name] = '錯誤'
-            summaries[source_name] = '錯誤'
-            
-    return results, summaries
-
-# 從新聞網站中擷取圖片 URL
-def extract_image_url(driver, sources_urls):
-    results = {}
-    for source_name, url in sources_urls.items():
-        if source_name not in ALLOWED_SOURCES:
-            continue
-            
-        try:
-            driver.get(url)
-            # 更新圖片選擇器以只包含四家報社
-            image_selectors = {
-                'Newtalk新聞': "div.news_img img",
-                '經濟日報': "section.article-body__editor img",
-                '自由時報': "div.image-popup-vertical-fit img",
-                '中時新聞': "div.article-body img"
-            }
-            
-            selector = image_selectors.get(source_name)
-            if not selector:  # 如果沒有對應的選擇器，跳過
-                continue
-                
-            try:
-                image_element = WebDriverWait(driver, 5).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, selector))
-                )
-                image_url = image_element.get_attribute('src') or image_element.get_attribute('data-src')
-                results[source_name] = image_url or 'null'
-            except Exception as e:
-                print(f"圖片擷取失敗: {e}")
-                results[source_name] = 'null'
-                
-        except Exception as e:
-            print(f"圖片擷取錯誤: {e}")
-            results[source_name] = 'null'
-            
-    return results
-
-# 先將爬取到的資料存進csv檔
-def load_and_summarize_csv(file_path):
-    try:
-        data = pd.read_csv(file_path)
-        if "內文" in data.columns:
-            return data  # 成功讀取時返回資料
-        else:
-            raise ValueError("CSV 檔案中缺少必要的欄位：內文")  # 若缺少必要欄位則拋出錯誤
-    except Exception as e:
-        return str(e)  # 返回錯誤訊息
-
-# X.AI 聊天功能
-def chat_with_xai(prompt, api_key, model_name, context=""):
-    try:
-        url = 'https://api.x.ai/v1/chat/completions'
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': f'Bearer {api_key}'
-        }
-
-        messages = [
-            {"role": "system", "content": "你是一個新聞分析助手，專門判斷新聞是否屬於同一事件。"},
-            {"role": "user", "content": prompt}
-        ]
-
-        data = {
-            "messages": messages,
-            "model": model_name,
-            "temperature": 0,
-            "stream": False
-        }
-
-        response = requests.post(url, headers=headers, json=data, timeout=30)
-        
-        if response.status_code == 200:
-            result = response.json()
-            if result and 'choices' in result and result['choices']:
-                content = result['choices'][0]['message']['content']
-                return content
-        
-        print(f"API 調用失敗 (狀態碼: {response.status_code})")
-        return ""  # 返回空字符串而不是 None
-
-    except Exception as e:
-        print(f"API 錯誤: {str(e)}")
-        return ""  # 返回空字符串而不是 None
-
-def is_disaster_news(title, content):
-    """
-    使用 X.AI 判斷新聞是否主要報導自然災害事件
-    """
-    prompt = f"""
-    請判斷以下新聞是否主要在報導自然災害事件本身，只需回答 true 或 false：
-    
-    允許的災害類型：大雨、豪雨、暴雨、淹水、洪水、水災、颱風、颶風、風災、地震、海嘯、乾旱、旱災
-
-    新聞標題：{title}
-    新聞內容：{content[:500]}
-
-    判斷標準：
-    1. 新聞必須主要描述災害事件本身，包括：
-       - 災害的發生過程
-       - 災害造成的直接影響和損失
-       - 災害現場的情況描述
-       
-    2. 必須排除以下類型的新聞：
-       - 災後援助或捐贈活動的報導
-       - 國際救援行動的新聞
-       - 災後重建相關報導
-       - 防災政策討論
-       - 氣候變遷議題
-       - 歷史災害回顧
-       - 以災害為背景但主要報導其他事件的新聞
-       
-    3. 特別注意：
-       - 如果新聞主要在報導救援、捐助、外交等活動，即使提到災害也應該回答 false
-       - 如果新聞只是用災害作為背景，主要報導其他事件，應該回答 false
-       - 新聞的核心主題必須是災害事件本身才回答 true
-    """
-    
-    # 呼叫 X.AI API 進行判斷
-    # xai_api_key：API 金鑰
-    # model_name：使用的模型名稱
-    # ""：空的上下文。每次對話都是獨立的，AI 不會記得之前的對話
-    response = chat_with_xai(prompt, xai_api_key, model_name, "")
-    return 'true' in response.lower()
+'''-------------------------------------------------
+            爬蟲功能(裡面已經一次性寫入csv檔了)
+----------------------------------------------------'''
 
 # 主程式
 def main():
@@ -549,138 +308,250 @@ def main():
 if __name__ == "__main__":
     main()
 
-#從資料庫讀取所有新聞資料
-def fetch_news_data():
-    db_name = 'w.db'
-    table_name = 'news'
+# 從 Google News 抓取新聞資料的爬蟲功能
+def fetch_news(url):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, 'html.parser')
 
-    conn = sqlite3.connect(db_name)
-    cursor = conn.cursor()
+        articles = soup.find_all('article', class_='IFHyqb')  # 查找所有文章
 
-    cursor.execute(f'SELECT id, title, link, content, source, date, image, region, summary, location, disaster FROM {table_name}')    
-    news_data = cursor.fetchall()
+        news_list = []
+        for article in articles:
+            title_element = article.find('a', class_='JtKRv')  # 查找標題元素
+            title = title_element.get_text(strip=True) if title_element else '未知'
+            link = title_element.get('href', '').strip() if title_element else ''
+            full_link = requests.compat.urljoin(url, link)  # 獲取完整連結
 
-    conn.close()
+            news_source = article.find('div', class_='vr1PYe')  # 查找來源元素
+            source_name = news_source.get_text(strip=True) if news_source else '未知'
 
-    news_list = []
-    for row in news_data:
-        news_list.append({
-            'id': row[0],
-            'title': row[1],
-            'link': row[2],
-            'content': row[3],
-            'source': row[4],
-            'date': row[5],
-            'image': row[6],
-            'region': row[7],
-            "summary": row[8].replace("\n", " ").replace("-", "").strip(),
-            "location": row[9].replace("\n", " ").replace("-", "").strip(),
-            "disaster": row[10].replace("\n", " ").replace("-", "").strip()
-        })
+            # 只處理允許的新聞來源
+            if source_name not in ALLOWED_SOURCES:
+                continue
+
+            time_element = article.find('div', class_='UOVeFe').find('time', class_='hvbAAd') if article.find('div', 'UOVeFe') else None
+            date_str = time_element.get_text(strip=True) if time_element else '未知'
+
+            date = parse_date(date_str)  # 解析時間
+
+            news_list.append({
+                '標題': title,
+                '連結': full_link,
+                '來源': source_name,
+                '時間': date
+            })
+
+        return news_list
+
+    except Exception as e:
+        print(f"抓取新聞時發生錯誤: {e}")
+        return []
+
+# 解析和標準化新聞的日期格式
+def parse_date(date_str):
+    current_date = datetime.now()
     
-    return news_list
-
-from django.http import JsonResponse
-
-def update_news(request):
-    main()  # 執行爬取新聞的函數
-    return JsonResponse({'message': '新聞更新成功！'})
-
-
-# views.py
-'''
-負責處理 HTTP 請求並返回 HTTP 響應
-
-接收用戶請求
-處理業務邏輯
-與資料庫互動
-返回適當的響應
-連接前端（模板）和後端（資料庫）
-'''
-from django.http import JsonResponse
-from django.shortcuts import render
-from .models import News
-import json
-from django.views.decorators.csrf import csrf_exempt
-
-# 處理新聞列表及搜尋功能
-def news_view(request):
-    query = request.GET.get('search', '')
-
-    conn = sqlite3.connect('w.db')  # 連接到 SQLite 資料庫
-    cursor = conn.cursor()  # 建立資料庫游標
-
-    if query:
-        # 如果有搜尋關鍵字，搜尋事件名稱中包含關鍵字的新聞
-        cursor.execute("SELECT * FROM news WHERE event LIKE ?", ('%' + query + '%',))
+    if '天前' in date_str:
+        days_ago = int(re.search(r'\d+', date_str).group())
+        date = current_date - timedelta(days=days_ago)
+    elif '小時前' in date_str:
+        hours_ago = int(re.search(r'\d+', date_str).group())
+        date = current_date - timedelta(hours=hours_ago)
+    elif '分鐘前' in date_str:
+        minutes_ago = int(re.search(r'\d+', date_str).group())
+        date = current_date - timedelta(minutes=minutes_ago)
+    elif '昨天' in date_str:
+        date = current_date - timedelta(days=1)
     else:
-        # 如果沒有搜尋關鍵字，取得所有新聞
-        cursor.execute("SELECT * FROM news")
+        try:
+            # 如果日期字符串中沒有年份，添加當前年份
+            if '年' not in date_str:
+                date_str = f'{current_date.year}年{date_str}'
+            date = datetime.strptime(date_str, '%Y年%m月%d日')
+        except ValueError:
+            # 如果解析失敗，使用當前日期
+            date = current_date
 
-    news_data = cursor.fetchall()
-    conn.close()
+    return date.strftime('%Y-%m-%d')
 
-    news_list = []
-    for row in news_data:
-        # 安全地處理可能為 None 的值
+# 瀏覽器的無頭模式，讓 Chrome 在背景運行而不需要開啟實際的瀏覽器視窗
+def setup_chrome_driver():
+    chrome_options = Options()
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_argument('--disable-gpu')
+    chrome_options.add_argument('--disable-software-rasterizer')
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service, options=chrome_options)
+    return driver
 
-        def safe_process(value):
-        # 如果值不是 None，則：
-        # 1. 將換行符 \n 替換成空格
-        # 2. 移除破折號 -
-        # 3. 移除前後空白
-        # 如果值是 None，則返回空字串
-            return value.replace("\n", " ").replace("-", "").strip() if value else ""
+# 從 Google News 的 URL 中提取最終的 URL
+def extract_final_url(google_news_url):
+    match = re.search(r'(https?://[^&]+)', google_news_url)
+    if match:
+        return match.group(1)
+    return google_news_url
 
-        news_list.append({
-            'id': row[0],
-            'event': safe_process(row[1]),
-            'image': row[2] or "",
-            'link': row[3] or "",
-            'content': safe_process(row[4])[:50] + '...' if row[4] and len(row[4]) > 50 else safe_process(row[4]),
-            'source': row[5] or "",
-            'date': row[6] or "",
-            'region': row[8] or "未知",
-            'summary': safe_process(row[11]),
-            'location': safe_process(row[9]),
-            'disaster': safe_process(row[10])
-        })
+# 從新聞網站中擷取內容和摘要
+def fetch_article_content(driver, sources_urls):
+    results = {}
+    summaries = {}
+    for source_name, url in sources_urls.items():
+        if source_name not in ALLOWED_SOURCES:
+            continue
+            
+        try:
+            driver.get(url)
+            WebDriverWait(driver, 5).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, 'p'))
+            )
+            
+            # 只處理這四家報社
+            # content_selectors「怎麼抓？」
+            content_selectors = {
+                'Newtalk新聞': 'div.articleBody.clearfix p',
+                '經濟日報': 'section.article-body__editor p',
+                '自由時報': 'div.text p',
+                '中時新聞': 'div.article-body p'
+            }
+            
+            selector = content_selectors.get(source_name)
+            if not selector:  # 如果沒有對應的選擇器，跳過
+                continue
+                
+            paragraphs = driver.find_elements(By.CSS_SELECTOR, selector)
+            content = '\n'.join([p.text.strip() for p in paragraphs if p.text.strip()])
+            
+            # 提取摘要（取前100字）
+            summary = content[:100] if content else '未找到內容'
+            
+            results[source_name] = content if content else '未找到內容'
+            summaries[source_name] = summary
+            
+        except Exception as e:
+            print(f"抓取內容失敗: {e}")
+            results[source_name] = '錯誤'
+            summaries[source_name] = '錯誤'
+            
+    return results, summaries
 
-    return render(request, 'news.html', {'news_list': news_list})
-
-
-# RESTful API 查詢所有新聞資料並以JSON格式返回
-# Views展示階段
-def news_list(request):
-    if request.method == 'GET': # GET 方法（讀取資料）
-        # 查詢所有新聞記錄，並返回標題、連結、內容、來源和日期
-        news = News.objects.all().values('title', 'link', 'content', 'source', 'date', 'image', 'region', 'summary', 'location', 'disaster')        
-        return JsonResponse(list(news), safe=False)
-
-# RESTful API 新增新聞資料
-# 從 CSV寫入資料庫
-@csrf_exempt
-def news_create(request):
-    if request.method == 'POST': # POST 方法（新增資料）
-        data = json.loads(request.body)
-        news = News.objects.create(
-            title=data['title'],
-            link=data['link'],
-            content=data['content'],
-            source=data['source'],
-            date=data['date'],
-            image=data.get('image', 'null'),
-            region=data.get('region', '未知'),
-            summary=data.get('summary', ''),  # 新增 summary 欄位，預設值為空字串
-            location=data.get('location', ''),  # 新增 location 欄位，預設值為空字串
-            disaster=data.get('disaster', '')  # 新增 disaster 欄位，預設值為空字串
-        )
-        return JsonResponse({"message": "News created", "news_id": news.id}, status=201)
+# 從新聞網站中擷取圖片 URL
+def extract_image_url(driver, sources_urls):
+    results = {}
+    for source_name, url in sources_urls.items():
+        if source_name not in ALLOWED_SOURCES:
+            continue
+            
+        try:
+            driver.get(url)
+            # 更新圖片選擇器以只包含四家報社
+            image_selectors = {
+                'Newtalk新聞': "div.news_img img",
+                '經濟日報': "section.article-body__editor img",
+                '自由時報': "div.image-popup-vertical-fit img",
+                '中時新聞': "div.article-body img"
+            }
+            
+            selector = image_selectors.get(source_name)
+            if not selector:  # 如果沒有對應的選擇器，跳過
+                continue
+                
+            try:
+                image_element = WebDriverWait(driver, 5).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, selector))
+                )
+                image_url = image_element.get_attribute('src') or image_element.get_attribute('data-src')
+                results[source_name] = image_url or 'null'
+            except Exception as e:
+                print(f"圖片擷取失敗: {e}")
+                results[source_name] = 'null'
+                
+        except Exception as e:
+            print(f"圖片擷取錯誤: {e}")
+            results[source_name] = 'null'
+            
+    return results
     
-from django.views.decorators.http import require_GET
+'''-------------------------------------------------
+                    資料清理 & AI 分析
+----------------------------------------------------'''
 
-# 處理 GET 請求
-@require_GET
+# X.AI 聊天功能
+def chat_with_xai(prompt, api_key, model_name, context=""):
+    try:
+        url = 'https://api.x.ai/v1/chat/completions'
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {api_key}'
+        }
+
+        messages = [
+            {"role": "system", "content": "你是一個新聞分析助手，專門判斷新聞是否屬於同一事件。"},
+            {"role": "user", "content": prompt}
+        ]
+
+        data = {
+            "messages": messages,
+            "model": model_name,
+            "temperature": 0,
+            "stream": False
+        }
+
+        response = requests.post(url, headers=headers, json=data, timeout=30)
+        
+        if response.status_code == 200:
+            result = response.json()
+            if result and 'choices' in result and result['choices']:
+                content = result['choices'][0]['message']['content']
+                return content
+        
+        print(f"API 調用失敗 (狀態碼: {response.status_code})")
+        return ""  # 返回空字符串而不是 None
+
+    except Exception as e:
+        print(f"API 錯誤: {str(e)}")
+        return ""  # 返回空字符串而不是 None
+
+def is_disaster_news(title, content):
+    """
+    使用 X.AI 判斷新聞是否主要報導自然災害事件
+    """
+    prompt = f"""
+    請判斷以下新聞是否主要在報導自然災害事件本身，只需回答 true 或 false：
+    
+    允許的災害類型：大雨、豪雨、暴雨、淹水、洪水、水災、颱風、颶風、風災、地震、海嘯、乾旱、旱災
+
+    新聞標題：{title}
+    新聞內容：{content[:500]}
+
+    判斷標準：
+    1. 新聞必須主要描述災害事件本身，包括：
+       - 災害的發生過程
+       - 災害造成的直接影響和損失
+       - 災害現場的情況描述
+       
+    2. 必須排除以下類型的新聞：
+       - 災後援助或捐贈活動的報導
+       - 國際救援行動的新聞
+       - 災後重建相關報導
+       - 防災政策討論
+       - 氣候變遷議題
+       - 歷史災害回顧
+       - 以災害為背景但主要報導其他事件的新聞
+       
+    3. 特別注意：
+       - 如果新聞主要在報導救援、捐助、外交等活動，即使提到災害也應該回答 false
+       - 如果新聞只是用災害作為背景，主要報導其他事件，應該回答 false
+       - 新聞的核心主題必須是災害事件本身才回答 true
+    """
+    
+    # 呼叫 X.AI API 進行判斷 xai_api_key：API 金鑰 model_name：使用的模型名稱 ""：空的上下文。每次對話都是獨立的，AI 不會記得之前的對話
+    response = chat_with_xai(prompt, xai_api_key, model_name, "")
+    return 'true' in response.lower()
+
 def news_api(request):
     # 資料庫連接
     try:
@@ -934,6 +805,28 @@ def news_api(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
     
+'''-------------------------------------------------
+                       從CSV寫入資料庫
+----------------------------------------------------'''
+# 從 CSV寫入資料庫
+@csrf_exempt
+def news_create(request):
+    if request.method == 'POST': # POST 方法（新增資料）
+        data = json.loads(request.body)
+        news = News.objects.create(
+            title=data['title'],
+            link=data['link'],
+            content=data['content'],
+            source=data['source'],
+            date=data['date'],
+            image=data.get('image', 'null'),
+            region=data.get('region', '未知'),
+            summary=data.get('summary', ''),  # 新增 summary 欄位，預設值為空字串
+            location=data.get('location', ''),  # 新增 location 欄位，預設值為空字串
+            disaster=data.get('disaster', '')  # 新增 disaster 欄位，預設值為空字串
+        )
+        return JsonResponse({"message": "News created", "news_id": news.id}, status=201)
+    
 #單純抓取資料庫資料
 @require_GET
 def news_api_sql(request):
@@ -976,10 +869,62 @@ def news_api_sql(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-    
+'''-------------------------------------------------
+                     Views展示階段
+----------------------------------------------------'''
+
+# views.py
+# 處理新聞列表及搜尋功能
+def news_view(request):
+    query = request.GET.get('search', '')
+
+    conn = sqlite3.connect('w.db')  # 連接到 SQLite 資料庫
+    cursor = conn.cursor()  # 建立資料庫游標
+
+    if query:
+        # 如果有搜尋關鍵字，搜尋事件名稱中包含關鍵字的新聞
+        cursor.execute("SELECT * FROM news WHERE event LIKE ?", ('%' + query + '%',))
+    else:
+        # 如果沒有搜尋關鍵字，取得所有新聞
+        cursor.execute("SELECT * FROM news")
+
+    news_data = cursor.fetchall()
+    conn.close()
+
+    news_list = []
+    for row in news_data:
+        # 安全地處理可能為 None 的值
+
+        def safe_process(value):
+            return value.replace("\n", " ").replace("-", "").strip() if value else ""
+
+        news_list.append({
+            'id': row[0],
+            'event': safe_process(row[1]),
+            'image': row[2] or "",
+            'link': row[3] or "",
+            'content': safe_process(row[4])[:50] + '...' if row[4] and len(row[4]) > 50 else safe_process(row[4]),
+            'source': row[5] or "",
+            'date': row[6] or "",
+            'region': row[8] or "未知",
+            'summary': safe_process(row[11]),
+            'location': safe_process(row[9]),
+            'disaster': safe_process(row[10])
+        })
+
+    return render(request, 'news.html', {'news_list': news_list})
+
+
+# RESTful API 查詢所有新聞資料並以JSON格式返回
+# Views展示階段
+def news_list(request):
+    if request.method == 'GET': # GET 方法（讀取資料）
+        # 查詢所有新聞記錄，並返回標題、連結、內容、來源和日期
+        news = News.objects.all().values('title', 'link', 'content', 'source', 'date', 'image', 'region', 'summary', 'location', 'disaster')        
+        return JsonResponse(list(news), safe=False)
+
 # 新增更新新聞每日記錄的 API 端點
 # @csrf_exempt  # 關閉 CSRF 保護，允許外部 POST 請求
-# 從 CSV寫入資料庫
 @csrf_exempt
 def update_daily_records(request, news_id):
     if request.method == 'POST':
@@ -1017,4 +962,8 @@ def update_daily_records(request, news_id):
             return JsonResponse({"error": str(e)}, status=500)
     
     return JsonResponse({"error": "Method not allowed"}, status=405)
+
+def update_news(request):
+    main()  # 執行爬取新聞的函數
+    return JsonResponse({'message': '新聞更新成功！'})
     
