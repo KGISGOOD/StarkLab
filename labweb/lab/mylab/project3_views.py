@@ -62,7 +62,7 @@ domestic_keywords = [
 # 主程式
 def main():
     start_time = time.time()
-    day="1"
+    day="3"
     # Google News 搜 URL
     urls = [
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%xA8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
@@ -847,26 +847,22 @@ def news_api_sql(request):
         def safe_process(value):
             """移除特殊符號並清理文字"""
             if value:
-                # 移除換行符和破折號
                 value = value.replace("\n", " ").replace("-", "")
-                # 移除多餘的空格
                 value = " ".join(value.split())
                 return value.strip()
             return ""
 
         news_list = []
         for row in news_data:
-            # �建預設的 daily_records
+            # 處理 daily_records
             default_record = {
-                "date": row[6] or "",  # 使用新聞的日期
-                "content": safe_process(row[11] or ""),  # 使用新聞的摘要
-                "location": [row[9]] if row[9] else []  # 使用新聞的位置
+                "date": row[6] or "",
+                "content": safe_process(row[11] or ""),
+                "location": [row[9]] if row[9] else []
             }
 
-            # 處理 daily_records
             try:
                 daily_records = json.loads(row[12]) if row[12] else [default_record]
-                # 確保每個記錄都有必要的欄位
                 processed_records = []
                 for record in daily_records:
                     processed_record = {
@@ -878,12 +874,50 @@ def news_api_sql(request):
             except (json.JSONDecodeError, TypeError):
                 processed_records = [default_record]
 
-            # 如果處理後的記錄為空，使用預設記錄
             if not processed_records:
                 processed_records = [default_record]
 
+            # 處理 links
+            try:
+                # 創建預設的 link 項目
+                default_link = {
+                    "source": row[5] or "",
+                    "url": row[3] or "",
+                    "title": row[1] or "",
+                    "publish_date": row[6] or "",
+                    "location": row[9] or "",
+                    "summary": safe_process(row[11] or "")
+                }
+
+                # 嘗試解析資料庫中的 links
+                links_data = json.loads(row[13]) if row[13] else []
+                
+                # 如果沒有其他相關新聞，則返回 null
+                if not links_data or (len(links_data) == 1 and links_data[0] == row[3]):
+                    processed_links = "null"
+                else:
+                    # 處理每個 link
+                    processed_links = []
+                    for link_data in links_data:
+                        if isinstance(link_data, dict):
+                            # 如果已經是正確格式的 dict
+                            processed_link = {
+                                "source": link_data.get("source", ""),
+                                "url": link_data.get("url", ""),
+                                "title": link_data.get("title", ""),
+                                "publish_date": link_data.get("publish_date", ""),
+                                "location": link_data.get("location", ""),
+                                "summary": safe_process(link_data.get("summary", ""))
+                            }
+                        else:
+                            # 如果只是 URL 字符串，使用預設值
+                            processed_link = default_link.copy()
+                            processed_link["url"] = link_data
+                        processed_links.append(processed_link)
+            except (json.JSONDecodeError, TypeError):
+                processed_links = "null"
+
             news_item = {
-                # "id": row[0],  # 註解掉 id 欄位
                 "event": row[1],
                 "cover": row[2] or "null",
                 "link": row[3],
@@ -895,8 +929,8 @@ def news_api_sql(request):
                 "location": row[9],
                 "disaster": safe_process(row[10]),
                 "summary": row[11],
-                "daily_records": processed_records,  # 使用處理過的 daily_records
-                "links": json.loads(row[13]) if row[13] else []
+                "daily_records": processed_records,
+                "links": processed_links
             }
             news_list.append(news_item)
 
