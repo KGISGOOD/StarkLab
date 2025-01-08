@@ -62,7 +62,7 @@ domestic_keywords = [
 # 主程式
 def main():
     start_time = time.time()
-    day="3"
+    day="1"
     # Google News 搜 URL
     urls = [
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%xA8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
@@ -844,10 +844,46 @@ def news_api_sql(request):
         news_data = cursor.fetchall()
         conn.close()
 
+        def safe_process(value):
+            """移除特殊符號並清理文字"""
+            if value:
+                # 移除換行符和破折號
+                value = value.replace("\n", " ").replace("-", "")
+                # 移除多餘的空格
+                value = " ".join(value.split())
+                return value.strip()
+            return ""
+
         news_list = []
         for row in news_data:
+            # �建預設的 daily_records
+            default_record = {
+                "date": row[6] or "",  # 使用新聞的日期
+                "content": safe_process(row[11] or ""),  # 使用新聞的摘要
+                "location": [row[9]] if row[9] else []  # 使用新聞的位置
+            }
+
+            # 處理 daily_records
+            try:
+                daily_records = json.loads(row[12]) if row[12] else [default_record]
+                # 確保每個記錄都有必要的欄位
+                processed_records = []
+                for record in daily_records:
+                    processed_record = {
+                        "date": record.get("date", default_record["date"]),
+                        "content": safe_process(record.get("content", default_record["content"])),
+                        "location": record.get("location", default_record["location"])
+                    }
+                    processed_records.append(processed_record)
+            except (json.JSONDecodeError, TypeError):
+                processed_records = [default_record]
+
+            # 如果處理後的記錄為空，使用預設記錄
+            if not processed_records:
+                processed_records = [default_record]
+
             news_item = {
-                "id": row[0],
+                # "id": row[0],  # 註解掉 id 欄位
                 "event": row[1],
                 "cover": row[2] or "null",
                 "link": row[3],
@@ -857,9 +893,9 @@ def news_api_sql(request):
                 "recent_update": row[7],
                 "region": row[8],
                 "location": row[9],
-                "disaster": row[10],
+                "disaster": safe_process(row[10]),
                 "summary": row[11],
-                "daily_records": json.loads(row[12]) if row[12] else [],
+                "daily_records": processed_records,  # 使用處理過的 daily_records
                 "links": json.loads(row[13]) if row[13] else []
             }
             news_list.append(news_item)
