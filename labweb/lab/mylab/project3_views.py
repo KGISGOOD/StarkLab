@@ -62,7 +62,7 @@ domestic_keywords = [
 # 主程式
 def main():
     start_time = time.time()
-    day="3"
+    day="40"
     # Google News 搜 URL
     urls = [
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%xA8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
@@ -577,126 +577,8 @@ def is_disaster_news(title, content):
     response = chat_with_xai(prompt, xai_api_key, model_name, "")
     return 'true' in response.lower()
 
-def format_event_title(location, content, title):
-    """格式化事件標題為：國家 主要城市 主要災害類型"""
-    prompt = f"""
-    請從以下資訊中提取一個主要的國家、一個主要城市和災害類型，
-    並以「國家 主要城市 主要災害類型」的格式回傳。
-    如果有多個城市，只需選擇最主要或最先提到的城市。
-    請用空格分隔不要加任何標點符號或換行符號：
-
-    地點：{location}
-    內容：{content}
-    標題：{title}
-
-    範例格式：
-    日本 東京 地震
-    美國 加州 洪水
-    台灣 高雄 豪雨
-    中國 浙江 颱風
-    """
-    
-    response = chat_with_xai(prompt, xai_api_key, model_name, "")
-    return response.strip()
-
-def is_pure_disaster_news(title, content):
-    """判斷是否為純災害新聞"""
-    prompt = f"""
-    請判斷以下新聞是否為純災害新聞報導，只需回答 true 或 false。
-
-    新聞標題：{title}
-    新聞內容：{content[:500]}
-
-    判斷標準：
-    1. 必須主要報導自然災害本身（如地震、颱風、洪水、乾旱等）
-    2. 不應包含以下內容：
-        - 政治議題或政策討論
-        - 經濟影響或金融市場反應
-        - 救援或援助活動
-        - 災後重建計劃
-        - 防災措施或政策
-        - 氣候變遷討論
-        - 歷史災害回顧
-        - 金錢損失統計
-        - 賠償金額討論
-        - 險理賠相關
-    3. 內容應集中在：
-        - 災害發生的情況
-        - 災害的規模（如地震規模、雨量）
-        - 受影響的地理範圍
-        - 即時災情描述
-    """
-    
-    response = chat_with_xai(prompt, xai_api_key, model_name, "")
-    return 'true' in response.lower()
-
-def is_same_event(event1, event2, date1, date2, location1, location2):
-    """判斷是否為同一事件"""
-    prompt = f"""
-    請判斷以下兩則新聞是否報導同一個災害事件，只需回答 true 或 false：
-
-    新聞1：
-    事件：{event1}
-    日期：{date1}
-    地點：{location1}
-
-    新聞2：
-    事件：{event2}
-    日期：{date2}
-    地點：{location2}
-
-    判斷標準：
-    1. 地震事件的特殊判斷：
-        - 如果是同一個國家在5天內發生的地震，視為同一事件，回答true
-        - 即使地點描述不同（如「近海」、「首都」、「某城市」），只要是同一國家或地區都視為同一事件，回答true
-        - 餘震也應該歸類在同一事件中，回答true
-        - 例如：「萬那杜近海地震」和「萬那杜維拉港地震」應該視為同一事件，回答true
-
-    2. 其他災害類型判斷：
-        - 同一國家3天內的相同類型災害視為同一事件，回答true
-        - 相鄰區域的相同災害視為同一事件，回答true
-
-    3. 特別注意：
-        - 地震新聞中的「近海」、「外海」、「城市名」都應視為同一國家的同一事件，回答true
-        - 日期相近（5天內）的地震通常為同一地震事件的後續報導，回答true
-        - 規模不同也可能是後續修正或不同機構的測量結果
-
-    請根據以上標準判斷。
-    """
-    
-    response = chat_with_xai(prompt, xai_api_key, model_name, "")
-    return 'true' in response.lower()
-
-def safe_process(value):
-    return value.replace("\n", " ").replace("-", "").strip() if value else ""
-
-def parse_location(location_str):
-    """處理地點字符串，移除特殊字符並用空格分隔"""
-    if not location_str:
-        return []
-    
-    # 如果是列表或字典，轉換為字符串
-    if isinstance(location_str, (list, dict)):
-        location_str = json.dumps(location_str, ensure_ascii=False)
-    
-    # 移除特殊字符和格式
-    location_str = location_str.replace('\n', ' ')  # 換行替換為空格
-    location_str = location_str.replace('- ', '')   # 移除列表符號
-    location_str = location_str.replace('，', ',')  # 統一逗號格式
-    
-    # 分割並清理每個地點
-    locations = []
-    for loc in location_str.split(','):
-        # 清理並添加非空的地點
-        cleaned_loc = loc.strip()
-        if cleaned_loc:
-            locations.append(cleaned_loc)
-    
-    # 移除重複項返回
-    return list(dict.fromkeys(locations))
-
-@require_GET
 def news_api(request):
+    # 資料庫連接
     try:
         conn = sqlite3.connect('w.db')
         cursor = conn.cursor()
@@ -711,84 +593,236 @@ def news_api(request):
         news_data = cursor.fetchall()
         conn.close()
 
+        # 使用 AI 生成標準格式的標題
+        # AI分析階段
+        def format_event_title(location, content, title):
+            """格式化事件標題為：國家主要城市主要災害類型"""
+            prompt = f"""
+            請從以下資訊中提取一個主要的國家、一個主要城市和災害類型，
+            並以「國家主要城市主要災害類型」的格式回傳。
+            不要加任何空格、標點符號或換行符號。
+            如果有多個城市，只需選擇最主要或最先提到的城市。
+
+            地點：{location}
+            內容：{content}
+            標題：{title}
+
+            範例格式：
+            日本東京地震
+            美國加州洪水
+            台灣高雄豪雨
+            中國浙江颱風
+            """
+            
+            response = chat_with_xai(prompt, xai_api_key, model_name, "")
+            return response.strip()
+
+        def is_pure_disaster_news(title, content):
+            """判斷是否為純災害新聞"""
+            prompt = f"""
+            請判斷以下新聞是否為純災害新聞報導，只需回答 true 或 false。
+
+            新聞標題：{title}
+            新聞內容：{content[:500]}
+
+            判斷標準：
+            1. 必須主要報導自然災害本身（如地震、颱風、洪水、乾旱等）
+            2. 不應包含以下內容：
+               - 政治議題或政策討論
+               - 經濟影響或金融市場反應
+               - 救援或援助活動
+               - 災後重建計劃
+               - 防災措施或政策
+               - 氣候變遷討論
+               - 歷史災害回顧
+               - 賠償金額討論
+               - 保險理賠相關
+            3. 內容應集中在：
+               - 災害發生的情況
+               - 災害的規模（如地震規模、雨量）
+               - 受影響的地理範圍
+               - 即時災情描述
+               - 災害造成的損失金額和財產損失統計
+            """
+            
+            response = chat_with_xai(prompt, xai_api_key, model_name, "")
+            return 'true' in response.lower()
+
+        def is_same_event(event1, event2, location1, location2):
+            """判斷是否為同一事件"""
+            prompt = f"""
+            請判斷以下兩則新聞是否報導同一個災害事件，只需回答 true 或 false：
+
+            新聞1：
+            事件：{event1}
+            地點：{location1}
+
+            新聞2：
+            事件：{event2}
+            地點：{location2}
+
+            判斷標準：
+            1. 如果新聞的標題與內文出現相同的地點或災害，則直接視為同一事件，回應 true。
+
+            2. 地震事件的特殊判斷：
+            - 即使地點描述不同（如「近海」、「首都」、「某城市」），只要是同一國家都視為同一事件
+            - 餘震也應該歸類在同一事件中
+            - 例如：「萬那杜近海地震」和「萬那杜維拉港地震」應該視為同一事件
+
+            3. 其他災害類型判斷：
+            - 同一國家有相同類型災害視為同一事件
+            - 相鄰區域的相同災害視為同一事件
+
+            請根據以上標準判斷。
+            """
+
+            response = chat_with_xai(prompt, xai_api_key, model_name, "")
+            return 'true' in response.lower()
+
+        # 資料清理階段
+        def safe_process(value):
+            """安全處理文字，移除特殊字符"""
+            return value.replace("\n", " ").replace("-", "").strip() if value else ""
+
+        def parse_location(location_str):
+            """處理地點字符串，移除特殊字符並用空格分隔"""
+            if not location_str:
+                return []
+            
+            # 如果是列表或字典，轉換為字符串
+            if isinstance(location_str, (list, dict)):
+                location_str = json.dumps(location_str, ensure_ascii=False)
+            
+            # 移除特殊字符和格式
+            location_str = location_str.replace('\n', ' ')  # 換行替換為空格
+            location_str = location_str.replace('- ', '')   # 移除列表符號
+            location_str = location_str.replace('，', ',')  # 統一逗號格式
+            
+            # 分割並清理每個地點
+            locations = []
+            for loc in location_str.split(','):
+                # 清理並添加非空的地點
+                cleaned_loc = loc.strip()
+                if cleaned_loc:
+                    locations.append(cleaned_loc)
+            
+            # 移除重複項返回
+            return list(dict.fromkeys(locations))
+
         merged_news = {}
         processed_events = set()
-        all_news_items = []
 
-        # 收集新聞項目
         for row in news_data:
+            # 先判斷是否為純災害新聞
             if not is_pure_disaster_news(row[1], row[4] or ""):
+                continue
+
+            if row[1] in processed_events:
                 continue
 
             location = parse_location(row[9])
             
+            # 處理 cover 欄位
+            cover = "null"
+            if row[2] and isinstance(row[2], str) and row[2].strip():
+                cover = row[2]
+            
+            formatted_event = format_event_title(
+                ','.join(location), 
+                safe_process(row[4] or ""),
+                row[1]
+            )
+
+            # 尋找相關事件
+            event_key = None
+            for existing_key in merged_news.keys():
+                if is_same_event(
+                    formatted_event,
+                    merged_news[existing_key]["event"],
+                    row[6] or row[7] or "",
+                    merged_news[existing_key]["date"],
+                    ', '.join(location),
+                    ', '.join(merged_news[existing_key]["location"])
+                ):
+                    event_key = existing_key
+                    break
+
             news_item = {
                 "source": row[5] or "",
                 "url": row[3] or "",
-                "title": row[1],
+                "title": row[1],  # 保留原始標題
                 "publish_date": row[6] or "",
                 "location": location,
-                "summary": safe_process(row[11] or ""),
-                "formatted_event": format_event_title(
-                    ','.join(location), 
-                    safe_process(row[4] or ""),
-                    row[1]
-                )
+                "summary": safe_process(row[11] or "")
             }
-            all_news_items.append(news_item)
 
-        # 分組處理
-        for current_news in all_news_items:
-            if current_news["title"] in processed_events:
-                continue
+            if event_key:
+                # 合併 location，確保不重複且格式正確
+                all_locations = set(merged_news[event_key]["location"])
+                all_locations.update(location)
+                merged_news[event_key]["location"] = sorted(list(all_locations))  # 排序以保持穩定順序
+                
+                merged_news[event_key]["links"].append(news_item)
+                
+                current_date = row[7] or row[6] or ""
+                if current_date > merged_news[event_key]["recent_update"]:
+                    merged_news[event_key]["recent_update"] = current_date
+                    merged_news[event_key]["daily_records"].append({
+                        "date": current_date,
+                        "content": safe_process(row[11] or ""),
+                        "location": location
+                    })
+                
+                # 更新 cover
+                if cover != "null" and merged_news[event_key]["cover"] == "null":
+                    merged_news[event_key]["cover"] = cover
+                
+                # 更新 overview，加入新的摘要和內文資訊
+                overview_prompt = f"""
+                請整合以下新的資訊到現有的概述中。請以單一段落呈現，不要使用任何特殊符號（包括但不限於：\n、**、#、-、*、>、`等），不要使用分點符號，不要換行。請直接以流暢的一段文字描述：
 
-            related_news = []
-            event_locations = set(current_news["location"])
-            processed_events.add(current_news["title"])
-            
-            # 尋找相關新聞
-            for other_news in all_news_items:
-                if other_news["title"] != current_news["title"] and \
-                   other_news["title"] not in processed_events and \
-                   is_same_event(
-                       current_news["formatted_event"],
-                       other_news["formatted_event"],
-                       current_news["publish_date"],
-                       other_news["publish_date"],
-                       ', '.join(current_news["location"]),
-                       ', '.join(other_news["location"])
-                   ):
-                    related_news.append(other_news)
-                    processed_events.add(other_news["title"])
-                    event_locations.update(other_news["location"])
+                現有概述：{merged_news[event_key]["overview"]}
+                新的摘要：{safe_process(row[11] or "")}
+                新的內文：{safe_process(row[4] or "")}
+                """
+                merged_news[event_key]["overview"] = chat_with_xai(overview_prompt, xai_api_key, model_name, "").strip()
+            else:
+                # 生成初始 overview
+                overview_prompt = f"""
+                請根據以下資訊生成一個完整的災害事件概述。請以單一段落呈現，不要使用任何特殊符號（包括但不限於：\n、**、#、-、*、>、`等），不要使用分點符號，不要換行。請直接以流暢的一段文字描述：
 
-            # 只在有相關新聞時才更新 links
-            links = [{
-                "source": news["source"],
-                "url": news["url"],
-                "title": news["title"],
-                "publish_date": news["publish_date"],
-                "location": ', '.join(news["location"]),
-                "summary": news["summary"]
-            } for news in related_news] if related_news else "null"
+                事件標題：{formatted_event}
+                事件摘要：{safe_process(row[11] or "")}
+                詳細內文：{safe_process(row[4] or "")}
+                """
+                initial_overview = chat_with_xai(overview_prompt, xai_api_key, model_name, "").strip()
+                
+                new_key = f"{formatted_event}_{len(merged_news)}"
+                merged_news[new_key] = {
+                    "event": formatted_event,
+                    "region": '國內' if any(keyword in ','.join(location) for keyword in domestic_keywords) else '國外',
+                    "cover": cover,  # 使用處理過的 cover
+                    "date": row[6] or "",
+                    "recent_update": row[7] or row[6] or "",
+                    "location": location,
+                    "overview": initial_overview,
+                    "summary": safe_process(row[11] or ""),  # 只保留當前新聞的摘要
+                    "daily_records": [{
+                        "date": row[7] or row[6] or "",
+                        "content": safe_process(row[11] or ""),
+                        "location": location
+                    }],
+                    "links": [{
+                        "source": row[5] or "",        # source
+                        "url": row[3] or "",           # link
+                        "title": row[1] or "",         # event
+                        "publish_date": row[6] or "",   # date
+                        "location": row[9] or "",      # location
+                        "summary": safe_process(row[11] or "")  # summary
+                    }]
+                }
 
-            # 建立事件群組
-            event_key = f"{current_news['formatted_event']}_{len(merged_news)}"
-            merged_news[event_key] = {
-                "event": current_news["formatted_event"],
-                "region": '國內' if any(keyword in ','.join(event_locations) for keyword in domestic_keywords) else '國外',
-                "cover": next((row[2] for row in news_data if row[1] == current_news["title"]), "null"),
-                "date": min(news["publish_date"] for news in related_news) if related_news else current_news["publish_date"],
-                "recent_update": max(news["publish_date"] for news in related_news) if related_news else current_news["publish_date"],
-                "location": sorted(list(event_locations)),
-                "overview": safe_process(current_news["summary"]),
-                "daily_records": [{
-                    "date": news["publish_date"],
-                    "content": news["summary"],
-                    "location": news["location"]
-                } for news in related_news] if related_news else [],
-                "links": links
-            }
+            processed_events.add(row[1])
 
         news_list = list(merged_news.values())
         news_list.sort(key=lambda x: x["recent_update"], reverse=True)
@@ -984,8 +1018,7 @@ def news_view(request):
             'region': row[8] or "未知",
             'summary': safe_process(row[11]),
             'location': safe_process(row[9]),
-            'disaster': safe_process(row[10]),
-            'links': json.loads(row[12]) if row[12] else "null"  # 假設 links 在索引 12
+            'disaster': safe_process(row[10])
         })
 
     return render(request, 'news.html', {'news_list': news_list})
