@@ -192,6 +192,20 @@ def main():
                 locations.append(location_answer)
                 disasters.append(disaster_answer)
 
+                # 生成 overview
+                overview_prompt = f"""
+                請根據以下資訊生成一個完整的災害事件概述。請以單一段落呈現，不要使用任何特殊符號，不要使用分點符號，不要換行。
+                請直接以流暢的一段文字描述事件的重點，包含地點、時間、災害類型、影響程度等關鍵資訊：
+
+                標題：{item['標題']}
+                內容：{content}
+                摘要：{summary_answer}
+                地點：{location_answer}
+                災害：{disaster_answer}
+                """
+                
+                overview = chat_with_xai(overview_prompt, xai_api_key, model_name, "").strip()
+
                 result = {
                     '標題': item['標題'],
                     '連結': original_url,
@@ -202,7 +216,8 @@ def main():
                     '地區': region,
                     '摘要': summary_answer,
                     '地點': location_answer,
-                    '災害': disaster_answer
+                    '災害': disaster_answer,
+                    '概述': overview  # 新增概述欄位
                 }
 
                 # 儲存資料到 CSV。所有處理完成後，一次性寫入 CSV
@@ -219,6 +234,7 @@ def main():
                 print(f"摘要: {result['摘要']}")
                 print(f"地點: {result['地點']}")
                 print(f"災害: {result['災害']}")
+                print(f"概述: {result['概述']}")  # 新增概述的輸出
                 print('-' * 80)
 
         driver.quit()
@@ -244,7 +260,8 @@ def main():
             disaster TEXT,               -- 災害類型
             summary TEXT,                -- 事件摘要
             daily_records TEXT,          -- 每日進展記錄 (JSON)
-            links TEXT                   -- 新聞連結資料 (JSON)
+            links TEXT,                  -- 新聞連結資料 (JSON)
+            overview TEXT                -- 事件概述
         )
         ''')
 
@@ -266,9 +283,9 @@ def main():
                 cursor.execute(f'''
                 INSERT INTO {table_name} (
                     event, image, link, content, source, date, recent_update,
-                    region, location, disaster, summary, daily_records, links
+                    region, location, disaster, summary, daily_records, links, overview
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ''', (
                     row['標題'],                # event
                     row['圖片'],                # image
@@ -276,13 +293,21 @@ def main():
                     row['內文'],                # content
                     row['來源'],                # source
                     row['時間'].strftime('%Y-%m-%d'),  # date
-                    row['時間'].strftime('%Y-%m-%d'),  # recent_update (使用相同日期)
+                    row['時間'].strftime('%Y-%m-%d'),  # recent_update
                     row['地區'],                # region
                     row['地點'],                # location
                     row['災害'],                # disaster
                     row['摘要'],                # summary
-                    json.dumps([]),             # daily_records (空陣列)
-                    json.dumps([row['連結']])   # links (包含原始連結)
+                    json.dumps([]),             # daily_records
+                    json.dumps([{               # links - 直接建立 news_item 格式
+                        "source": row['來源'],
+                        "url": row['連結'],
+                        "title": row['標題'],
+                        "publish_date": row['時間'].strftime('%Y-%m-%d'),
+                        "location": row['地點'],
+                        "summary": row['摘要']
+                    }]),
+                    row.get('概述', row['內文'][:200])  # overview
                 ))
                 print(f"Inserted: {row['標題']}")
 
@@ -793,7 +818,14 @@ def news_api(request):
                         "content": safe_process(row[11] or ""),
                         "location": location
                     }],
-                    "links": [news_item]
+                    "links": [{
+                        "source": row[5] or "",        # source
+                        "url": row[3] or "",           # link
+                        "title": row[1] or "",         # event
+                        "publish_date": row[6] or "",   # date
+                        "location": row[9] or "",      # location
+                        "summary": safe_process(row[11] or "")  # summary
+                    }]
                 }
 
             processed_events.add(row[1])
@@ -813,6 +845,17 @@ def news_api(request):
 def news_create(request):
     if request.method == 'POST': # POST 方法（新增資料）
         data = json.loads(request.body)
+        
+        # 建立 news_item 格式的 links
+        news_item = {
+            "source": data['source'],
+            "url": data['link'],
+            "title": data['title'],
+            "publish_date": data['date'],
+            "location": data.get('location', ''),
+            "summary": data.get('summary', '')
+        }
+        
         news = News.objects.create(
             title=data['title'],
             link=data['link'],
@@ -821,9 +864,10 @@ def news_create(request):
             date=data['date'],
             image=data.get('image', 'null'),
             region=data.get('region', '未知'),
-            summary=data.get('summary', ''),  # 新增 summary 欄位，預設值為空字串
-            location=data.get('location', ''),  # 新增 location 欄位，預設值為空字串
-            disaster=data.get('disaster', '')  # 新增 disaster 欄位，預設值為空字串
+            summary=data.get('summary', ''),
+            location=data.get('location', ''),
+            disaster=data.get('disaster', ''),
+            links=json.dumps([news_item])  # 新增 links 欄位，存入 JSON 格式的 news_item
         )
         return JsonResponse({"message": "News created", "news_id": news.id}, status=201)
     
@@ -837,7 +881,7 @@ def news_api_sql(request):
         cursor.execute("""
             SELECT id, event, image, link, content, source, date, 
                    recent_update, region, location, disaster, 
-                   summary, daily_records, links 
+                   summary, daily_records, links, overview 
             FROM news
             ORDER BY date DESC
         """)
@@ -929,6 +973,7 @@ def news_api_sql(request):
                 "location": row[9],
                 "disaster": safe_process(row[10]),
                 "summary": row[11],
+                "overview": safe_process(row[14] or ""),  # 加入 overview
                 "daily_records": processed_records,
                 "links": processed_links
             }
@@ -1034,6 +1079,31 @@ def update_daily_records(request, news_id):
     return JsonResponse({"error": "Method not allowed"}, status=405)
 
 def update_news(request):
-    main()  # 執行爬取新聞的函數
-    return JsonResponse({'message': '新聞更新成功！'})
-    
+    try:
+        # 先檢查並更新資料庫結構
+        conn = sqlite3.connect('w.db')
+        cursor = conn.cursor()
+        
+        # 檢查 overview 欄位是否存在
+        cursor.execute("PRAGMA table_info(news)")
+        columns = [column[1] for column in cursor.fetchall()]
+        
+        # 如果 overview 欄位不存在，則新增
+        if 'overview' not in columns:
+            cursor.execute('ALTER TABLE news ADD COLUMN overview TEXT')
+            conn.commit()
+        
+        conn.close()
+        
+        # 執行主要的爬蟲功能
+        main()
+        return JsonResponse({'message': '新聞更新成功！'})
+    except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"更新錯誤: {str(e)}")
+        print(f"詳細錯誤訊息: {error_details}")
+        return JsonResponse({
+            'error': str(e),
+            'details': error_details
+        }, status=500)
