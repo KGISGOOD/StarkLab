@@ -37,7 +37,7 @@ class News(models.Model):
     )  # 災害類型
     summary = models.TextField(blank=True, null=True)  # 事件摘要
     daily_records = models.JSONField(blank=True, null=True)  # 每日進展記錄
-    links = models.TextField(default='[]')  # 存儲 JSON 格式的相關新聞列表
+    links = models.JSONField(null=True, blank=True)  # 允許 links 欄位為 null
     class Meta:
         db_table = "news"  # 指定資料表名稱為 "news"
 
