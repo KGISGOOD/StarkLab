@@ -293,19 +293,19 @@ def main():
     day="30"
     # Google News 搜 URL
     urls = [
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%xA8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%xA8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
     ]
     
     #print(urls)
@@ -659,8 +659,7 @@ def news_api(request):
             ORDER BY date DESC
         """)
         news_data = cursor.fetchall()
-        conn.close()
-
+        
         def format_event_title(location, content, title):
             """格式化事件標題為：國家主要城市主要災害類型"""
             prompt = f"""
@@ -890,7 +889,123 @@ def news_api(request):
         news_list = list(merged_news.values())
         news_list.sort(key=lambda x: x["recent_update"], reverse=True)
 
+        # 在處理完資料後，將結果存入新的資料表
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS processed_news (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            event TEXT,
+            region TEXT,
+            cover TEXT,
+            date TEXT,
+            recent_update TEXT,
+            location TEXT,
+            overview TEXT,
+            summary TEXT,
+            daily_records TEXT,
+            links TEXT,
+            last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+        
+        # 清空舊資料
+        cursor.execute('DELETE FROM processed_news')
+        
+        # 儲存處理後的資料
+        for news_item in news_list:
+            cursor.execute('''
+            INSERT INTO processed_news (
+                event, region, cover, date, recent_update,
+                location, overview, summary, daily_records, links
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                news_item['event'],
+                news_item['region'],
+                news_item['cover'],
+                news_item['date'],
+                news_item['recent_update'],
+                json.dumps(news_item['location'], ensure_ascii=False),
+                news_item['overview'],
+                news_item['summary'],
+                json.dumps(news_item['daily_records'], ensure_ascii=False),
+                json.dumps(news_item['links'], ensure_ascii=False)
+            ))
+        
+        # 確保所有更改都已提交
+        conn.commit()
+        
+        # 在返回結果之前關閉連接
+        conn.close()
+
         return JsonResponse(news_list, safe=False)
+    except Exception as e:
+        # 確保在發生錯誤時也關閉連接
+        if 'conn' in locals():
+            conn.close()
+        return JsonResponse({'error': str(e)}, status=500)
+    
+@require_GET
+def news_api_sql(request):
+    """
+    直接從處理好的資料表中讀取資料，不需要調用 AI API
+    """
+    try:
+        conn = sqlite3.connect('w.db')
+        cursor = conn.cursor()
+        
+        # 確保資料表存在
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS processed_news (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            event TEXT,
+            region TEXT,
+            cover TEXT,
+            date TEXT,
+            recent_update TEXT,
+            location TEXT,  -- JSON 格式的字串
+            overview TEXT,
+            summary TEXT,
+            daily_records TEXT,  -- JSON 格式的字串
+            links TEXT,  -- JSON 格式的字串
+            last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+        conn.commit()
+        
+        cursor.execute('''
+        SELECT event, region, cover, date, recent_update,
+               location, overview, summary, daily_records, links
+        FROM processed_news
+        ORDER BY date DESC
+        ''')
+        
+        rows = cursor.fetchall()
+        
+        # 如果資料表是空的，返回空列表
+        if not rows:
+            return JsonResponse([], safe=False)
+
+        news_list = []
+        for row in rows:
+            try:
+                news_item = {
+                    "event": row[0],
+                    "region": row[1],
+                    "cover": row[2],
+                    "date": row[3],
+                    "recent_update": row[4],
+                    "location": json.loads(row[5]) if row[5] else [],
+                    "overview": row[6],
+                    "summary": row[7],
+                    "daily_records": json.loads(row[8]) if row[8] else [],
+                    "links": json.loads(row[9]) if row[9] else []
+                }
+                news_list.append(news_item)
+            except json.JSONDecodeError:
+                continue  # 跳過解析失敗的資料
+
+        conn.close()
+        return JsonResponse(news_list, safe=False)
+    
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
     
