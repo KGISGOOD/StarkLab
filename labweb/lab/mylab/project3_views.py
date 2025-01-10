@@ -1,5 +1,3 @@
-# 架構：爬蟲 -> 資料清理 -> AI 分析 -> 寫入 CSV -> 寫入資料庫
-
 from django.shortcuts import render
 import pandas as pd
 import os
@@ -46,7 +44,6 @@ domestic_keywords = [
     '臺灣', '台北', '臺中', '臺南', '臺9縣', '全台', '全臺'
 ]
 
-# 從 Google News 抓取新聞資料的爬蟲功能
 def fetch_news(url):
     try:
         response = requests.get(url)
@@ -86,8 +83,7 @@ def fetch_news(url):
     except Exception as e:
         print(f"抓取新聞時發生錯誤: {e}")
         return []
-
-# 解析和標準化新聞的日期格式
+    
 def parse_date(date_str):
     current_date = datetime.now()
     
@@ -114,7 +110,6 @@ def parse_date(date_str):
 
     return date.strftime('%Y-%m-%d')
 
-# 瀏覽器的無頭模式，讓 Chrome 在背景運行而不需要開啟實際的瀏覽器視窗
 def setup_chrome_driver():
     chrome_options = Options()
     chrome_options.add_argument('--headless')
@@ -126,14 +121,12 @@ def setup_chrome_driver():
     driver = webdriver.Chrome(service=service, options=chrome_options)
     return driver
 
-# 從 Google News 的 URL 中提取最終的 URL
 def extract_final_url(google_news_url):
     match = re.search(r'(https?://[^&]+)', google_news_url)
     if match:
         return match.group(1)
     return google_news_url
 
-# 從新聞網站中擷取內容和摘要
 def fetch_article_content(driver, sources_urls):
     results = {}
     summaries = {}
@@ -147,8 +140,7 @@ def fetch_article_content(driver, sources_urls):
                 EC.presence_of_element_located((By.CSS_SELECTOR, 'p'))
             )
             
-            # 只處理這四家報社
-            # content_selectors「怎麼抓？」
+            # 更新選擇器以只包含四家報社
             content_selectors = {
                 'Newtalk新聞': 'div.articleBody.clearfix p',
                 '經濟日報': 'section.article-body__editor p',
@@ -176,7 +168,6 @@ def fetch_article_content(driver, sources_urls):
             
     return results, summaries
 
-# 從新聞網站中擷取圖片 URL
 def extract_image_url(driver, sources_urls):
     results = {}
     for source_name, url in sources_urls.items():
@@ -213,7 +204,7 @@ def extract_image_url(driver, sources_urls):
             
     return results
 
-# 先將爬取到的資料存進csv檔
+# 加載並摘要 CSV 資料
 def load_and_summarize_csv(file_path):
     try:
         data = pd.read_csv(file_path)
@@ -293,10 +284,6 @@ def is_disaster_news(title, content):
        - 新聞的核心主題必須是災害事件本身才回答 true
     """
     
-    # 呼叫 X.AI API 進行判斷
-    # xai_api_key：API 金鑰
-    # model_name：使用的模型名稱
-    # ""：空的上下文。每次對話都是獨立的，AI 不會記得之前的對話
     response = chat_with_xai(prompt, xai_api_key, model_name, "")
     return 'true' in response.lower()
 
@@ -321,19 +308,18 @@ def main():
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
     ]
     
-    #收集新聞
+    #print(urls)
     all_news_items = []
     for url in urls:
         news_items = fetch_news(url)
         all_news_items.extend(news_items)
 
-    #處理新聞資料
     if all_news_items:
         news_df = pd.DataFrame(all_news_items)
         news_df = news_df.drop_duplicates(subset='標題', keep='first')
 
-        # 設定輸出檔案
         driver = setup_chrome_driver()
+
         output_file = 'w.csv'
         if os.path.exists(output_file):
             os.remove(output_file)
@@ -343,7 +329,6 @@ def main():
         locations = []
         disasters = []
 
-        # 處理每個新聞項目
         for index, item in news_df.iterrows():
             source_name = item['來源']
             original_url = item['連結']
@@ -446,7 +431,7 @@ def main():
                     '災害': disaster_answer
                 }
 
-                # 儲存資料到 CSV。所有處理完成後，一次性寫入 CSV
+                # 儲存資料到 CSV
                 output_df = pd.DataFrame([result])
                 output_df.to_csv(output_file, mode='a', header=not os.path.exists(output_file), index=False, encoding='utf-8')
 
@@ -517,20 +502,13 @@ def main():
                     row['內文'],                # content
                     row['來源'],                # source
                     row['時間'].strftime('%Y-%m-%d'),  # date
-                    row['時間'].strftime('%Y-%m-%d'),  # recent_update
+                    row['時間'].strftime('%Y-%m-%d'),  # recent_update (使用相同日期)
                     row['地區'],                # region
                     row['地點'],                # location
                     row['災害'],                # disaster
                     row['摘要'],                # summary
-                    json.dumps([]),             # daily_records
-                    json.dumps([{               # links - 完整的 link_item 格式
-                        "source": row['來源'],
-                        "url": row['連結'],
-                        "title": row['標題'],
-                        "publish_date": row['時間'].strftime('%Y-%m-%d'),
-                        "location": row['地點'],
-                        "summary": row['摘要']
-                    }])
+                    json.dumps([]),             # daily_records (空陣列)
+                    json.dumps([row['連結']])   # links (包含原始連結)
                 ))
                 print(f"Inserted: {row['標題']}")
 
@@ -556,7 +534,7 @@ def main():
 if __name__ == "__main__":
     main()
 
-#從資料庫讀取所有新聞資料
+
 def fetch_news_data():
     db_name = 'w.db'
     table_name = 'news'
@@ -605,14 +583,12 @@ from django.views.decorators.csrf import csrf_exempt
 def news_view(request):
     query = request.GET.get('search', '')
 
-    conn = sqlite3.connect('w.db')  # 連接到 SQLite 資料庫
-    cursor = conn.cursor()  # 建立資料庫游標
+    conn = sqlite3.connect('w.db')
+    cursor = conn.cursor()
 
     if query:
-        # 如果有搜尋關鍵字，搜尋事件名稱中包含關鍵字的新聞
         cursor.execute("SELECT * FROM news WHERE event LIKE ?", ('%' + query + '%',))
     else:
-        # 如果沒有搜尋關鍵字，取得所有新聞
         cursor.execute("SELECT * FROM news")
 
     news_data = cursor.fetchall()
@@ -621,7 +597,6 @@ def news_view(request):
     news_list = []
     for row in news_data:
         # 安全地處理可能為 None 的值
-
         def safe_process(value):
             return value.replace("\n", " ").replace("-", "").strip() if value else ""
 
@@ -644,7 +619,7 @@ def news_view(request):
 
 # RESTful API 查詢所有新聞資料並以JSON格式返回
 def news_list(request):
-    if request.method == 'GET': # GET 方法（讀取資料）
+    if request.method == 'GET':
         # 查詢所有新聞記錄，並返回標題、連結、內容、來源和日期
         news = News.objects.all().values('title', 'link', 'content', 'source', 'date', 'image', 'region', 'summary', 'location', 'disaster')        
         return JsonResponse(list(news), safe=False)
@@ -652,25 +627,8 @@ def news_list(request):
 # RESTful API 新增新聞資料
 @csrf_exempt
 def news_create(request):
-    if request.method == 'POST': # POST 方法（新增資料）
+    if request.method == 'POST':
         data = json.loads(request.body)
-        
-        # 處理 links 資料
-        links_data = data.get('links', [])
-        # 如果 links 是字串，轉換為 JSON 格式
-        if isinstance(links_data, str):
-            try:
-                links_data = json.loads(links_data)
-            except json.JSONDecodeError:
-                links_data = []
-        
-        # 確保 links_data 是列表格式
-        if not isinstance(links_data, list):
-            links_data = []
-            
-        # 將 links_data 轉換為 JSON 字串
-        links_json = json.dumps(links_data)
-        
         news = News.objects.create(
             title=data['title'],
             link=data['link'],
@@ -683,18 +641,12 @@ def news_create(request):
             location=data.get('location', ''),  # 新增 location 欄位，預設值為空字串
             disaster=data.get('disaster', '')  # 新增 disaster 欄位，預設值為空字串
         )
-        return JsonResponse({
-            "message": "News created", 
-            "news_id": news.id,
-            "links": links_data  # 在回應中包含處理後的 links 資料
-        }, status=201)
+        return JsonResponse({"message": "News created", "news_id": news.id}, status=201)
     
 from django.views.decorators.http import require_GET
 
-# 處理 GET 請求
 @require_GET
 def news_api(request):
-    # 資料庫連接
     try:
         conn = sqlite3.connect('w.db')
         cursor = conn.cursor()
@@ -709,7 +661,6 @@ def news_api(request):
         news_data = cursor.fetchall()
         conn.close()
 
-        # 使用 AI 生成標準格式的標題
         def format_event_title(location, content, title):
             """格式化事件標題為：國家主要城市主要災害類型"""
             prompt = f"""
@@ -763,19 +714,19 @@ def news_api(request):
             response = chat_with_xai(prompt, xai_api_key, model_name, "")
             return 'true' in response.lower()
 
-        def is_same_event(event1, event2, disaster1, disaster2, location1, location2):
+        def is_same_event(event1, event2, date1, date2, location1, location2):
             """判斷是否為同一事件"""
             prompt = f"""
             請判斷以下兩則新聞是否報導同一個災害事件，只需回答 true 或 false：
 
             新聞1：
             事件：{event1}
-            災害：{disaster1}
+            日期：{date1}
             地點：{location1}
 
             新聞2：
             事件：{event2}
-            災害：{disaster2}
+            日期：{date2}
             地點：{location2}
 
             判斷標準：
@@ -801,7 +752,6 @@ def news_api(request):
             return 'true' in response.lower()
 
         def safe_process(value):
-            """安全處理文字，移除特殊字符"""
             return value.replace("\n", " ").replace("-", "").strip() if value else ""
 
         def parse_location(location_str):
@@ -867,7 +817,7 @@ def news_api(request):
                     event_key = existing_key
                     break
 
-            link_item = {
+            news_item = {
                 "source": row[5] or "",
                 "url": row[3] or "",
                 "title": row[1],  # 保留原始標題
@@ -882,7 +832,7 @@ def news_api(request):
                 all_locations.update(location)
                 merged_news[event_key]["location"] = sorted(list(all_locations))  # 排序以保持穩定順序
                 
-                merged_news[event_key]["links"].append(link_item)
+                merged_news[event_key]["links"].append(news_item)
                 
                 current_date = row[7] or row[6] or ""
                 if current_date > merged_news[event_key]["recent_update"]:
@@ -932,7 +882,7 @@ def news_api(request):
                         "content": safe_process(row[11] or ""),
                         "location": location
                     }],
-                    "links": [link_item]
+                    "links": [news_item]
                 }
 
             processed_events.add(row[1])
@@ -944,8 +894,7 @@ def news_api(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
     
-# 新增更新新聞每日記錄的 API 端點
-#@csrf_exempt  # 關閉 CSRF 保護，允許外部 POST 請求
+# 新增更新每日記錄的函數
 @csrf_exempt
 def update_daily_records(request, news_id):
     if request.method == 'POST':
@@ -984,111 +933,3 @@ def update_daily_records(request, news_id):
     
     return JsonResponse({"error": "Method not allowed"}, status=405)
     
-
-    #單純抓取資料庫資料
-@require_GET
-def news_api_sql(request):
-    try:
-        conn = sqlite3.connect('w.db')
-        cursor = conn.cursor()
-        
-        cursor.execute("""
-            SELECT id, event, image, link, content, source, date, 
-                   recent_update, region, location, disaster, 
-                   summary, daily_records, links, overview 
-            FROM news
-            ORDER BY date DESC
-        """)
-        news_data = cursor.fetchall()
-        conn.close()
-
-        def safe_process(value):
-            """移除特殊符號並清理文字"""
-            if value:
-                value = value.replace("\n", " ").replace("-", "")
-                value = " ".join(value.split())
-                return value.strip()
-            return ""
-
-        news_list = []
-        for row in news_data:
-            # 處理 daily_records
-            default_record = {
-                "date": row[6] or "",
-                "content": safe_process(row[11] or ""),
-                "location": [row[9]] if row[9] else []
-            }
-
-            try:
-                daily_records = json.loads(row[12]) if row[12] else [default_record]
-                processed_records = []
-                for record in daily_records:
-                    processed_record = {
-                        "date": record.get("date", default_record["date"]),
-                        "content": safe_process(record.get("content", default_record["content"])),
-                        "location": record.get("location", default_record["location"])
-                    }
-                    processed_records.append(processed_record)
-            except (json.JSONDecodeError, TypeError):
-                processed_records = [default_record]
-
-            if not processed_records:
-                processed_records = [default_record]
-
-            # 處理 links
-            try:
-                # 嘗試解析資料庫中的 links
-                links_data = json.loads(row[13]) if row[13] else []
-                
-                # 如果沒有其他相關新聞，則返回 null
-                if not links_data:
-                    processed_links = "null"
-                else:
-                    # 處理每個 link
-                    processed_links = []
-                    for link_data in links_data:
-                        if isinstance(link_data, dict):
-                            link_item = {
-                                "source": link_data.get("source", ""),
-                                "url": link_data.get("url", ""),
-                                "title": link_data.get("title", ""),
-                                "publish_date": link_data.get("publish_date", ""),
-                                "location": link_data.get("location", ""),
-                                "summary": safe_process(link_data.get("summary", ""))
-                            }
-                        else:
-                            link_item = {
-                                "source": row[5] or "",
-                                "url": link_data,
-                                "title": row[1] or "",
-                                "publish_date": row[6] or "",
-                                "location": row[9] or "",
-                                "summary": safe_process(row[11] or "")
-                            }
-                        processed_links.append(link_item)
-            except (json.JSONDecodeError, TypeError):
-                processed_links = "null"
-
-            # 建立主要的新聞項目
-            news_item = {
-                "event": row[1],
-                "cover": row[2] or "null",
-                "link": row[3],
-                "content": row[4],
-                "source": row[5],
-                "date": row[6],
-                "recent_update": row[7],
-                "region": row[8],
-                "location": row[9],
-                "disaster": safe_process(row[10]),
-                "summary": row[11],
-                "overview": safe_process(row[14] or ""),
-                "daily_records": processed_records,
-                "links": processed_links
-            }
-            news_list.append(news_item)
-
-        return JsonResponse(news_list, safe=False)
-        
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
