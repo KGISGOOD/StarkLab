@@ -946,7 +946,8 @@ def news_api(request):
 @require_GET
 def news_api_sql(request):
     """
-    直接從處理好的資料表中讀取資料，不需要調用 AI API
+    如果資料表為空，調用 news_api 來處理資料
+    否則直接從資料表讀取資料
     """
     try:
         conn = sqlite3.connect('w.db')
@@ -961,16 +962,26 @@ def news_api_sql(request):
             cover TEXT,
             date TEXT,
             recent_update TEXT,
-            location TEXT,  -- JSON 格式的字串
+            location TEXT,
             overview TEXT,
             summary TEXT,
-            daily_records TEXT,  -- JSON 格式的字串
-            links TEXT,  -- JSON 格式的字串
+            daily_records TEXT,
+            links TEXT,
             last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
         ''')
         conn.commit()
         
+        # 檢查資料表是否為空
+        cursor.execute('SELECT COUNT(*) FROM processed_news')
+        count = cursor.fetchone()[0]
+        
+        if count == 0:
+            # 如果資料表為空，調用 news_api
+            conn.close()  # 先關閉連接
+            return news_api(request)  # 直接使用 news_api 的結果
+
+        # 如果資料表有資料，直接讀取
         cursor.execute('''
         SELECT event, region, cover, date, recent_update,
                location, overview, summary, daily_records, links
@@ -980,10 +991,6 @@ def news_api_sql(request):
         
         rows = cursor.fetchall()
         
-        # 如果資料表是空的，返回空列表
-        if not rows:
-            return JsonResponse([], safe=False)
-
         news_list = []
         for row in rows:
             try:
@@ -1001,12 +1008,14 @@ def news_api_sql(request):
                 }
                 news_list.append(news_item)
             except json.JSONDecodeError:
-                continue  # 跳過解析失敗的資料
+                continue
 
         conn.close()
         return JsonResponse(news_list, safe=False)
     
     except Exception as e:
+        if 'conn' in locals():
+            conn.close()
         return JsonResponse({'error': str(e)}, status=500)
     
 # 新增更新每日記錄的函數
