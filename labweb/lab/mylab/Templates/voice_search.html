@@ -1,16 +1,61 @@
 {% load static %}
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voice Search</title>
+    <title>語音搜尋</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <h1>Voice Search</h1>
+    <h1>語音搜尋</h1>
+    
+    <button id="startRecord">開始語音查詢</button>
+    <button id="stopRecord" disabled>停止</button>
+    <div id="status"></div>
+    
+    <div id="result">
+        <p>您的問題：<span id="question"></span></p>
+        <p>AI 回答：<span id="answer"></span></p>
+    </div>
 
+    <script>
+        let recognition = new webkitSpeechRecognition();
+        recognition.continuous = false;
+        recognition.lang = 'zh-TW';
 
+        recognition.onresult = function(event) {
+            let question = event.results[0][0].transcript;
+            $('#question').text(question);
+            
+            // 發送問題到後端
+            $.ajax({
+                url: '/ask_ai/',
+                method: 'POST',
+                data: {
+                    'question': question,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    $('#answer').text(response.answer);
+                }
+            });
+        };
+
+        $('#startRecord').click(function() {
+            recognition.start();
+            $('#startRecord').prop('disabled', true);
+            $('#stopRecord').prop('disabled', false);
+            $('#status').text('正在錄音...');
+        });
+
+        $('#stopRecord').click(function() {
+            recognition.stop();
+            $('#startRecord').prop('disabled', false);
+            $('#stopRecord').prop('disabled', true);
+            $('#status').text('錄音已停止');
+        });
+    </script>
 </body>
 </html>
+
+

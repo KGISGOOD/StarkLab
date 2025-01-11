@@ -51,5 +51,7 @@ urlpatterns = [
     path("ai_report/", project4_views.ai_report, name='ai_report'),
 
     # project5
-    path('voice_search/', project5_views.voice_search, name='voice_search')
+    path('voice_search/', project5_views.voice_search, name='voice_search'),
+    path('ask_ai/', project5_views.ask_ai, name='ask_ai'),
+
 ]
