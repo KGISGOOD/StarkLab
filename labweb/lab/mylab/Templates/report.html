@@ -7,19 +7,24 @@
 </head>
 <body>
     <h1>應變報告生成</h1>
-    <form>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <button type="submit" name="action" value="trainButton">訓練</button>
+        <button type="submit" name="action" value="testButton">測試 API</button><br><br>
+
         <label for="fileUpload">上傳檔案：</label>
         <input type="file" id="fileUpload" name="fileUpload"><br><br>
-
+    
         <label for="inputText">輸入框：</label><br>
         <textarea id="inputText" name="inputText" rows="10" cols="50"></textarea><br><br>
-
-        <button type="button" id="generateButton">生成</button><br><br>
-
+    
+        <button type="submit" name="action" value="generateButton">生成</button><br><br>
+    
         <label for="outputText">輸出框：</label><br>
         <textarea id="outputText" name="outputText" rows="10" cols="50" readonly></textarea><br><br>
-
-        <button type="button" id="downloadButton">下載</button>
     </form>
+    
+    <button type="button" id="downloadButton">下載</button>
+
 </body>
 </html>
