@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path, re_path
-from mylab import views, project1_views, project2_views, project3_views
+from mylab import views, project1_views, project2_views, project3_views, project4_views
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic.base import RedirectView
@@ -46,4 +46,9 @@ urlpatterns = [
 
     # 新增爬蟲執行的 URL 路徑
     path('run_crawler/', views.run_crawler, name='run_crawler'),
+
+    # project4
+    path("ai_report/", project4_views.ai_report, name='ai_report')
+
+
 ]

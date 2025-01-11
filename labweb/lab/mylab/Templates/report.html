@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>應變報告生成</title>
+</head>
+<body>
+    <h1>應變報告生成</h1>
+    <form>
+        <label for="fileUpload">上傳檔案：</label>
+        <input type="file" id="fileUpload" name="fileUpload"><br><br>
+
+        <label for="inputText">輸入框：</label><br>
+        <textarea id="inputText" name="inputText" rows="10" cols="50"></textarea><br><br>
+
+        <button type="button" id="generateButton">生成</button><br><br>
+
+        <label for="outputText">輸出框：</label><br>
+        <textarea id="outputText" name="outputText" rows="10" cols="50" readonly></textarea><br><br>
+
+        <button type="button" id="downloadButton">下載</button>
+    </form>
+</body>
+</html>
