@@ -48,7 +48,10 @@ urlpatterns = [
     path('run_crawler/', views.run_crawler, name='run_crawler'),
 
     # project4
-    path("ai_report/", project4_views.ai_report, name='ai_report')
+    path("ai_report/", project4_views.ai_report, name='ai_report'),
+    path('train/', project4_views.train_view, name='train_view'),
+    path('test-api/', project4_views.test_groq_api, name='test_groq_api'),
+    path('generate/', project4_views.generate_view, name='generate_view'),
 
 
 ]

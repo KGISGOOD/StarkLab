@@ -7,28 +7,38 @@
 </head>
 <body>
     <h1>應變報告生成</h1>
-    <form method="POST" enctype="multipart/form-data">
+    
+    <!-- 訓練按鈕表單 -->
+    <form action="{% url 'train_view' %}" method="POST">
         {% csrf_token %}
         <button type="submit" name="action" value="trainButton">訓練</button>
-        <span id="train-status">{{ train_message }}</span><br>
+        <span id="train-status">{{ train_message }}</span>
+    </form>
+    <br>
 
+    <!-- 測試 API 按鈕表單 -->
+    <form action="{% url 'test_groq_api' %}" method="POST">
+        {% csrf_token %}
         <button type="submit" name="action" value="testButton">測試 API</button>
-        <span id="test-status">{{ test_message }}</span><br><br>
+        <span id="test-status">{{ test_message }}</span>
+    </form>
+    <br><br>
 
-
+    <!-- 生成內容表單 -->
+    <form action="{% url 'generate_view' %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
         <label for="fileUpload">上傳檔案：</label>
         <input type="file" id="fileUpload" name="fileUpload"><br><br>
     
         <label for="inputText">輸入框：</label><br>
-        <textarea id="inputText" name="inputText" rows="10" cols="50"></textarea><br><br>
+        <textarea id="inputText" name="inputText" rows="10" cols="50">{{ inputText }}</textarea><br><br>
     
         <button type="submit" name="action" value="generateButton">生成</button><br><br>
     
         <label for="outputText">輸出框：</label><br>
-        <textarea id="outputText" name="outputText" rows="10" cols="50" readonly></textarea><br><br>
+        <textarea id="outputText" name="outputText" rows="10" cols="50" readonly>{{ outputText }}</textarea><br><br>
     </form>
     
     <button type="button" id="downloadButton">下載</button>
-
 </body>
 </html>
