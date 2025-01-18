@@ -1,5 +1,6 @@
 from django.shortcuts import render
 
+#顯示report.html
 def ai_report(request):
     return render(request, 'report.html')
 
@@ -12,14 +13,18 @@ from django.http import JsonResponse
 import requests
 from django.views.decorators.csrf import csrf_exempt
 
+groq_api_key = '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'
+model_name = 'llama-3.3-70b-versatile'
+
+# 測試 Groq API
 @csrf_exempt 
 def test_groq_api(request):
     if request.method == 'POST':
         action = request.POST.get('action')
         if action == 'testButton':
-            # Groq API 的金鑰和 URL
+            
             groq_api_url = "https://api.groq.com/openai/v1/chat/completions"
-            groq_api_key = "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" 
+            # groq_api_key = "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" 
 
             # 設置請求標頭和數據
             headers = {
@@ -41,44 +46,20 @@ def test_groq_api(request):
 
             # 檢查回應
             if response.status_code == 200:
-                return JsonResponse({'message': 'API 測試成功!'})
+                return JsonResponse({'test_message': 'API 測試成功!'})
             else:
-                return JsonResponse({'error': f'錯誤: {response.status_code}'}, status=response.status_code)
+                return JsonResponse({'test_message':'錯誤'})
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
 def setup_chatbot():
-    # 測試groq api_key有無問題
-    # groq 官網 https://console.groq.com/keys
-    groq_api_key = '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'
-    model_name = 'llama-3.1-8b-instant'
+    # 使用 test_groq_api 驗證 API 是否正常
+    test_api_response = test_groq_api()
+    if 'error' in test_api_response:
+        return JsonResponse({'error': test_api_response['error']}, status=400)
+
     groq_chat = ChatGroq(groq_api_key=groq_api_key, model_name=model_name)
-
-    # 測試 Groq API 連線
-    groq_api_url = "https://api.groq.com/openai/v1/chat/completions"
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {groq_api_key}"
-    }
-    data = {
-        "model": model_name,
-        "messages": [
-            {
-                "role": "user",
-                "content": "Explain the importance of fast language models"
-            }
-        ]
-    }
-
-    # 發送 POST 請求
-    response = requests.post(groq_api_url, headers=headers, json=data)
-
-    # 檢查回應
-    if response.status_code == 200:
-        print("成功!")
-    else:
-        print(f"錯誤: {response.status_code}")
 
     memory = ConversationBufferMemory(
         memory_key="history",
@@ -112,7 +93,7 @@ def train_view(request):
         if action == 'trainButton':
             # 訓練模型初始化，不需要任何額外的處理
             response_message = "模型初始化完成！"
-            return JsonResponse({'message': response_message})
+            return JsonResponse({'train_message': response_message})
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
 def chat_function(message):

@@ -10,7 +10,11 @@
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         <button type="submit" name="action" value="trainButton">訓練</button>
-        <button type="submit" name="action" value="testButton">測試 API</button><br><br>
+        <span id="train-status">{{ train_message }}</span><br>
+
+        <button type="submit" name="action" value="testButton">測試 API</button>
+        <span id="test-status">{{ test_message }}</span><br><br>
+
 
         <label for="fileUpload">上傳檔案：</label>
         <input type="file" id="fileUpload" name="fileUpload"><br><br>
