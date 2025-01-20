@@ -22,7 +22,10 @@ model_name = "grok-beta"
 
 # 修改 ALLOWED_SOURCES 為只包含四家報社
 ALLOWED_SOURCES = {
- 
+    'Newtalk新聞',
+    '經濟日報',
+    '自由時報',
+    '中時新聞',
     'BBC News 中文'
 }
  
@@ -327,7 +330,7 @@ def is_disaster_news(title, content):
     prompt = f"""
     請判斷以下新聞是否主要在報導自然災害事件本身，只需回答 true 或 false：
     
-    允許的災害類型：大雨、豪雨、暴雨、淹水、洪水、水災、颱風、颶風、風災、地震、海嘯、乾旱、旱災
+    允許的災害類型：大雨、豪雨、暴雨、淹水、洪水、水災、颱風、颶風、風災、地震、海嘯、乾旱、旱災、大火、野火
 
     新聞標題：{title}
     新聞內容：{content[:500]}
@@ -375,22 +378,26 @@ def main():
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A30d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E7%81%AB%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際大火
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%87%8E%E7%81%AB%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際野火
+        #加上bbc關鍵字
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E7%81%AB%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際大火
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%87%8E%E7%81%AB%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'#新增國際野火
     ]
     
-    #print(urls)
     all_news_items = []
     for url in urls:
         news_items = fetch_news(url)
@@ -437,22 +444,52 @@ def main():
 
             # 提問並取得摘要、地點與災害
             question_summary = f"""
-            請從以下內文中萃取出災害相關資訊。只需顯示有資料的項目，並在數值前加上項目名稱。
-            如果某項資訊在內文中未提及，則不要顯示該項目。各項目之間用逗號分隔。
-            時間必須是完整的年月日格式（例如：2024-01-15），不要使用「今天」、「昨天」、「前天」等相對時間。
-            如果無法從內文中確定完整時間，則使用 {item['時間']} 作為事件時間。
+            請從以下新聞內容中提取災害相關資訊，並以下列格式回覆。
+            只列出確實提到的資訊，未提及的項目請勿顯示。
+            所有數字前必須加上項目名稱，各項目用逗號分隔。
+
+            必要項目（若有資訊）：
+            1. 災害種類（例如：地震、颱風、洪水等）
+            2. 災害規模（例如：地震規模、雨量、風速等）
+            3. 影響範圍（例如：面積、區域範圍等）
+            4. 傷亡統計（死亡、受傷、失蹤、撤離人數等）
+            5. 災情描述（建物損毀、交通中斷等）
+            6. 時間：{item['時間']}（若新聞中有更精確時間則使用新聞時間）
 
             範例格式：
-            災害種類：地震，死亡人數：3人，受傷人數：12人，撤離人數：50人，受困人數：6人，受災人數：180人，經濟損失：3億元，建物受損：52棟，建物倒塌：13棟，特殊事件：建物搖晃，坍塌事件：2處，時間：2024-01-15
+            災害種類：地震，地震規模：7.4級，震源深度：10公里，死亡人數：3人，受傷人數：12人，
+            建物倒塌：13棟，影響範圍：20公里，發生時間：2024-03-20
 
-            請依照以下順序檢查並提供資訊：
-            災害種類、降雨量、死亡人數、受傷人數、撤離人數、失蹤人數、受困人數、受災人數、經濟損失、建物受損、建物倒塌、淹水高度、淹水範圍、特殊事件、坍塌事件、崩塌事件、國家和地區、農業損失、時間
-
-            內文內容：
+            新聞內容：
             {content}
             """
-            question_location = f"請從以下內文中提取災害發生的國家和地點，只需顯示國家和地點即可，限10字內：{content}"
-            question_disaster = f"請從以下內文中提取所有災害，只需顯示災害即可，若有相同的災害則存一個即可，限10字內：{content}"
+            question_location = f"""
+            請從以下新聞內容中提取災害發生的地點資訊，格式為「國家+地區」，限制在10個字以內。
+            如果內容提到多個地點，請選擇主要災害發生地點。
+            如果只提到國家沒提到地區，則只回覆國家名。
+
+            範例格式：
+            日本東京
+            美國加州
+            智利聖地亞哥
+
+            新聞內容：
+            {content}
+            """
+            question_disaster = f"""
+            請從以下新聞內容中提取主要的災害類型，只需列出災害名稱，限制在10個字以內。
+            如果有多個災害，只列出最主要或最嚴重的災害。
+            相同類型的災害只需列出一次。
+
+            範例格式：
+            地震
+            颱風
+            洪水
+            土石流
+
+            新聞內容：
+            {content}
+            """
 
             summary_answer = chat_with_xai(question_summary, xai_api_key, model_name, content)
             location_answer = chat_with_xai(question_location, xai_api_key, model_name, content)
@@ -471,29 +508,6 @@ def main():
 
             if content != '未找到內容':
                 csv_summary = content
-
-                # 提問並取得摘要、地點與災害
-                question_summary = f"""
-                請從以下內文中萃取出災害相關資訊。只需顯示有資料的項目，並在數值前加上項目名稱。
-                如果某項資訊在內文中未提及，則不要顯示該項目。各項目之間用逗號分隔。
-                時間必須是完整的年月日格式（例如：2024-01-15），不要使用「今天」、「昨天」、「前天」等相對時間。
-                如果無法從內文中確定完整時間，則使用 {item['時間']} 作為事件時間。
-
-                範例格式：
-                災害種類：地震，死亡人數：3人，受傷人數：12人，撤離人數：50人，受困人數：6人，受災人數：180人，經濟損失：3億元，建物受損：52棟，建物倒塌：13棟，特殊事件：建物搖晃，坍塌事件：2處，時間：2024-01-15
-
-                請依照以下順序檢查並提供資訊：
-                災害種類、降雨量、死亡人數、受傷人數、撤離人數、失蹤人數、受困人數、受災人數、經濟損失、建物受損、建物倒塌、淹水高度、淹水範圍、特殊事件、坍塌事件、崩塌事件、國家和地區、農業損失、時間
-
-                內文內容：
-                {csv_summary}
-                """
-                question_location = f"請從以下內文中提取災害發生的國家和地點，只需顯示國家和地點即可，限10字內：{csv_summary}"
-                question_disaster = f"請從以下內文中提取所有災害，只需顯示災害即可，若有相同的災害則存一個即可，限10字內：{csv_summary}"
-
-                summary_answer = chat_with_xai(question_summary, xai_api_key, model_name, csv_summary)
-                location_answer = chat_with_xai(question_location, xai_api_key, model_name, csv_summary)
-                disaster_answer = chat_with_xai(question_disaster, xai_api_key, model_name, csv_summary)
 
                 # 收集結果
                 summaries.append(summary_answer)
@@ -764,37 +778,6 @@ def news_api(request):
             response = chat_with_xai(prompt, xai_api_key, model_name, "")
             return response.strip()
 
-        def is_pure_disaster_news(title, content):
-            """判斷是否為純災害新聞"""
-            prompt = f"""
-            請判斷以下新聞是否為純災害新聞報導，只需回答 true 或 false。
-
-            新聞標題：{title}
-            新聞內容：{content[:500]}
-
-            判斷標準：
-            1. 必須主要報導自然災害本身（如地震、颱風、洪水、乾旱等）
-            2. 不應包含以下內容：
-               - 政治議題或政策討論
-               - 經濟影響或金融市場反應
-               - 救援或援助活動
-               - 災後重建計劃
-               - 防災措施或政策
-               - 氣候變遷討論
-               - 歷史災害回顧
-               - 賠償金額討論
-               - 保險理賠相關
-            3. 內容應集中在：
-               - 災害發生的情況
-               - 災害的規模（如地震規模、雨量）
-               - 受影響的地理範圍
-               - 即時災情描述
-               - 災害造成的損失金額和財產損失統計
-            """
-            
-            response = chat_with_xai(prompt, xai_api_key, model_name, "")
-            return 'true' in response.lower()
-
         def is_same_event(event1, event2, date1, date2, location1, location2):
             """判斷是否為同一事件"""
             prompt = f"""
@@ -865,7 +848,7 @@ def news_api(request):
 
         for row in news_data:
             # 先判斷是否為純災害新聞
-            if not is_pure_disaster_news(row[1], row[4] or ""):
+            if not is_disaster_news(row[1], row[4] or ""):
                 continue
 
             if row[1] in processed_events:
@@ -907,66 +890,60 @@ def news_api(request):
                 "summary": safe_process(row[11] or "")
             }
 
-            if event_key:
-                # 合併 location，確保不重複且格式正確
-                all_locations = set(merged_news[event_key]["location"])
-                all_locations.update(location)
-                merged_news[event_key]["location"] = sorted(list(all_locations))  # 排序以保持穩定順序
-                
-                merged_news[event_key]["links"].append(news_item)
-                
-                current_date = row[7] or row[6] or ""
-                if current_date > merged_news[event_key]["recent_update"]:
-                    merged_news[event_key]["recent_update"] = current_date
-                    merged_news[event_key]["daily_records"].append({
-                        "date": current_date,
-                        "content": safe_process(row[11] or ""),
-                        "location": location
-                    })
-                
-                # 更新 cover
-                if cover != "null" and merged_news[event_key]["cover"] == "null":
-                    merged_news[event_key]["cover"] = cover
-                
-                # 更新 overview，加入新的摘要和內文資訊
-                overview_prompt = f"""
-                請整合以下新的資訊到現有的概述中。請以單一段落呈現，不要使用任何特殊符號（包括但不限於：\n、**、#、-、*、>、`等），不要使用分點符號，不要換行。請直接以流暢的一段文字描述：
+# 檢查是否為新事件
+        is_new_event = event_key is None
 
-                現有概述：{merged_news[event_key]["overview"]}
-                新的摘要：{safe_process(row[11] or "")}
-                新的內文：{safe_process(row[4] or "")}
-                """
-                merged_news[event_key]["overview"] = chat_with_xai(overview_prompt, xai_api_key, model_name, "").strip()
-            else:
-                # 生成初始 overview
-                overview_prompt = f"""
-                請根據以下資訊生成一個完整的災害事件概述。請以單一段落呈現，不要使用任何特殊符號（包括但不限於：\n、**、#、-、*、>、`等），不要使用分點符號，不要換行。請直接以流暢的一段文字描述：
+        # 如果是新事件，生成新 key 和基礎結構
+        if is_new_event:
+            event_key = f"{formatted_event}_{len(merged_news)}"
+            merged_news[event_key] = {
+                "event": formatted_event,
+                "region": '國內' if any(keyword in ','.join(location) for keyword in domestic_keywords) else '國外',
+                "cover": cover,
+                "date": row[6] or "",
+                "recent_update": row[7] or row[6] or "",
+                "location": [],
+                "overview": "",
+                "summary": "",
+                "daily_records": [],
+                "links": []
+            }
 
-                事件標題：{formatted_event}
-                事件摘要：{safe_process(row[11] or "")}
-                詳細內文：{safe_process(row[4] or "")}
-                """
-                initial_overview = chat_with_xai(overview_prompt, xai_api_key, model_name, "").strip()
-                
-                new_key = f"{formatted_event}_{len(merged_news)}"
-                merged_news[new_key] = {
-                    "event": formatted_event,
-                    "region": '國內' if any(keyword in ','.join(location) for keyword in domestic_keywords) else '國外',
-                    "cover": cover,  # 使用處理過的 cover
-                    "date": row[6] or "",
-                    "recent_update": row[7] or row[6] or "",
-                    "location": location,
-                    "overview": initial_overview,
-                    "summary": safe_process(row[11] or ""),  # 只保留當前新聞的摘要
-                    "daily_records": [{
-                        "date": row[7] or row[6] or "",
-                        "content": safe_process(row[11] or ""),
-                        "location": location
-                    }],
-                    "links": [news_item]
-                }
+        # 合併 location，確保不重複且排序
+        merged_news[event_key]["location"] = sorted(set(merged_news[event_key]["location"]).union(location))
 
-            processed_events.add(row[1])
+        # 添加新聞連結
+        merged_news[event_key]["links"].append(news_item)
+
+        # 更新 recent_update 和 daily_records
+        current_date = row[7] or row[6] or ""
+        if current_date > merged_news[event_key]["recent_update"]:
+            merged_news[event_key]["recent_update"] = current_date
+            merged_news[event_key]["daily_records"].append({
+                "date": current_date,
+                "content": safe_process(row[11] or ""),
+                "location": location
+            })
+
+        # 更新封面圖片
+        if cover != "null" and merged_news[event_key]["cover"] == "null":
+            merged_news[event_key]["cover"] = cover
+
+        # 更新概述或生成初始概述
+        overview_prompt = f"""
+        請整合以下新的資訊到現有的概述中（如果是新事件，請生成新的概述）。請以單一段落呈現，不要使用任何特殊符號（包括但不限於：\n、**、#、-、*、>、`等），不要使用分點符號，不要換行。請直接以流暢的一段文字描述：
+
+        現有概述：{merged_news[event_key]["overview"]}
+        新的摘要：{safe_process(row[11] or "")}
+        新的內文：{safe_process(row[4] or "")}
+        """
+        merged_news[event_key]["overview"] = chat_with_xai(overview_prompt, xai_api_key, model_name, "").strip()
+
+        # 更新摘要（僅保留最新的摘要內容）
+        merged_news[event_key]["summary"] = safe_process(row[11] or "")
+
+        # 標記該事件已處理
+        processed_events.add(row[1])
 
         news_list = list(merged_news.values())
         news_list.sort(key=lambda x: x["recent_update"], reverse=True)
