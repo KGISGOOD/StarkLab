@@ -14,7 +14,6 @@ def ai_report(request):
 from langchain.memory import ConversationBufferMemory
 from langchain.prompts import PromptTemplate
 from langchain.chains import ConversationChain
-from langchain_groq import ChatGroq
 
 from django.http import JsonResponse
 import requests
@@ -40,7 +39,7 @@ def test_groq_api(request):
                 }
 
                 messages = [
-                    # {"role": "system", "content": "你是一個新聞分析助手，專門判斷新聞是否屬於同一事件。"},
+                    {"role": "system", "content": "你是一個新聞分析助手，專門判斷新聞是否屬於同一事件。"},
 
                 ]
 
@@ -65,49 +64,47 @@ def test_groq_api(request):
     return redirect('ai_report')
 
 
-def setup_chatbot():
-    try:
-        groq_chat = ChatGroq(xai_api_key=xai_api_key, model_name=model_name)
-        
-        memory = ConversationBufferMemory(
-            memory_key="history",
-            return_messages=True
-        )
+def setup_chatbot(xai_api_key, model_name):
+    prompt = """
+    
+    """
+    
+    url = 'https://api.x.ai/v1/chat/completions'
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {xai_api_key}'
+    }
 
-        template = """
-        以下是先前的對話記錄：
-        {history}
+    messages = [
+        {"role": "system", "content": "你是一個負責寫新聞稿的員工"},
+        {"role": "user", "content": prompt}
+    ]
 
-        使用者的最新提問：
-        {input}
+    data = {
+        "messages": messages,
+        "model": "grok-beta",
+        "temperature": 0,
+        "stream": False
+    }
 
-        請根據上述內容，給出詳細、準確的回答。
-        如果是中文問題，請用中文回答。
-        """
-        prompt = PromptTemplate(input_variables=["history", "input"], template=template)
-
-        chat_chain = ConversationChain(
-            llm=groq_chat,
-            memory=memory,
-            prompt=prompt,
-            verbose=True
-        )
-
-        return chat_chain
-    except Exception as e:
-        print(f"設置聊天機器人時發生錯誤: {str(e)}")
-        return None
+    response = requests.post(url, headers=headers, json=data, timeout=30)
+    
+    if response.status_code == 200:
+        result = response.json()
+        if result and 'choices' in result and result['choices']:
+            content = result['choices'][0]['message']['content']
+            return content
+    
+    print(f"API 調用失敗 (狀態碼: {response.status_code})")
+    return ""  # 返回空字符串而不是 None
 
 def train_view(request):
     if request.method == 'POST':
         print("訪問了 train_view")  # 添加調試信息
         try:
-            # 清除舊的對話歷史
-            request.session['conversation_history'] = []
-            
             # 初始化 chatbot
-            chat_chain = setup_chatbot()  # 不再傳入 request
-            if chat_chain is None:
+            response = setup_chatbot(xai_api_key, model_name)
+            if not response:
                 request.session['train_message'] = "模型初始化失敗！"
             else:
                 request.session['train_message'] = "模型初始化完成！"
