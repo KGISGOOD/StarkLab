@@ -47,42 +47,84 @@ domestic_keywords = [
 
 def fetch_news(url):
     try:
-        response = requests.get(url)
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        response = requests.get(url, headers=headers)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
 
-        articles = soup.find_all('article', class_='IFHyqb')  # 查找所有文章
+        # 使用多個可能的 class 名稱來找到文章區塊
+        articles = soup.find_all(['article', 'div'], class_=['IFHyqb', 'xrnccd', 'IBr9hb', 'NiLAwe'])
+        print(f"找到 {len(articles)} 個文章區塊")
 
         news_list = []
         for article in articles:
-            title_element = article.find('a', class_='JtKRv')  # 查找標題元素
-            title = title_element.get_text(strip=True) if title_element else '未知'
-            link = title_element.get('href', '').strip() if title_element else ''
-            full_link = requests.compat.urljoin(url, link)  # 獲取完整連結
+            try:
+                # 尋找標題和連結（增加更多可能的 class）
+                title_element = article.find(['a', 'h3', 'h4'], class_=['JtKRv', 'ipQwMb', 'DY5T1d', 'gPFEn'])
+                if not title_element:
+                    title_element = article.find('a', recursive=True)  # 遞迴搜尋所有 a 標籤
+                
+                if not title_element:
+                    continue
 
-            news_source = article.find('div', class_='vr1PYe')  # 查找來源元素
-            source_name = news_source.get_text(strip=True) if news_source else '未知'
+                title = title_element.get_text(strip=True)
+                link = title_element.get('href', '')
 
-            # 只處理允許的新聞來源
-            if source_name not in ALLOWED_SOURCES:
+                # 處理 Google News 的相對 URL
+                if link.startswith('./'):
+                    link = 'https://news.google.com/' + link[2:]
+                elif link.startswith('/'):
+                    link = 'https://news.google.com' + link
+
+                # 尋找新聞來源（增加更多可能的 class 和搜尋方式）
+                source_element = article.find(['div', 'a'], class_=['vr1PYe', 'wEwyrc', 'SVJrMe', 'NmQAAc'])
+                if not source_element:
+                    # 嘗試找到包含 "BBC" 的元素
+                    source_element = article.find(lambda tag: tag.name in ['div', 'a'] and 'BBC' in tag.get_text())
+
+                if not source_element:
+                    continue
+
+                source_name = source_element.get_text(strip=True)
+                
+                # 特別處理 BBC 來源名稱
+                if 'BBC' in source_name:
+                    source_name = 'BBC News 中文'
+
+                # 檢查是否為允許的來源
+                if source_name not in ALLOWED_SOURCES:
+                    continue
+
+                # 尋找時間（增加更多可能的 class）
+                time_element = article.find(['time', 'div'], class_=['UOVeFe', 'hvbAAd', 'WW6dff', 'LfVVr'])
+                date_str = time_element.get_text(strip=True) if time_element else '未知'
+                date = parse_date(date_str)
+
+                news_item = {
+                    '標題': title,
+                    '連結': link,
+                    '來源': source_name,
+                    '時間': date
+                }
+
+                print(f"\n找到新聞:")
+                print(f"標題: {title}")
+                print(f"來源: {source_name}")
+                print(f"連結: {link}")
+                print(f"時間: {date}")
+
+                news_list.append(news_item)
+
+            except Exception as e:
+                print(f"處理文章時發生錯誤: {str(e)}")
                 continue
-
-            time_element = article.find('div', class_='UOVeFe').find('time', class_='hvbAAd') if article.find('div', 'UOVeFe') else None
-            date_str = time_element.get_text(strip=True) if time_element else '未知'
-
-            date = parse_date(date_str)  # 解析時間
-
-            news_list.append({
-                '標題': title,
-                '連結': full_link,
-                '來源': source_name,
-                '時間': date
-            })
 
         return news_list
 
     except Exception as e:
-        print(f"抓取新聞時發生錯誤: {e}")
+        print(f"抓取新聞時發生錯誤: {str(e)}")
         return []
     
 def parse_date(date_str):
@@ -320,7 +362,7 @@ def is_disaster_news(title, content):
 # 主程式
 def main():
     start_time = time.time()
-    day="350"
+    day="30"
     # Google News 搜 URL
     urls = [
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%xA8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
@@ -1084,7 +1126,7 @@ def update_daily_records(request, news_id):
 def crawler_first_stage(request):
     try:
         start_time = time.time()
-        day = "350"
+        day = "30"
         
         # 連接資料庫並清空上次的資料
         conn = sqlite3.connect('news.db')
@@ -1114,19 +1156,20 @@ def crawler_first_stage(request):
         
         # Google News 搜尋 URL
         urls = [
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%xA8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%xA8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
+            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A30d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
         ]
         
         all_news_items = []
