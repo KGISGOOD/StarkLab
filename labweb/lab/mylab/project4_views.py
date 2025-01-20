@@ -20,10 +20,10 @@ from django.http import JsonResponse
 import requests
 from django.views.decorators.csrf import csrf_exempt
 
-groq_api_key = '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'
-model_name = 'llama-3.3-70b-versatile'
+xai_api_key = "xai-sEKM3YfLj81l66aMWyXpmasF8Xab7hvpcwtEY4WU0jIeJfEoWDPSjm5VjbH9bq9JDNN5SmAAIrGyjfPN"
+model_name = "grok-beta"
 
-# 測試 Groq API
+# 測試 xai API
 @csrf_exempt 
 def test_groq_api(request):
     if request.method == 'POST':
@@ -31,26 +31,30 @@ def test_groq_api(request):
         action = request.POST.get('action')
         if action == 'testButton':
             try:
-                groq_api_url = "https://api.groq.com/openai/v1/chat/completions"
+                xai_api_url = "https://api.x.ai/v1/chat/completions"
                 
                 # 設置請求標頭和數據
                 headers = {
-                    "Content-Type": "application/json",
-                    "Authorization": f"Bearer {groq_api_key}"
+                    'Content-Type': 'application/json',
+                    'Authorization': f'Bearer {xai_api_key}'
                 }
+
+                messages = [
+                    # {"role": "system", "content": "你是一個新聞分析助手，專門判斷新聞是否屬於同一事件。"},
+
+                ]
+
                 data = {
-                    "model": "llama-3.3-70b-versatile",
-                    "messages": [
-                        {
-                            "role": "user",
-                            "content": "Explain the importance of fast language models"
-                        }
-                    ]
+                    "messages": messages,
+                    "model": model_name,
+                    "temperature": 0,
+                    "stream": False
                 }
 
                 # 發送 POST 請求
-                response = requests.post(groq_api_url, headers=headers, json=data)
-
+                response = requests.post(xai_api_url, headers=headers, json=data)
+                print(f"Response status code: {response.status_code}")
+                print(f"Response content: {response.content}")
                 # 檢查回應
                 if response.status_code == 200:
                     request.session['test_message'] = 'API 測試成功!'
@@ -63,7 +67,7 @@ def test_groq_api(request):
 
 def setup_chatbot():
     try:
-        groq_chat = ChatGroq(groq_api_key=groq_api_key, model_name=model_name)
+        groq_chat = ChatGroq(xai_api_key=xai_api_key, model_name=model_name)
         
         memory = ConversationBufferMemory(
             memory_key="history",
@@ -135,4 +139,30 @@ def generate_view(request):
             # 將輸入和輸出存入 session
             request.session['input_text'] = input_text
             request.session['output_text'] = output
+    return redirect('ai_report')
+
+
+import PyPDF2
+
+def upload_file(request):
+    if request.method == 'POST':
+        uploaded_file = request.FILES.get('fileUpload')
+        if uploaded_file:
+            try:
+                # 將上傳的檔案傳給 PyPDF2
+                pdf_reader = PyPDF2.PdfReader(uploaded_file)
+                content = ""
+
+                # 逐頁讀取 PDF 的文字內容
+                for page in pdf_reader.pages:
+                    content += page.extract_text()
+
+                # 如果成功讀取，將內容儲存到 session
+                request.session['input_text'] = content or "錯誤：PDF 內容為空，請檢查檔案。"
+
+            except Exception as e:
+                # 捕捉錯誤並回報
+                request.session['input_text'] = f"錯誤：無法讀取 PDF 檔案，請確認檔案格式是否正確。({str(e)})"
+                return redirect('ai_report')
+    
     return redirect('ai_report')

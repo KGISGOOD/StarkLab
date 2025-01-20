@@ -23,13 +23,17 @@
         <span id="test-status">{{ test_message }}</span>
     </form>
     <br><br>
+    
+    <!-- 檔案上傳表單 -->
+    <form action="{% url 'upload_file' %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="fileUpload">上傳檔案：</label>
+        <input type="file" id="fileUpload" name="fileUpload" onchange="this.form.submit()"><br><br>
+    </form>
 
     <!-- 生成內容表單 -->
     <form action="{% url 'generate_view' %}" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
-        <label for="fileUpload">上傳檔案：</label>
-        <input type="file" id="fileUpload" name="fileUpload"><br><br>
-    
         <label for="inputText">輸入框：</label><br>
         <textarea id="inputText" name="inputText" rows="10" cols="50">{{ inputText }}</textarea><br><br>
     
