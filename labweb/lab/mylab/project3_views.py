@@ -56,7 +56,7 @@ def fetch_news(url):
 
         # 使用多個可能的 class 名稱來找到文章區塊
         articles = soup.find_all(['article', 'div'], class_=['IFHyqb', 'xrnccd', 'IBr9hb', 'NiLAwe'])
-        print(f"找到 {len(articles)} 個文章區塊")
+        # print(f"找到 {len(articles)} 個文章區塊")
 
         news_list = []
         for article in articles:
@@ -160,6 +160,9 @@ def setup_chrome_driver():
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--disable-software-rasterizer')
+    chrome_options.add_argument('--ignore-certificate-errors')  # 新增：忽略憑證錯誤
+    chrome_options.add_argument('--ignore-ssl-errors')         # 新增：忽略 SSL 錯誤
+    
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=chrome_options)
     return driver
@@ -1188,25 +1191,28 @@ def crawler_first_stage(request):
         ]
         
         all_news_items = []
-        print("\n=== 開始爬取 Google News ===")
+        start_crawl_time = time.time()
         for url in urls:
-            print(f"\n搜尋URL: {url}")
             news_items = fetch_news(url)
-            print(f"找到 {len(news_items)} 則新聞:")
-            for item in news_items:
-                print(f"\n標題: {item['標題']}")
-                print(f"來源: {item['來源']}")
-                print(f"連結: {item['連結']}")
-                print(f"時間: {item['時間']}")
-                print("-" * 50)
             all_news_items.extend(news_items)
-        print("\n=== Google News 爬取完成 ===\n")
-
+        
         if all_news_items:
-            print(f"總共爬取到 {len(all_news_items)} 則新聞")
             news_df = pd.DataFrame(all_news_items)
             news_df = news_df.drop_duplicates(subset='標題', keep='first')
-            print(f"去重後剩餘 {len(news_df)} 則新聞\n")
+            
+            end_crawl_time = time.time()
+            crawl_time = int(end_crawl_time - start_crawl_time)
+            hours, remainder = divmod(crawl_time, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            
+            time_str = ''
+            if hours > 0:
+                time_str += f'{hours}小時'
+            if minutes > 0 or hours > 0:
+                time_str += f'{minutes}分'
+            time_str += f'{seconds}秒'
+            
+            print(f'Google News 爬取完成，耗時：{time_str}')
 
             driver = setup_chrome_driver()
 
