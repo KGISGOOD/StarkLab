@@ -22,10 +22,11 @@ model_name = "grok-beta"
 
 # 修改 ALLOWED_SOURCES 為只包含四家報社
 ALLOWED_SOURCES = {
-    'Newtalk新聞',
-    '經濟日報',
-    '自由時報',
-    '中時新聞'
+    # 'Newtalk新聞',
+    # '經濟日報',
+    # '自由時報',
+    # '中時新聞',
+    'BBC News 中文'
 }
 
 # 定義允許的自然災害關鍵字
@@ -140,22 +141,37 @@ def fetch_article_content(driver, sources_urls):
                 EC.presence_of_element_located((By.CSS_SELECTOR, 'p'))
             )
             
-            # 更新選擇器以只包含四家報社
+            # 更新選擇器以包含 BBC
             content_selectors = {
                 'Newtalk新聞': 'div.articleBody.clearfix p',
                 '經濟日報': 'section.article-body__editor p',
                 '自由時報': 'div.text p',
-                '中時新聞': 'div.article-body p'
+                '中時新聞': 'div.article-body p',
+                'BBC News 中文': 'div.bbc-1cvxiy9 p'
             }
             
             selector = content_selectors.get(source_name)
             if not selector:  # 如果沒有對應的選擇器，跳過
                 continue
                 
+            # 特別處理 BBC 新聞
+            if source_name == 'BBC News 中文':
+                response = requests.get(url)
+                if response.status_code == 200:
+                    soup = BeautifulSoup(response.content, 'html.parser')
+                    content_div = soup.find('div', class_='bbc-1cvxiy9')
+                    if content_div:
+                        paragraphs = content_div.find_all('p')
+                        content = '\n'.join([p.get_text(strip=True) for p in paragraphs])
+                        summary = content[:100] if content else '未找到內容'
+                        results[source_name] = content if content else '未找到內容'
+                        summaries[source_name] = summary
+                        continue
+            
+            # 其他報社的原有處理邏輯
             paragraphs = driver.find_elements(By.CSS_SELECTOR, selector)
             content = '\n'.join([p.text.strip() for p in paragraphs if p.text.strip()])
             
-            # 提取摘要（取前100字）
             summary = content[:100] if content else '未找到內容'
             
             results[source_name] = content if content else '未找到內容'
@@ -176,13 +192,26 @@ def extract_image_url(driver, sources_urls):
             
         try:
             driver.get(url)
-            # 更新圖片選擇器以只包含四家報社
+            # 更新圖片選擇器以包含 BBC
             image_selectors = {
                 'Newtalk新聞': "div.news_img img",
                 '經濟日報': "section.article-body__editor img",
                 '自由時報': "div.image-popup-vertical-fit img",
-                '中時新聞': "div.article-body img"
+                '中時新聞': "div.article-body img",
+                'BBC News 中文': "div.bbc-1cvxiy9 img"
             }
+            
+            # 特別處理 BBC 新聞圖片
+            if source_name == 'BBC News 中文':
+                response = requests.get(url)
+                if response.status_code == 200:
+                    soup = BeautifulSoup(response.content, 'html.parser')
+                    content_div = soup.find('div', class_='bbc-1cvxiy9')
+                    if content_div:
+                        first_image = content_div.find('img')
+                        if first_image and 'src' in first_image.attrs:
+                            results[source_name] = first_image['src']
+                            continue
             
             selector = image_selectors.get(source_name)
             if not selector:  # 如果沒有對應的選擇器，跳過
@@ -203,6 +232,7 @@ def extract_image_url(driver, sources_urls):
             results[source_name] = 'null'
             
     return results
+
 
 # 加載並摘要 CSV 資料
 def load_and_summarize_csv(file_path):
@@ -290,22 +320,22 @@ def is_disaster_news(title, content):
 # 主程式
 def main():
     start_time = time.time()
-    day="30"
+    day="350"
     # Google News 搜 URL
     urls = [
-        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%xA8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%xA8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
     ]
     
     #print(urls)
@@ -993,22 +1023,15 @@ def news_api_sql(request):
         
         news_list = []
         for row in rows:
-            try:
-                news_item = {
-                    "event": row[0],
-                    "region": row[1],
-                    "cover": row[2],
-                    "date": row[3],
-                    "recent_update": row[4],
-                    "location": json.loads(row[5]) if row[5] else [],
-                    "overview": row[6],
-                    "summary": row[7],
-                    "daily_records": json.loads(row[8]) if row[8] else [],
-                    "links": json.loads(row[9]) if row[9] else []
-                }
-                news_list.append(news_item)
-            except json.JSONDecodeError:
-                continue
+            news_item = {
+                "來源": row[0],
+                "標題": row[1],
+                "連結": row[2],
+                "內文": row[3],
+                "時間": row[4],
+                "圖片": row[5]
+            }
+            news_list.append(news_item)
 
         conn.close()
         return JsonResponse(news_list, safe=False)
@@ -1056,4 +1079,215 @@ def update_daily_records(request, news_id):
             return JsonResponse({"error": str(e)}, status=500)
     
     return JsonResponse({"error": "Method not allowed"}, status=405)
+    
+@require_GET
+def crawler_first_stage(request):
+    try:
+        start_time = time.time()
+        day = "350"
+        
+        # 連接資料庫並清空上次的資料
+        conn = sqlite3.connect('news.db')
+        cursor = conn.cursor()
+        
+        # 清空資料表（如果存在的話）
+        cursor.execute('''
+        DROP TABLE IF EXISTS raw_news
+        ''')
+        
+        # 重新建立資料表
+        cursor.execute('''
+        CREATE TABLE raw_news (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            source TEXT,           -- 來源
+            title TEXT,            -- 標題
+            link TEXT,             -- 連結
+            content TEXT,          -- 內文
+            date TEXT,             -- 時間
+            image TEXT,            -- 圖片
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+        
+        conn.commit()
+        conn.close()
+        
+        # Google News 搜尋 URL
+        urls = [
+            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%xA8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
+        ]
+        
+        all_news_items = []
+        print("\n=== 開始爬取 Google News ===")
+        for url in urls:
+            print(f"\n搜尋URL: {url}")
+            news_items = fetch_news(url)
+            print(f"找到 {len(news_items)} 則新聞:")
+            for item in news_items:
+                print(f"\n標題: {item['標題']}")
+                print(f"來源: {item['來源']}")
+                print(f"連結: {item['連結']}")
+                print(f"時間: {item['時間']}")
+                print("-" * 50)
+            all_news_items.extend(news_items)
+        print("\n=== Google News 爬取完成 ===\n")
+
+        if all_news_items:
+            print(f"總共爬取到 {len(all_news_items)} 則新聞")
+            news_df = pd.DataFrame(all_news_items)
+            news_df = news_df.drop_duplicates(subset='標題', keep='first')
+            print(f"去重後剩餘 {len(news_df)} 則新聞\n")
+
+            driver = setup_chrome_driver()
+
+            # 刪除舊的 CSV 檔案（如果存在）
+            first_stage_file = 'w2.csv'
+            if os.path.exists(first_stage_file):
+                os.remove(first_stage_file)
+
+            for index, item in news_df.iterrows():
+                source_name = item['來源']
+                original_url = item['連結']
+                final_url = extract_final_url(original_url)
+                sources_urls = {source_name: final_url}
+
+                # 擷取內容和圖片
+                content_results, _ = fetch_article_content(driver, sources_urls)
+                image_results = extract_image_url(driver, sources_urls)
+
+                content = content_results.get(source_name, '未找到內容')
+                image_url = image_results.get(source_name, 'null')
+
+                # 準備要存入 CSV 的資料
+                result = {
+                    '標題': item['標題'],
+                    '連結': original_url,
+                    '內文': content,
+                    '來源': source_name,
+                    '時間': item['時間'],
+                    '圖片': image_url
+                }
+
+                # 儲存資料到 CSV
+                output_df = pd.DataFrame([result])
+                output_df.to_csv(first_stage_file, mode='a', header=not os.path.exists(first_stage_file), 
+                               index=False, encoding='utf-8')
+
+                print(f"已儲存新聞: {result['標題']}")
+
+            driver.quit()
+
+            # 將資料存入資料庫
+            conn = sqlite3.connect('news.db')
+            cursor = conn.cursor()
+
+            # 修改資料表結構，使用英文欄位名稱
+            cursor.execute('''
+            CREATE TABLE IF NOT EXISTS raw_news (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                source TEXT,           -- 來源
+                title TEXT,            -- 標題
+                link TEXT,             -- 連結
+                content TEXT,          -- 內文
+                date TEXT,             -- 時間
+                image TEXT,            -- 圖片
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            ''')
+            
+            # 修改插入語句
+            news_df = pd.read_csv(first_stage_file)
+            for _, row in news_df.iterrows():
+                cursor.execute('''
+                INSERT INTO raw_news (source, title, link, content, date, image)
+                VALUES (?, ?, ?, ?, ?, ?)
+                ''', (
+                    row['來源'],
+                    row['標題'],
+                    row['連結'],
+                    row['內文'],
+                    row['時間'],
+                    row['圖片']
+                ))
+            
+            conn.commit()
+            conn.close()
+
+            end_time = time.time()
+            elapsed_time = int(end_time - start_time)
+            hours, remainder = divmod(elapsed_time, 3600)
+            minutes, seconds = divmod(remainder, 60)
+
+            time_str = ''
+            if hours > 0:
+                time_str += f'{hours} 小時 '
+            if minutes > 0 or hours > 0:
+                time_str += f'{minutes} 分 '
+            time_str += f'{seconds} 秒'
+
+            return JsonResponse({
+                'status': 'success',
+                'message': f'第一階段爬蟲完成！耗時：{time_str}',
+                'csv_file': first_stage_file,
+                'total_news': len(news_df)
+            })
+
+        return JsonResponse({
+            'status': 'error',
+            'message': '沒有找到新聞'
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': f'爬蟲執行失敗：{str(e)}'
+        }, status=500)
+    
+@require_GET
+def view_raw_news(request):
+    try:
+        conn = sqlite3.connect('news.db')
+        cursor = conn.cursor()
+        
+        # 修改查詢語句，使用英文欄位名稱
+        cursor.execute('''
+        SELECT source, title, link, content, date, image 
+        FROM raw_news 
+        ORDER BY date DESC
+        ''')
+        
+        rows = cursor.fetchall()
+        
+        news_list = []
+        for row in rows:
+            news_item = {
+                '來源': row[0],
+                '標題': row[1],
+                '連結': row[2],
+                '內文': row[3],
+                '時間': row[4],
+                '圖片': row[5]
+            }
+            news_list.append(news_item)
+            
+        conn.close()
+        return JsonResponse(news_list, safe=False)
+        
+    except Exception as e:
+        if 'conn' in locals():
+            conn.close()
+        print(f"Error in view_raw_news: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
     
