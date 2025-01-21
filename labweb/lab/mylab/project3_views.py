@@ -16,6 +16,25 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime, timedelta
 import json
+import threading
+
+# API 調用頻率控制
+class RateLimiter:
+    def __init__(self, calls_per_second=1):
+        self.calls_per_second = calls_per_second
+        self.last_call = 0
+        self.lock = threading.Lock()
+
+    def wait(self):
+        with self.lock:
+            current_time = time.time()
+            time_since_last_call = current_time - self.last_call
+            if time_since_last_call < 1.0 / self.calls_per_second:
+                time.sleep(1.0 / self.calls_per_second - time_since_last_call)
+            self.last_call = time.time()
+
+# 建立全域的 rate limiter 實例
+rate_limiter = RateLimiter(calls_per_second=0.5)  # 每2秒最多一次調用
 
 xai_api_key = "xai-sEKM3YfLj81l66aMWyXpmasF8Xab7hvpcwtEY4WU0jIeJfEoWDPSjm5VjbH9bq9JDNN5SmAAIrGyjfPN"
 model_name = "grok-beta"
@@ -285,39 +304,54 @@ def load_and_summarize_csv(file_path):
 
 # X.AI 聊天功能
 def chat_with_xai(prompt, api_key, model_name, context=""):
-    try:
-        url = 'https://api.x.ai/v1/chat/completions'
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': f'Bearer {api_key}'
-        }
+    max_retries = 3
+    retry_delay = 2  # 初始延遲2秒
+    
+    for attempt in range(max_retries):
+        try:
+            url = 'https://api.x.ai/v1/chat/completions'
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {api_key}'
+            }
 
-        messages = [
-            {"role": "system", "content": "你是一個新聞分析助手，專門判斷新聞是否屬於同一事件。"},
-            {"role": "user", "content": prompt}
-        ]
+            messages = [
+                {"role": "system", "content": "你是一個新聞分析助手，專門判斷新聞是否屬於同一事件。"},
+                {"role": "user", "content": prompt}
+            ]
 
-        data = {
-            "messages": messages,
-            "model": model_name,
-            "temperature": 0,
-            "stream": False
-        }
+            data = {
+                "messages": messages,
+                "model": model_name,
+                "temperature": 0,
+                "stream": False
+            }
 
-        response = requests.post(url, headers=headers, json=data, timeout=30)
-        
-        if response.status_code == 200:
-            result = response.json()
-            if result and 'choices' in result and result['choices']:
-                content = result['choices'][0]['message']['content']
-                return content
-        
-        print(f"API 調用失敗 (狀態碼: {response.status_code})")
-        return ""  # 返回空字符串而不是 None
+            response = requests.post(url, headers=headers, json=data, timeout=30)
+            
+            if response.status_code == 200:
+                result = response.json()
+                if result and 'choices' in result and result['choices']:
+                    content = result['choices'][0]['message']['content']
+                    return content
+            elif response.status_code == 429:
+                if attempt < max_retries - 1:
+                    wait_time = retry_delay * (2 ** attempt)  # 指數退避
+                    print(f"API 速率限制，等待 {wait_time} 秒後重試...")
+                    time.sleep(wait_time)
+                    continue
+            
+            print(f"API 調用失敗 (狀態碼: {response.status_code})")
+            return "無法取得回應"  # 改為有意義的預設值
 
-    except Exception as e:
-        print(f"API 錯誤: {str(e)}")
-        return ""  # 返回空字符串而不是 None
+        except Exception as e:
+            print(f"API 錯誤: {str(e)}")
+            if attempt < max_retries - 1:
+                wait_time = retry_delay * (2 ** attempt)
+                print(f"等待 {wait_time} 秒後重試...")
+                time.sleep(wait_time)
+                continue
+            return "發生錯誤"  # 改為有意義的預設值
 
 def is_disaster_news(title, content):
     """
@@ -358,7 +392,7 @@ def is_disaster_news(title, content):
 # 主程式
 def main():
     start_time = time.time()
-    day="14"
+    day="1"
     # Google News 搜 URL
     urls = [
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%xA8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
@@ -429,7 +463,7 @@ def main():
 
             # 生成簡短的事件描述
             content_prompt = f"""
-            請根據以下新聞內容，生成一段完整的災害事件描述。描述應包含以下要素（如新聞中有提及）：
+            請根據以下新聞內容，生成一段災害事件描述。描述應包含以下要素（如新聞中有提及）：
 
             1. 對於颱風事件：
                - 颱風編號和名稱
@@ -452,9 +486,8 @@ def main():
                - 人員傷亡或撤離情況
                - 救援或應對措施
 
-            請以完整句子描述，確保資訊準確且前後連貫。
+            請確保資訊準確且前後連貫。
             不要加入新聞中未提及的推測性內容。
-            如果某些資訊未提及，則略過該部分。
 
             範例格式：
             颱風：「第26號颱風帕布生成，預計朝中南半島方向移動，對台灣無直接影響，外圍水氣將導致全台降雨機率增加」
@@ -468,7 +501,7 @@ def main():
 
             # 提問並取得摘要、地點與災害
             question_summary = f"""
-            請根據以下新聞內容，生成一段完整的事件摘要。摘要應包含以下要素（如新聞中有提及）：
+            請根據以下新聞內容，生成一段事件摘要。摘要應包含以下要素（如新聞中有提及）：
 
             1. 對於地震事件：
             - 發生時間（含時區說明）
@@ -513,32 +546,14 @@ def main():
 
             範例格式：
             地震：「台灣時間12月17日上午9點47分，太平洋島國萬那杜發生規模7.4強震，震源深度僅10公里，可能引發海嘯。氣象署與太平洋海嘯警報中心已發布警報，提醒可能面臨海嘯威脅。」
-
             颱風：「第16號颱風小犬持續增強，中心位置在台灣東南方海面，以每小時15公里速度向西北移動。預計48小時內暴風圈可能籠罩台灣東部海域，氣象局已發布海上颱風警報。」
-
-            請根據以下新聞內容生成符合上述要求的完整摘要：
             {content}
             """
             
             question_location = f"""
-            1. 提取規則：
-            - 主要災害發生地點
-            - 預計影響的地區
-            - 相關預警發布地區
-            - 救援或支援地區
+            請根據以下新聞內容提取所有相關地點：
 
-            2. 格式要求：
-            - 每個地點獨立為一個字串
-            - 每個字串只包含一個完整地點
-            - 地點需包含最具體的位置描述
-            - 如有行政區域，應包含上級行政區
-
-            3. 特殊處理：
-            - 海域地點：保留「海域」、「海面」等後綴
-            - 離島地點：保留完整名稱
-            - 跨國地區：分別列出各國家/地區
-
-            4. 檢核標準：
+            檢核標準：
             - 地點是否完整（不遺漏任何提到的地點）
             - 格式是否一致（每個字串一個地點）
             - 描述是否準確（地理位置準確性）
@@ -549,7 +564,6 @@ def main():
             地震新聞：["日本福島縣", "宮城縣", "東京都"]
             水災新聞：["泰國曼谷", "大城府", "巴吞他尼府"]
 
-            請根據以下新聞內容提取所有相關地點：
             {content}
             """
             question_disaster = f"""
@@ -929,29 +943,64 @@ def news_api(request):
             return value.replace("\n", " ").replace("-", "").strip() if value else ""
 
         def parse_location(location_str):
-            """處理地點字符串，移除特殊字符並用空格分隔"""
+            """使用 X.AI 處理地點字符串，只保留有效地名"""
             if not location_str:
                 return []
             
-            # 如果是列表或字典，轉換為字符串
-            if isinstance(location_str, (list, dict)):
-                location_str = json.dumps(location_str, ensure_ascii=False)
-            
-            # 移除特殊字符和格式
-            location_str = location_str.replace('\n', ' ')  # 換行替換為空格
-            location_str = location_str.replace('- ', '')   # 移除列表符號
-            location_str = location_str.replace('，', ',')  # 統一逗號格式
-            
-            # 分割並清理每個地點
-            locations = []
-            for loc in location_str.split(','):
-                # 清理並添加非空的地點
-                cleaned_loc = loc.strip()
-                if cleaned_loc:
-                    locations.append(cleaned_loc)
-            
-            # 移除重複項返回
-            return list(dict.fromkeys(locations))
+            try:
+                # 如果是 JSON 字符串，先嘗試解析
+                if isinstance(location_str, str):
+                    try:
+                        location_list = json.loads(location_str)
+                        if isinstance(location_list, list):
+                            location_str = ' '.join(location_list)
+                    except json.JSONDecodeError:
+                        pass
+
+                # 使用 X.AI 清理和提取地點
+                clean_location_prompt = f"""
+                請從以下文字中提取所有有效的地名，並以 JSON 數組格式返回。
+                請直接返回 JSON 數組，不要加任何其他標記或說明文字。
+                
+                要求：
+                1. 只返回實際的地名
+                2. 移除所有說明文字、標點符號和格式標記
+                3. 確保每個地名都是完整且有意義的
+                4. 如果有重複的地名，只保留一次
+                5. 不要包含任何非地名的文字
+                
+                舉例：
+                ["台北市", "新北市", "基隆市"]
+
+                
+                輸入文字：
+                {location_str}
+                """
+                
+                # 獲取 X.AI 的回應並清理
+                response = chat_with_xai(clean_location_prompt, xai_api_key, model_name, "").strip()
+                
+                # 清理回應中的 ```json 和 ``` 標記
+                response = response.replace('```json', '').replace('```', '').strip()
+                
+                try:
+                    # 嘗試解析 JSON 回應
+                    cleaned_locations = json.loads(response)
+                    if isinstance(cleaned_locations, list):
+                        # 確保所有項目都是字符串，並移除空項目
+                        cleaned_locations = [str(loc).strip() for loc in cleaned_locations if str(loc).strip()]
+                        # 移除重複項並排序
+                        return sorted(list(dict.fromkeys(cleaned_locations)))
+                except json.JSONDecodeError as e:
+                    print(f"JSON 解析錯誤，嘗試其他方式處理: {str(e)}")
+                    # 如果 JSON 解析失敗，嘗試直接處理文字
+                    locations = response.replace('[', '').replace(']', '').replace('"', '').split(',')
+                    cleaned_locations = [loc.strip() for loc in locations if loc.strip()]
+                    return sorted(list(dict.fromkeys(cleaned_locations)))
+                
+            except Exception as e:
+                print(f"解析地點時發生錯誤: {str(e)}")
+                return []
 
         merged_news = {}
         processed_events = set()
@@ -1031,11 +1080,49 @@ def news_api(request):
         current_date = row[7] or row[6] or ""
         if current_date > merged_news[event_key]["recent_update"]:
             merged_news[event_key]["recent_update"] = current_date
-            merged_news[event_key]["daily_records"].append({
-                "date": current_date,
-                "content": safe_process(row[11] or ""),
-                "location": location
-            })
+
+        # 生成每日記錄的內容
+        daily_record_prompt = f"""
+        請根據以下新聞內容生成一段簡短的災情記錄，描述當天的主要災情發展。
+        內容應包含：災害類型、影響範圍、傷亡或損失情況（如有）。
+        請用精簡的方式描述，限制在100字以內。
+
+        新聞內容：
+        {safe_process(row[4] or "")}
+        """
+        
+        daily_content = chat_with_xai(daily_record_prompt, xai_api_key, model_name, "").strip()
+        
+        # 清理格式
+        daily_content = daily_content.replace('\n', ' ')
+        daily_content = daily_content.replace('- ', '')
+        daily_content = daily_content.replace('*', '')
+        daily_content = ' '.join(daily_content.split())
+        
+        # 添加新的每日記錄
+        daily_record = {
+            "date": current_date,
+            "content": daily_content,
+            "location": location
+        }
+        
+        # 檢查是否已存在相同日期的記錄
+        existing_record = None
+        for record in merged_news[event_key]["daily_records"]:
+            if record["date"] == current_date:
+                existing_record = record
+                break
+        
+        if existing_record:
+            # 更新現有記錄
+            existing_record["content"] = daily_content
+            existing_record["location"] = location
+        else:
+            # 添加新記錄
+            merged_news[event_key]["daily_records"].append(daily_record)
+        
+        # 按日期排序 daily_records
+        merged_news[event_key]["daily_records"].sort(key=lambda x: x["date"], reverse=True)
 
         # 更新封面圖片
         if cover != "null" and merged_news[event_key]["cover"] == "null":
@@ -1043,19 +1130,36 @@ def news_api(request):
 
         # 更新事件概述（整合所有相關新聞的內容）
         overview_prompt = f"""
-        請整合以下所有相關新聞的內容，生成一個完整的事件概述。
-        概述應包含：
+        請整合以下所有相關新聞的內容，生成一個完整的事件概述。請用完整的段落描述，不要使用任何符號標記（如-、*等）。
+        
+        概述內容應包含：
         1. 事件的整體發展過程
-        2. 主要影響和損失
-        3. 各方回應和措施
-        4. 後續發展和影響
+        2. 主要影響和損失情況
+        3. 各方回應和應對措施
+        4. 後續發展和影響評估
+
+        請以流暢的文字敘述呈現，避免使用項目符號，直接以完整句子描述。
+        確保各個面向的資訊能自然地串連在一起，形成連貫的敘事。
 
         現有概述：{merged_news[event_key]["overview"]}
         新的新聞內容：{safe_process(row[4] or "")}
         所有相關新聞摘要：{[link.get('summary', '') for link in merged_news[event_key]["links"]]}
         """
 
-        merged_news[event_key]["overview"] = chat_with_xai(overview_prompt, xai_api_key, model_name, "").strip()
+        # 取得 overview 回應並清理格式
+        overview_response = chat_with_xai(overview_prompt, xai_api_key, model_name, "").strip()
+        # 清理可能的符號和格式
+        overview_response = overview_response.replace('\n- ', ' ')
+        overview_response = overview_response.replace('- ', '')
+        overview_response = overview_response.replace('\n*', ' ')
+        overview_response = overview_response.replace('*', '')
+        overview_response = overview_response.replace('\n1.', ' ')
+        overview_response = overview_response.replace('\n2.', ' ')
+        overview_response = overview_response.replace('\n3.', ' ')
+        overview_response = overview_response.replace('\n4.', ' ')
+        overview_response = ' '.join(overview_response.split())  # 移除多餘的空格和換行
+        
+        merged_news[event_key]["overview"] = overview_response
 
         # 為新的新聞生成摘要並添加到 links 中
         summary_prompt = f"""
@@ -1086,17 +1190,10 @@ def news_api(request):
 
         # 在處理完資料後，將結果存入新的資料表
         cursor.execute('''
-        CREATE TABLE IF NOT EXISTS processed_news (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            event TEXT,              # 1
-            region TEXT,             # 2
-            cover TEXT,              # 3
-            date TEXT,              # 4
-            recent_update TEXT,      # 5
-            location TEXT,           # 6
-            overview TEXT,           # 7
-            daily_records TEXT,      # 8
-            links TEXT              # 9
+        CREATE TABLE IF NOT EXISTS api_cache (
+            prompt TEXT PRIMARY KEY,
+            response TEXT,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
         )
         ''')
         
@@ -1149,25 +1246,25 @@ def news_api_sql(request):
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS processed_news (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            event TEXT,              # 1
-            region TEXT,             # 2
-            cover TEXT,              # 3
-            date TEXT,              # 4
-            recent_update TEXT,      # 5
-            location TEXT,           # 6
-            overview TEXT,           # 7
-            daily_records TEXT,      # 8
-            links TEXT              # 9
+            event TEXT,              -- 事件名稱
+            region TEXT,             -- 地區
+            cover TEXT,              -- 封面圖片
+            date TEXT,               -- 日期
+            recent_update TEXT,      -- 最近更新時間
+            location TEXT,           -- 地點
+            overview TEXT,           -- 概述
+            daily_records TEXT,      -- 每日記錄
+            links TEXT               -- 相關連結
         )
         ''')
         conn.commit()
-        
+
         # 檢查資料表是否為空
         cursor.execute('SELECT COUNT(*) FROM processed_news')
         count = cursor.fetchone()[0]
-        
+
         if count == 0:
-            # 如果資料表為空，調用 news_api
+            # 如果資料表為空，調用 news_api 來處理資料
             conn.close()  # 先關閉連接
             return news_api(request)  # 直接使用 news_api 的結果
 
