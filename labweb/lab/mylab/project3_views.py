@@ -56,7 +56,6 @@ def fetch_news(url):
 
         # 使用多個可能的 class 名稱來找到文章區塊
         articles = soup.find_all(['article', 'div'], class_=['IFHyqb', 'xrnccd', 'IBr9hb', 'NiLAwe'])
-        # print(f"找到 {len(articles)} 個文章區塊")
 
         news_list = []
         for article in articles:
@@ -108,12 +107,6 @@ def fetch_news(url):
                     '來源': source_name,
                     '時間': date
                 }
-
-                print(f"\n找到新聞:")
-                print(f"標題: {title}")
-                print(f"來源: {source_name}")
-                print(f"連結: {link}")
-                print(f"時間: {date}")
 
                 news_list.append(news_item)
 
@@ -267,14 +260,14 @@ def extract_image_url(driver, sources_urls):
                     EC.presence_of_element_located((By.CSS_SELECTOR, selector))
                 )
                 image_url = image_element.get_attribute('src') or image_element.get_attribute('data-src')
-                results[source_name] = image_url or 'null'
+                results[source_name] = image_url or ''  # 改為空字串
             except Exception as e:
                 print(f"圖片擷取失敗: {e}")
-                results[source_name] = 'null'
+                results[source_name] = ''  # 改為空字串
                 
         except Exception as e:
             print(f"圖片擷取錯誤: {e}")
-            results[source_name] = 'null'
+            results[source_name] = ''  # 改為空字串
             
     return results
 
@@ -365,7 +358,7 @@ def is_disaster_news(title, content):
 # 主程式
 def main():
     start_time = time.time()
-    day="30"
+    day="14"
     # Google News 搜 URL
     urls = [
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%xA8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
@@ -436,9 +429,37 @@ def main():
 
             # 生成簡短的事件描述
             content_prompt = f"""
-            請根據以下新聞內容，生成一個簡短的事件描述，格式為「地點+災害類型+規模」。
-            例如：「北加州近海7.0地震」、「台灣花蓮6.0地震」、「日本東京暴雨300毫米」。
-            請確保描述簡潔且包含關鍵資訊。
+            請根據以下新聞內容，生成一段完整的災害事件描述。描述應包含以下要素（如新聞中有提及）：
+
+            1. 對於颱風事件：
+               - 颱風編號和名稱
+               - 目前位置和強度
+               - 移動方向和速度
+               - 預計影響範圍
+               - 可能造成的影響（如降雨、強風等）
+
+            2. 對於地震事件：
+               - 發生地點
+               - 地震規模和震源深度
+               - 是否發布海嘯警報
+               - 如果是群震，需說明發生頻率和最大震級
+               - 災情和民眾反應
+
+            3. 對於其他災害：
+               - 災害類型和規模
+               - 影響範圍
+               - 災情描述
+               - 人員傷亡或撤離情況
+               - 救援或應對措施
+
+            請以完整句子描述，確保資訊準確且前後連貫。
+            不要加入新聞中未提及的推測性內容。
+            如果某些資訊未提及，則略過該部分。
+
+            範例格式：
+            颱風：「第26號颱風帕布生成，預計朝中南半島方向移動，對台灣無直接影響，外圍水氣將導致全台降雨機率增加」
+            地震：「萬那杜發生規模7.4的淺層地震，震源深度10公里，發布海嘯警報」
+            群震：「銀川市在17小時內共發生9次地震，最大震級為2.6級。居民擔心更大地震來襲，部分人選擇在車內或空曠區域過夜」
 
             新聞內容：
             {content}
@@ -447,36 +468,88 @@ def main():
 
             # 提問並取得摘要、地點與災害
             question_summary = f"""
-            請從以下新聞內容中提取災害相關資訊，並以下列格式回覆。
-            只列出確實提到的資訊，未提及的項目請勿顯示。
-            所有數字前必須加上項目名稱，各項目用逗號分隔。
+            請根據以下新聞內容，生成一段完整的事件摘要。摘要應包含以下要素（如新聞中有提及）：
 
-            必要項目（若有資訊）：
-            1. 災害種類（例如：地震、颱風、洪水等）
-            2. 災害規模（例如：地震規模、雨量、風速等）
-            3. 影響範圍（例如：面積、區域範圍等）
-            4. 傷亡統計（死亡、受傷、失蹤、撤離人數等）
-            5. 災情描述（建物損毀、交通中斷等）
-            6. 時間：{item['時間']}（若新聞中有更精確時間則使用新聞時間）
+            1. 對於地震事件：
+            - 發生時間（含時區說明）
+            - 具體地點（含國家/地區名）
+            - 地震規模和震源深度
+            - 發布單位（如地質調查所、氣象部門等）
+            - 是否發布海嘯警報
+            - 影響範圍和預警情況
+            - 傷亡和損失情況（如有）
+
+            2. 對於颱風事件：
+            - 颱風編號、名稱和等級
+            - 目前位置和強度
+            - 移動方向和速度
+            - 預計路徑
+            - 各地警報發布情況
+            - 可能帶來的影響（降雨量、風速等）
+            - 防災應變措施
+
+            3. 對於水災/洪災事件：
+            - 發生時間和地點
+            - 降雨量或洪水規模
+            - 淹水範圍和深度
+            - 受災情況（含人員傷亡、財產損失）
+            - 救援行動和疏散情況
+            - 相關單位應變措施
+
+            4. 對於其他災害事件：
+            - 災害類型和規模
+            - 發生時間和地點
+            - 影響範圍
+            - 傷亡和損失統計
+            - 救援行動進展
+            - 相關單位回應
+
+            摘要格式要求：
+            1. 使用完整句子描述
+            2. 按時間順序陳述
+            3. 確保資訊準確性
+            4. 重要數據需包含單位
+            5. 避免主觀評論
 
             範例格式：
-            災害種類：地震，地震規模：7.4級，震源深度：10公里，死亡人數：3人，受傷人數：12人，
-            建物倒塌：13棟，影響範圍：20公里，發生時間：2024-03-20
+            地震：「台灣時間12月17日上午9點47分，太平洋島國萬那杜發生規模7.4強震，震源深度僅10公里，可能引發海嘯。氣象署與太平洋海嘯警報中心已發布警報，提醒可能面臨海嘯威脅。」
 
-            新聞內容：
+            颱風：「第16號颱風小犬持續增強，中心位置在台灣東南方海面，以每小時15公里速度向西北移動。預計48小時內暴風圈可能籠罩台灣東部海域，氣象局已發布海上颱風警報。」
+
+            請根據以下新聞內容生成符合上述要求的完整摘要：
             {content}
             """
+            
             question_location = f"""
-            請從以下新聞內容中提取災害發生的地點資訊，格式為「國家+地區」，限制在10個字以內。
-            如果內容提到多個地點，請選擇主要災害發生地點。
-            如果只提到國家沒提到地區，則只回覆國家名。
+            1. 提取規則：
+            - 主要災害發生地點
+            - 預計影響的地區
+            - 相關預警發布地區
+            - 救援或支援地區
+
+            2. 格式要求：
+            - 每個地點獨立為一個字串
+            - 每個字串只包含一個完整地點
+            - 地點需包含最具體的位置描述
+            - 如有行政區域，應包含上級行政區
+
+            3. 特殊處理：
+            - 海域地點：保留「海域」、「海面」等後綴
+            - 離島地點：保留完整名稱
+            - 跨國地區：分別列出各國家/地區
+
+            4. 檢核標準：
+            - 地點是否完整（不遺漏任何提到的地點）
+            - 格式是否一致（每個字串一個地點）
+            - 描述是否準確（地理位置準確性）
+            - 層級是否合適（行政區劃準確性）
 
             範例格式：
-            日本東京
-            美國加州
-            智利聖地亞哥
+            颱風新聞：["南沙島海面", "中南半島", "台灣"]
+            地震新聞：["日本福島縣", "宮城縣", "東京都"]
+            水災新聞：["泰國曼谷", "大城府", "巴吞他尼府"]
 
-            新聞內容：
+            請根據以下新聞內容提取所有相關地點：
             {content}
             """
             question_disaster = f"""
@@ -760,22 +833,48 @@ def news_api(request):
         news_data = cursor.fetchall()
         
         def format_event_title(location, content, title):
-            """格式化事件標題為：國家主要城市主要災害類型"""
+            """格式化事件標題，根據不同災害類型生成對應格式"""
             prompt = f"""
-            請從以下資訊中提取一個主要的國家、一個主要城市和災害類型，
-            並以「國家主要城市主要災害類型」的格式回傳。
+            請從以下資訊中提取關鍵資訊，並根據災害類型生成對應格式的事件名稱。
             不要加任何空格、標點符號或換行符號。
-            如果有多個城市，只需選擇最主要或最先提到的城市。
+            
+            對於不同類型的災害，請遵循以下格式規則：
 
+            1. 颱風事件：
+               格式：「地理位置+颱風名稱+狀態」
+               例如：南沙島海域颱風帕布生成
+               例如：菲律賓海面颱風蘇拉增強
+               
+            2. 地震事件：
+               A. 單次地震：
+                  格式：「地點+震級+地震」
+                  例如：萬那杜7.4級地震
+                  例如：阿富汗6.3級地震
+                  
+               B. 頻發地震：
+                  格式：「地點+地震頻發」
+                  例如：中國寧夏銀川地震頻發
+                  例如：土耳其敘利亞地震頻發
+                  
+            3. 水災/洪水事件：
+               格式：「國家地區+災情描述」
+               例如：利比亞東部特大洪災
+               例如：希臘中部嚴重水患
+               
+            4. 火災事件：
+               格式：「地點+火災規模描述」
+               例如：夏威夷毛伊島大規模野火
+               例如：加拿大林區森林大火
+               
+            5. 其他災害：
+               格式：「地點+災害類型+嚴重程度」
+               例如：日本福島核污水排放
+               例如：西非尼日爾嚴重乾旱
+
+            請根據以下資訊生成事件名稱：
             地點：{location}
             內容：{content}
             標題：{title}
-
-            範例格式：
-            日本東京地震
-            美國加州洪水
-            台灣高雄豪雨
-            中國浙江颱風
             """
             
             response = chat_with_xai(prompt, xai_api_key, model_name, "")
@@ -812,7 +911,7 @@ def news_api(request):
                - 核心描述要一致（如災害規模、影響程度的描述）
                - 地震事件：不同規模的報導可能是後續修正，仍視為同一事件
                - 水災：「淹水」、「洪水」、「水災」視為相同類型
-               - 火災：「野火」、「森林大火」視為相同類型
+               - 火災：「野火」、「森林大火」、「大火」視為相同類型
 
             特別注意：
             - 三個條件必須同時滿足才能判定為同一事件
@@ -893,9 +992,12 @@ def news_api(request):
                     break
 
             news_item = {
-                "source": row[5] or "",
+                "source": {
+                    "publisher": row[5] or "",  # 發布媒體
+                    "author": row[5] or ""      # 作者（與發布媒體相同）
+                },
                 "url": row[3] or "",
-                "title": row[1],  # 保留原始標題
+                "title": row[1],
                 "publish_date": row[6] or "",
                 "location": location,
                 "summary": safe_process(row[11] or "")
@@ -914,10 +1016,9 @@ def news_api(request):
                 "date": row[6] or "",
                 "recent_update": row[7] or row[6] or "",
                 "location": [],
-                "overview": "",
-                "summary": "",
+                "overview": "",  # 只在事件層級保留 overview
                 "daily_records": [],
-                "links": []
+                "links": []  # links 中會包含每篇新聞的 summary
             }
 
         # 合併 location，確保不重複且排序
@@ -940,18 +1041,42 @@ def news_api(request):
         if cover != "null" and merged_news[event_key]["cover"] == "null":
             merged_news[event_key]["cover"] = cover
 
-        # 更新概述或生成初始概述
+        # 更新事件概述（整合所有相關新聞的內容）
         overview_prompt = f"""
-        請整合以下新的資訊到現有的概述中（如果是新事件，請生成新的概述）。請以單一段落呈現，不要使用任何特殊符號（包括但不限於：\n、**、#、-、*、>、`等），不要使用分點符號，不要換行。請直接以流暢的一段文字描述：
+        請整合以下所有相關新聞的內容，生成一個完整的事件概述。
+        概述應包含：
+        1. 事件的整體發展過程
+        2. 主要影響和損失
+        3. 各方回應和措施
+        4. 後續發展和影響
 
         現有概述：{merged_news[event_key]["overview"]}
-        新的摘要：{safe_process(row[11] or "")}
-        新的內文：{safe_process(row[4] or "")}
+        新的新聞內容：{safe_process(row[4] or "")}
+        所有相關新聞摘要：{[link.get('summary', '') for link in merged_news[event_key]["links"]]}
         """
+
         merged_news[event_key]["overview"] = chat_with_xai(overview_prompt, xai_api_key, model_name, "").strip()
 
-        # 更新摘要（僅保留最新的摘要內容）
-        merged_news[event_key]["summary"] = safe_process(row[11] or "")
+        # 為新的新聞生成摘要並添加到 links 中
+        summary_prompt = f"""
+        請針對這篇新聞生成簡短摘要，只需摘要這篇新聞的重點：
+        {safe_process(row[4] or "")}
+        """
+        current_summary = chat_with_xai(summary_prompt, xai_api_key, model_name, "").strip()
+
+        # 添加新聞連結和其摘要到 links 中
+        news_item = {
+            "source": {
+                "publisher": row[5] or "",  # 發布媒體
+                "author": row[5] or ""      # 作者（與發布媒體相同）
+            },
+            "url": row[3] or "",
+            "title": row[1],
+            "publish_date": row[6] or "",
+            "location": location,
+            "summary": current_summary  # 每篇新聞的個別摘要
+        }
+        merged_news[event_key]["links"].append(news_item)
 
         # 標記該事件已處理
         processed_events.add(row[1])
@@ -963,17 +1088,15 @@ def news_api(request):
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS processed_news (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            event TEXT,
-            region TEXT,
-            cover TEXT,
-            date TEXT,
-            recent_update TEXT,
-            location TEXT,
-            overview TEXT,
-            summary TEXT,
-            daily_records TEXT,
-            links TEXT,
-            last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            event TEXT,              # 1
+            region TEXT,             # 2
+            cover TEXT,              # 3
+            date TEXT,              # 4
+            recent_update TEXT,      # 5
+            location TEXT,           # 6
+            overview TEXT,           # 7
+            daily_records TEXT,      # 8
+            links TEXT              # 9
         )
         ''')
         
@@ -985,8 +1108,8 @@ def news_api(request):
             cursor.execute('''
             INSERT INTO processed_news (
                 event, region, cover, date, recent_update,
-                location, overview, summary, daily_records, links
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                location, overview, daily_records, links
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 news_item['event'],
                 news_item['region'],
@@ -995,11 +1118,10 @@ def news_api(request):
                 news_item['recent_update'],
                 json.dumps(news_item['location'], ensure_ascii=False),
                 news_item['overview'],
-                news_item['summary'],
                 json.dumps(news_item['daily_records'], ensure_ascii=False),
                 json.dumps(news_item['links'], ensure_ascii=False)
             ))
-        
+
         # 確保所有更改都已提交
         conn.commit()
         
@@ -1027,17 +1149,15 @@ def news_api_sql(request):
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS processed_news (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            event TEXT,
-            region TEXT,
-            cover TEXT,
-            date TEXT,
-            recent_update TEXT,
-            location TEXT,
-            overview TEXT,
-            summary TEXT,
-            daily_records TEXT,
-            links TEXT,
-            last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            event TEXT,              # 1
+            region TEXT,             # 2
+            cover TEXT,              # 3
+            date TEXT,              # 4
+            recent_update TEXT,      # 5
+            location TEXT,           # 6
+            overview TEXT,           # 7
+            daily_records TEXT,      # 8
+            links TEXT              # 9
         )
         ''')
         conn.commit()
@@ -1053,8 +1173,9 @@ def news_api_sql(request):
 
         # 如果資料表有資料，直接讀取
         cursor.execute('''
-        SELECT event, region, cover, date, recent_update,
-               location, overview, summary, daily_records, links
+        SELECT 
+            event, region, cover, date, recent_update,
+            location, overview, daily_records, links
         FROM processed_news
         ORDER BY date DESC
         ''')
@@ -1069,7 +1190,9 @@ def news_api_sql(request):
                 "連結": row[2],
                 "內文": row[3],
                 "時間": row[4],
-                "圖片": row[5]
+                "圖片": row[5],
+                "publisher": row[6],
+                "author": row[7]
             }
             news_list.append(news_item)
 
@@ -1123,235 +1246,238 @@ def update_daily_records(request, news_id):
 
 #測試爬蟲：開始爬蟲url http://localhost:8000/api/crawler/first-stage/
 #測試爬蟲：開啟後端api http://localhost:8000/api/raw-news/    
-@require_GET
-def crawler_first_stage(request):
-    try:
-        start_time = time.time()
-        day = "30"
+# @require_GET
+# def crawler_first_stage(request):
+#     try:
+#         start_time = time.time()
+#         day = "30"
         
-        # 連接資料庫並清空上次的資料
-        conn = sqlite3.connect('news.db')
-        cursor = conn.cursor()
+#         # 連接資料庫並清空上次的資料
+#         conn = sqlite3.connect('news.db')
+#         cursor = conn.cursor()
         
-        # 清空資料表（如果存在的話）
-        cursor.execute('''
-        DROP TABLE IF EXISTS raw_news
-        ''')
+#         # 清空資料表（如果存在的話）
+#         cursor.execute('''
+#         DROP TABLE IF EXISTS raw_news
+#         ''')
         
-        # 重新建立資料表
-        cursor.execute('''
-        CREATE TABLE raw_news (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            source TEXT,           -- 來源
-            title TEXT,            -- 標題
-            link TEXT,             -- 連結
-            content TEXT,          -- 內文
-            date TEXT,             -- 時間
-            image TEXT,            -- 圖片
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-        ''')
+#         # 重新建立資料表，將 source 改為 publisher 並新增 author
+#         cursor.execute('''
+#         CREATE TABLE raw_news (
+#             id INTEGER PRIMARY KEY AUTOINCREMENT,
+#             publisher TEXT,         -- 發布媒體
+#             author TEXT,           -- 作者（與發布媒體相同）
+#             title TEXT,            -- 標題
+#             link TEXT,             -- 連結
+#             content TEXT,          -- 內文
+#             date TEXT,             -- 時間
+#             image TEXT,            -- 圖片
+#             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+#         )
+#         ''')
         
-        conn.commit()
-        conn.close()
+#         conn.commit()
+#         conn.close()
         
-        # Google News 搜尋 URL
-        urls = [
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%xA8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E7%81%AB%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際大火
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%87%8E%E7%81%AB%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際野火
-            #加上bbc關鍵字
-            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E7%81%AB%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際大火
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%87%8E%E7%81%AB%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'#新增國際野火
-        ]
+#         # Google News 搜尋 URL
+#         urls = [
+#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%xA8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E7%81%AB%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際大火
+#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%87%8E%E7%81%AB%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際野火
+#             #加上bbc關鍵字
+#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+#             'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+#             'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+#             'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+#             'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E7%81%AB%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際大火
+#             'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%87%8E%E7%81%AB%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'#新增國際野火
+#         ]
         
-        all_news_items = []
-        start_crawl_time = time.time()
-        for url in urls:
-            news_items = fetch_news(url)
-            all_news_items.extend(news_items)
+#         all_news_items = []
+#         start_crawl_time = time.time()
+#         for url in urls:
+#             news_items = fetch_news(url)
+#             all_news_items.extend(news_items)
         
-        if all_news_items:
-            news_df = pd.DataFrame(all_news_items)
-            news_df = news_df.drop_duplicates(subset='標題', keep='first')
+#         if all_news_items:
+#             news_df = pd.DataFrame(all_news_items)
+#             news_df = news_df.drop_duplicates(subset='標題', keep='first')
             
-            end_crawl_time = time.time()
-            crawl_time = int(end_crawl_time - start_crawl_time)
-            hours, remainder = divmod(crawl_time, 3600)
-            minutes, seconds = divmod(remainder, 60)
+#             end_crawl_time = time.time()
+#             crawl_time = int(end_crawl_time - start_crawl_time)
+#             hours, remainder = divmod(crawl_time, 3600)
+#             minutes, seconds = divmod(remainder, 60)
             
-            time_str = ''
-            if hours > 0:
-                time_str += f'{hours}小時'
-            if minutes > 0 or hours > 0:
-                time_str += f'{minutes}分'
-            time_str += f'{seconds}秒'
+#             time_str = ''
+#             if hours > 0:
+#                 time_str += f'{hours}小時'
+#             if minutes > 0 or hours > 0:
+#                 time_str += f'{minutes}分'
+#             time_str += f'{seconds}秒'
             
-            print(f'Google News 爬取完成，耗時：{time_str}')
+#             print(f'Google News 爬取完成，耗時：{time_str}')
 
-            driver = setup_chrome_driver()
+#             driver = setup_chrome_driver()
 
-            # 刪除舊的 CSV 檔案（如果存在）
-            first_stage_file = 'w2.csv'
-            if os.path.exists(first_stage_file):
-                os.remove(first_stage_file)
+#             # 刪除舊的 CSV 檔案（如果存在）
+#             first_stage_file = 'w2.csv'
+#             if os.path.exists(first_stage_file):
+#                 os.remove(first_stage_file)
 
-            for index, item in news_df.iterrows():
-                source_name = item['來源']
-                original_url = item['連結']
-                final_url = extract_final_url(original_url)
-                sources_urls = {source_name: final_url}
+#             for index, item in news_df.iterrows():
+#                 source_name = item['來源']
+#                 original_url = item['連結']
+#                 final_url = extract_final_url(original_url)
+#                 sources_urls = {source_name: final_url}
 
-                # 擷取內容和圖片
-                content_results, _ = fetch_article_content(driver, sources_urls)
-                image_results = extract_image_url(driver, sources_urls)
+#                 # 擷取內容和圖片
+#                 content_results, _ = fetch_article_content(driver, sources_urls)
+#                 image_results = extract_image_url(driver, sources_urls)
 
-                content = content_results.get(source_name, '未找到內容')
-                image_url = image_results.get(source_name, 'null')
+#                 content = content_results.get(source_name, '')  # 改為空字串
+#                 image_url = image_results.get(source_name, '')  # 改為空字串
 
-                # 準備要存入 CSV 的資料
-                result = {
-                    '標題': item['標題'],
-                    '連結': original_url,
-                    '內文': content,
-                    '來源': source_name,
-                    '時間': item['時間'],
-                    '圖片': image_url
-                }
+#                 # 準備要存入 CSV 的資料
+#                 result = {
+#                     '標題': item['標題'],
+#                     '連結': original_url,
+#                     '內文': content or '',  # 確保空值為空字串
+#                     '來源': source_name,
+#                     '時間': item['時間'],
+#                     '圖片': image_url or ''  # 確保空值為空字串
+#                 }
 
-                # 儲存資料到 CSV
-                output_df = pd.DataFrame([result])
-                output_df.to_csv(first_stage_file, mode='a', header=not os.path.exists(first_stage_file), 
-                               index=False, encoding='utf-8')
+#                 # 儲存資料到 CSV
+#                 output_df = pd.DataFrame([result])
+#                 output_df.to_csv(first_stage_file, mode='a', header=not os.path.exists(first_stage_file), 
+#                                index=False, encoding='utf-8')
 
-                print(f"已儲存新聞: {result['標題']}")
+#                 print(f"已儲存新聞: {result['標題']}")
 
-            driver.quit()
+#             driver.quit()
 
-            # 將資料存入資料庫
-            conn = sqlite3.connect('news.db')
-            cursor = conn.cursor()
+#             # 將資料存入資料庫
+#             conn = sqlite3.connect('news.db')
+#             cursor = conn.cursor()
 
-            # 修改資料表結構，使用英文欄位名稱
-            cursor.execute('''
-            CREATE TABLE IF NOT EXISTS raw_news (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                source TEXT,           -- 來源
-                title TEXT,            -- 標題
-                link TEXT,             -- 連結
-                content TEXT,          -- 內文
-                date TEXT,             -- 時間
-                image TEXT,            -- 圖片
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-            ''')
+#             # 修改資料表結構，使用英文欄位名稱
+#             cursor.execute('''
+#             CREATE TABLE IF NOT EXISTS raw_news (
+#                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+#                 publisher TEXT,         -- 發布媒體
+#                 author TEXT,           -- 作者（與發布媒體相同）
+#                 title TEXT,            -- 標題
+#                 link TEXT,             -- 連結
+#                 content TEXT,          -- 內文
+#                 date TEXT,             -- 時間
+#                 image TEXT,            -- 圖片
+#                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+#             )
+#             ''')
             
-            # 修改插入語句
-            news_df = pd.read_csv(first_stage_file)
-            for _, row in news_df.iterrows():
-                cursor.execute('''
-                INSERT INTO raw_news (source, title, link, content, date, image)
-                VALUES (?, ?, ?, ?, ?, ?)
-                ''', (
-                    row['來源'],
-                    row['標題'],
-                    row['連結'],
-                    row['內文'],
-                    row['時間'],
-                    row['圖片']
-                ))
+#             # 修改插入語句
+#             news_df = pd.read_csv(first_stage_file)
+#             for _, row in news_df.iterrows():
+#                 cursor.execute('''
+#                 INSERT INTO raw_news (publisher, author, title, link, content, date, image)
+#                 VALUES (?, ?, ?, ?, ?, ?, ?)
+#                 ''', (
+#                     row['來源'],
+#                     row['來源'],
+#                     row['標題'],
+#                     row['連結'],
+#                     row['內文'],
+#                     row['時間'],
+#                     row['圖片']
+#                 ))
             
-            conn.commit()
-            conn.close()
+#             conn.commit()
+#             conn.close()
 
-            end_time = time.time()
-            elapsed_time = int(end_time - start_time)
-            hours, remainder = divmod(elapsed_time, 3600)
-            minutes, seconds = divmod(remainder, 60)
+#             end_time = time.time()
+#             elapsed_time = int(end_time - start_time)
+#             hours, remainder = divmod(elapsed_time, 3600)
+#             minutes, seconds = divmod(remainder, 60)
 
-            time_str = ''
-            if hours > 0:
-                time_str += f'{hours} 小時 '
-            if minutes > 0 or hours > 0:
-                time_str += f'{minutes} 分 '
-            time_str += f'{seconds} 秒'
+#             time_str = ''
+#             if hours > 0:
+#                 time_str += f'{hours} 小時 '
+#             if minutes > 0 or hours > 0:
+#                 time_str += f'{minutes} 分 '
+#             time_str += f'{seconds} 秒'
 
-            return JsonResponse({
-                'status': 'success',
-                'message': f'第一階段爬蟲完成！耗時：{time_str}',
-                'csv_file': first_stage_file,
-                'total_news': len(news_df)
-            })
+#             return JsonResponse({
+#                 'status': 'success',
+#                 'message': f'第一階段爬蟲完成！耗時：{time_str}',
+#                 'csv_file': first_stage_file,
+#                 'total_news': len(news_df)
+#             })
 
-        return JsonResponse({
-            'status': 'error',
-            'message': '沒有找到新聞'
-        })
+#         return JsonResponse({
+#             'status': 'error',
+#             'message': '沒有找到新聞'
+#         })
 
-    except Exception as e:
-        return JsonResponse({
-            'status': 'error',
-            'message': f'爬蟲執行失敗：{str(e)}'
-        }, status=500)
+#     except Exception as e:
+#         return JsonResponse({
+#             'status': 'error',
+#             'message': f'爬蟲執行失敗：{str(e)}'
+#         }, status=500)
     
-@require_GET
-def view_raw_news(request):
-    try:
-        conn = sqlite3.connect('news.db')
-        cursor = conn.cursor()
+# @require_GET
+# def view_raw_news(request):
+#     try:
+#         conn = sqlite3.connect('news.db')
+#         cursor = conn.cursor()
         
-        # 修改查詢語句，使用英文欄位名稱
-        cursor.execute('''
-        SELECT source, title, link, content, date, image 
-        FROM raw_news 
-        ORDER BY date DESC
-        ''')
+#         cursor.execute('''
+#         SELECT publisher, author, title, link, content, date, image 
+#         FROM raw_news 
+#         ORDER BY date DESC
+#         ''')
         
-        rows = cursor.fetchall()
+#         rows = cursor.fetchall()
         
-        news_list = []
-        for row in rows:
-            news_item = {
-                '來源': row[0],
-                '標題': row[1],
-                '連結': row[2],
-                '內文': row[3],
-                '時間': row[4],
-                '圖片': row[5]
-            }
-            news_list.append(news_item)
+#         news_list = []
+#         for row in rows:
+#             news_item = {
+#                 '來源': row[0] or '',  # 確保空值為空字串
+#                 '作者': row[1] or '',
+#                 '標題': row[2] or '',
+#                 '連結': row[3] or '',
+#                 '內文': row[4] or '',
+#                 '時間': row[5] or '',
+#                 '圖片': row[6] or ''
+#             }
+#             news_list.append(news_item)
             
-        conn.close()
-        return JsonResponse(news_list, safe=False)
+#         conn.close()
+#         return JsonResponse(news_list, safe=False)
         
-    except Exception as e:
-        if 'conn' in locals():
-            conn.close()
-        print(f"Error in view_raw_news: {str(e)}")
-        return JsonResponse({'error': str(e)}, status=500)
+#     except Exception as e:
+#         if 'conn' in locals():
+#             conn.close()
+#         print(f"Error in view_raw_news: {str(e)}")
+#         return JsonResponse({'error': str(e)}, status=500)
     

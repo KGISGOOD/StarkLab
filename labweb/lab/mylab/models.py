@@ -12,17 +12,19 @@ class Stock(models.Model):
 
 class News(models.Model):
     event = models.CharField(max_length=255)  # 事件名稱
-    image = models.URLField(max_length=500, blank=True, null=True)  # 事件圖片URL
-    link = models.URLField(max_length=500)  # 相關新聞連結
-    content = models.TextField()  # 新聞內容
-    source = models.CharField(max_length=100)  # 新聞來源
-    date = models.DateField()  # 事件日期
-    recent_update = models.DateField(blank=True, null=True)  # 最新更新日期
     region = models.CharField(
         max_length=10,
         choices=[('國內', '國內'), ('國外', '國外')],
         default='未知'
     )  # 地理範圍
+    cover = models.URLField(max_length=500, blank=True, null=True)  # 封面圖片
+    image = models.URLField(max_length=500, blank=True, null=True)  # 事件圖片URL
+    link = models.URLField(max_length=500)  # 相關新聞連結
+    content = models.TextField()  # 新聞內容
+    source = models.CharField(max_length=100)  # 新聞來源
+    author = models.CharField(max_length=100, default='')  # 新聞作者
+    date = models.DateField()  # 事件日期
+    recent_update = models.DateField(blank=True, null=True)  # 最新更新日期
     location = models.CharField(max_length=255, blank=True, null=True)  # 地點
     disaster = models.CharField(
         max_length=50,
@@ -35,11 +37,12 @@ class News(models.Model):
         ],
         default='未知'
     )  # 災害類型
-    summary = models.TextField(blank=True, null=True)  # 事件摘要
+    overview = models.TextField(blank=True, null=True)  # 事件整體概述
     daily_records = models.JSONField(blank=True, null=True)  # 每日進展記錄
-    links = models.JSONField(null=True, blank=True)  # 允許 links 欄位為 null
+    links = models.JSONField(null=True, blank=True)  # 相關新聞連結，包含各新聞的摘要
+
     class Meta:
-        db_table = "news"  # 指定資料表名稱為 "news"
+        db_table = "news"
 
 
         
