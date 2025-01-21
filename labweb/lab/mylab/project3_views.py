@@ -943,7 +943,7 @@ def news_api(request):
             return value.replace("\n", " ").replace("-", "").strip() if value else ""
 
         def parse_location(location_str):
-            """使用 X.AI 處理地點字符串，只保留有效地名"""
+            """使用 X.AI 處理地點字符串，只保留有效地名，並添加國家名稱"""
             if not location_str:
                 return []
             
@@ -957,21 +957,21 @@ def news_api(request):
                     except json.JSONDecodeError:
                         pass
 
-                # 使用 X.AI 清理和提取地點
+                # 使用 X.AI 清理和提取地點，並添加國家名稱
                 clean_location_prompt = f"""
-                請從以下文字中提取所有有效的地名，並以 JSON 數組格式返回。
-                請直接返回 JSON 數組，不要加任何其他標記或說明文字。
+                請從以下文字中提取所有地點，並以 JSON 數組格式返回。
                 
                 要求：
-                1. 只返回實際的地名
-                2. 移除所有說明文字、標點符號和格式標記
-                3. 確保每個地名都是完整且有意義的
-                4. 如果有重複的地名，只保留一次
-                5. 不要包含任何非地名的文字
+                1. 必須包含國家名稱
+                2. 如果提到台灣的地點（如台北市、新北市等），則在數組開頭加上"台灣"
+                3. 如果是國外地點，確保每個地點都有對應的國家名稱
+                4. 如果同一個國家有多個地點，國家名稱只需出現一次
+                5. 移除所有說明文字、標點符號和格式標記
                 
-                舉例：
-                ["台北市", "新北市", "基隆市"]
-
+                範例格式：
+                台灣地點：["台灣", "台北市", "新北市", "基隆市"]
+                日本地點：["日本", "東京都", "大阪府", "福島縣"]
+                多國地點：["日本", "東京都", "大阪府", "韓國", "首爾市", "釜山市"]
                 
                 輸入文字：
                 {location_str}
@@ -989,14 +989,16 @@ def news_api(request):
                     if isinstance(cleaned_locations, list):
                         # 確保所有項目都是字符串，並移除空項目
                         cleaned_locations = [str(loc).strip() for loc in cleaned_locations if str(loc).strip()]
-                        # 移除重複項並排序
-                        return sorted(list(dict.fromkeys(cleaned_locations)))
+                        # 移除重複項並排序，但保持國家名稱在前
+                        return sorted(list(dict.fromkeys(cleaned_locations)), 
+                                   key=lambda x: (x not in ['台灣', '日本', '韓國', '中國', '美國'], x))
                 except json.JSONDecodeError as e:
                     print(f"JSON 解析錯誤，嘗試其他方式處理: {str(e)}")
                     # 如果 JSON 解析失敗，嘗試直接處理文字
                     locations = response.replace('[', '').replace(']', '').replace('"', '').split(',')
                     cleaned_locations = [loc.strip() for loc in locations if loc.strip()]
-                    return sorted(list(dict.fromkeys(cleaned_locations)))
+                    return sorted(list(dict.fromkeys(cleaned_locations)),
+                                key=lambda x: (x not in ['台灣', '日本', '韓國', '中國', '美國'], x))
                 
             except Exception as e:
                 print(f"解析地點時發生錯誤: {str(e)}")
@@ -1234,64 +1236,53 @@ def news_api(request):
     
 @require_GET
 def news_api_sql(request):
-    """
-    如果資料表為空，調用 news_api 來處理資料
-    否則直接從資料表讀取資料
-    """
+    """直接從 processed_news 資料表讀取已經整理好的資料"""
     try:
         conn = sqlite3.connect('w.db')
         cursor = conn.cursor()
         
-        # 確保資料表存在
+        # 檢查資料表是否存在
         cursor.execute('''
-        CREATE TABLE IF NOT EXISTS processed_news (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            event TEXT,              -- 事件名稱
-            region TEXT,             -- 地區
-            cover TEXT,              -- 封面圖片
-            date TEXT,               -- 日期
-            recent_update TEXT,      -- 最近更新時間
-            location TEXT,           -- 地點
-            overview TEXT,           -- 概述
-            daily_records TEXT,      -- 每日記錄
-            links TEXT               -- 相關連結
-        )
+        SELECT name FROM sqlite_master 
+        WHERE type='table' AND name='processed_news'
         ''')
-        conn.commit()
+        
+        if not cursor.fetchone():
+            return JsonResponse({'error': '資料尚未處理完成'}, status=404)
 
-        # 檢查資料表是否為空
-        cursor.execute('SELECT COUNT(*) FROM processed_news')
-        count = cursor.fetchone()[0]
-
-        if count == 0:
-            # 如果資料表為空，調用 news_api 來處理資料
-            conn.close()  # 先關閉連接
-            return news_api(request)  # 直接使用 news_api 的結果
-
-        # 如果資料表有資料，直接讀取
+        # 直接從 processed_news 讀取資料
         cursor.execute('''
         SELECT 
             event, region, cover, date, recent_update,
             location, overview, daily_records, links
         FROM processed_news
-        ORDER BY date DESC
+        ORDER BY recent_update DESC
         ''')
         
         rows = cursor.fetchall()
         
         news_list = []
         for row in rows:
-            news_item = {
-                "來源": row[0],
-                "標題": row[1],
-                "連結": row[2],
-                "內文": row[3],
-                "時間": row[4],
-                "圖片": row[5],
-                "publisher": row[6],
-                "author": row[7]
-            }
-            news_list.append(news_item)
+            try:
+                location = json.loads(row[5]) if row[5] else []
+                daily_records = json.loads(row[7]) if row[7] else []
+                links = json.loads(row[8]) if row[8] else []
+                
+                news_item = {
+                    "event": row[0],
+                    "region": row[1],
+                    "cover": row[2],
+                    "date": row[3],
+                    "recent_update": row[4],
+                    "location": location,
+                    "overview": row[6],
+                    "daily_records": daily_records,
+                    "links": links
+                }
+                news_list.append(news_item)
+            except json.JSONDecodeError as e:
+                print(f"JSON 解析錯誤: {str(e)}")
+                continue
 
         conn.close()
         return JsonResponse(news_list, safe=False)
