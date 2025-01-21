@@ -392,7 +392,7 @@ def is_disaster_news(title, content):
 # 主程式
 def main():
     start_time = time.time()
-    day="1"
+    day="3"
     # Google News 搜 URL
     urls = [
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%xA8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
@@ -1170,19 +1170,29 @@ def news_api(request):
         """
         current_summary = chat_with_xai(summary_prompt, xai_api_key, model_name, "").strip()
 
-        # 添加新聞連結和其摘要到 links 中
-        news_item = {
-            "source": {
-                "publisher": row[5] or "",  # 發布媒體
-                "author": row[5] or ""      # 作者（與發布媒體相同）
-            },
-            "url": row[3] or "",
-            "title": row[1],
-            "publish_date": row[6] or "",
-            "location": location,
-            "summary": current_summary  # 每篇新聞的個別摘要
-        }
-        merged_news[event_key]["links"].append(news_item)
+        # 檢查是否已存在相同標題和來源的新聞
+        existing_news = None
+        for link in merged_news[event_key]["links"]:
+            if (link["title"] == row[1] and 
+                link["source"]["publisher"] == row[5]):
+                existing_news = link
+                break
+
+        # 只有在不存在相同新聞時才添加
+        if not existing_news:
+            # 添加新聞連結和其摘要到 links 中
+            news_item = {
+                "source": {
+                    "publisher": row[5] or "",  # 發布媒體
+                    "author": row[5] or ""      # 作者（與發布媒體相同）
+                },
+                "url": row[3] or "",
+                "title": row[1],
+                "publish_date": row[6] or "",
+                "location": location,
+                "summary": current_summary  # 每篇新聞的個別摘要
+            }
+            merged_news[event_key]["links"].append(news_item)
 
         # 標記該事件已處理
         processed_events.add(row[1])
