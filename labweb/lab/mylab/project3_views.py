@@ -1,3 +1,4 @@
+#爬蟲 - 暫存在DataFrame - ai處理 - 進sqlite
 from django.shortcuts import render
 import pandas as pd
 import os
