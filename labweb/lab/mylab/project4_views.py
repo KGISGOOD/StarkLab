@@ -171,7 +171,7 @@ def chat_function(message, model_settings):
             "stream": False
         }
         
-        response = requests.post(url, headers=model_settings['headers'], json=data, timeout=30)
+        response = requests.post(url, headers=model_settings['headers'], json=data, timeout=60)
         
         if response.status_code == 200:
             result = response.json()
