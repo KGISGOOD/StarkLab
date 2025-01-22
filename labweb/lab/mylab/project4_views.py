@@ -19,6 +19,10 @@ from django.http import JsonResponse
 import requests
 from django.views.decorators.csrf import csrf_exempt
 
+import pandas as pd
+import os
+import csv
+
 xai_api_key = "xai-sEKM3YfLj81l66aMWyXpmasF8Xab7hvpcwtEY4WU0jIeJfEoWDPSjm5VjbH9bq9JDNN5SmAAIrGyjfPN"
 model_name = "grok-beta"
 
@@ -65,24 +69,58 @@ def test_groq_api(request):
 
 
 def setup_chatbot(xai_api_key, model_name):
-    prompt = """
-    
-    """
-    
+
     url = 'https://api.x.ai/v1/chat/completions'
     headers = {
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {xai_api_key}'
     }
 
-    messages = [
-        {"role": "system", "content": "你是一個負責寫新聞稿的員工"},
-        {"role": "user", "content": prompt}
-    ]
+    # 從檔案中讀取資料並學習
+    initial_messages = []
+    
+    # 首先加入系統提示
+    initial_messages.append({
+        "role": "system",
+        "content": """
+        這是水利署的專案，目標是要就手邊的資訊進行新聞稿撰寫。請根據使用者提供的資訊，自動判斷分類（災害前、災害進行中、災害後），並以繁體中文（UTF-8)進行撰寫。
+
+        日期格式部分：例如2024年11月1日，請參考前後文意，採用「今(1)日」「昨(1)日」等格式撰寫。
+
+        如果資訊來源是會議記錄，請著重於天災案件的資訊內容，不要提及開會或會議部分。
+
+        請依照以下範例的風格撰寫新聞稿，並用對應的語氣與風格。新聞稿長度約五百字，並請附上標題。
+        """
+    })
+
+    # 定義分類對應說明
+    category_descriptions = {
+        1: "災害前(防汛整備工作、滯洪池、防災管理、抽水機、河道疏濬、智慧防災、氣候變遷應對、洪水預警、防災數位轉型、淹水潛勢圖、防災聯繫)",
+        2: "災害進行中（應變小組、豪雨特報、水情監控、抽水機啟用、河川水位、土石流警戒、降雨情勢、災情掌握、緊急疏散、防災聯繫）",
+        3: "災害後（移動式抽水機、土壤含水量、坡地滑動、災情復原、供水正常、設施檢查、地震檢查、土石流警戒、疏散撤離、衛生消毒）"
+    }
+
+    # 假設檔案的讀取與 pandas DataFrame 相關
+    data = pd.read_excel('learn.xlsx')  # 載入你的xlsx檔案
+
+    for _, row in data.iterrows():
+        title = row['標題']    # 標題
+        content = row['內容']  # 使用的內容
+        category = row['分類']
+
+        # 將每個新聞作為示例加入
+        initial_messages.append({
+            "role": "system", 
+            "content": f"以下是{category_descriptions[category]}的新聞稿範例："
+        })
+        initial_messages.append({
+            "role": "assistant", 
+            "content": f"標題：{title}\n\n內容：\n{content}"
+        })
 
     data = {
-        "messages": messages,
-        "model": "grok-beta",
+        "messages": initial_messages,
+        "model": model_name,
         "temperature": 0,
         "stream": False
     }
@@ -90,40 +128,55 @@ def setup_chatbot(xai_api_key, model_name):
     response = requests.post(url, headers=headers, json=data, timeout=30)
     
     if response.status_code == 200:
-        result = response.json()
-        if result and 'choices' in result and result['choices']:
-            content = result['choices'][0]['message']['content']
-            return content
+        return {
+            'headers': headers,
+            'initial_messages': initial_messages,
+            'model': model_name
+        }
     
     print(f"API 調用失敗 (狀態碼: {response.status_code})")
-    return ""  # 返回空字符串而不是 None
+    return None
 
 def train_view(request):
     if request.method == 'POST':
-        print("訪問了 train_view")  # 添加調試信息
+        print("訪問了 train_view")
         try:
-            # 初始化 chatbot
-            response = setup_chatbot(xai_api_key, model_name)
-            if not response:
+            # 初始化 chatbot 並保存設置到 session
+            model_settings = setup_chatbot(xai_api_key, model_name)
+            if not model_settings:
                 request.session['train_message'] = "模型初始化失敗！"
             else:
+                request.session['model_settings'] = model_settings
                 request.session['train_message'] = "模型初始化完成！"
                 
         except Exception as e:
-            print(f"初始化錯誤: {str(e)}")  # 添加錯誤日誌
+            print(f"初始化錯誤: {str(e)}")
             request.session['train_message'] = f"初始化過程發生錯誤：{str(e)}"
             
-    return redirect('ai_report')  # 重定向回主頁面
+    return redirect('ai_report')
 
-def chat_function(message):
+def chat_function(message, model_settings):
     try:
-        chat_chain = setup_chatbot()
-        if chat_chain is None:
-            return "聊天機器人初始化失敗"
+        if not model_settings:
+            return "請先進行模型初始化訓練"
             
-        response = chat_chain({"input": message})
-        result = response["response"]
-        return result
+        url = 'https://api.x.ai/v1/chat/completions'
+        messages = model_settings['initial_messages'].copy()
+        messages.append({"role": "user", "content": message})
+        
+        data = {
+            "messages": messages,
+            "model": model_settings['model'],
+            "temperature": 0,
+            "stream": False
+        }
+        
+        response = requests.post(url, headers=model_settings['headers'], json=data, timeout=30)
+        
+        if response.status_code == 200:
+            result = response.json()
+            return result['choices'][0]['message']['content']
+        return "API 調用失敗"
     except Exception as e:
         print(f"聊天過程中發生錯誤: {str(e)}")
         return f"發生錯誤: {str(e)}"
@@ -132,11 +185,23 @@ def generate_view(request):
     if request.method == 'POST':
         input_text = request.POST.get('inputText')
         if input_text:
-            output = chat_function(input_text)
-            # 將輸入和輸出存入 session
+            # 從 session 中獲取模型設置
+            model_settings = request.session.get('model_settings')
+            output = chat_function(input_text, model_settings)
             request.session['input_text'] = input_text
             request.session['output_text'] = output
+            # 記錄到 CSV 文件
+            csv_path = 'chat_records.csv'
+            file_exists = os.path.exists(csv_path)
+            
+            with open(csv_path, 'a', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+                if not file_exists:
+                    writer.writerow(['input', 'output'])  # 寫入標題行
+                writer.writerow([input_text, output])
+                
     return redirect('ai_report')
+
 
 
 import PyPDF2

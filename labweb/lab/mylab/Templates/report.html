@@ -23,7 +23,7 @@
         <span id="test-status">{{ test_message }}</span>
     </form>
     <br><br>
-    
+
     <!-- 檔案上傳表單 -->
     <form action="{% url 'upload_file' %}" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
@@ -35,12 +35,12 @@
     <form action="{% url 'generate_view' %}" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         <label for="inputText">輸入框：</label><br>
-        <textarea id="inputText" name="inputText" rows="10" cols="50">{{ inputText }}</textarea><br><br>
+        <textarea id="inputText" name="inputText" rows="15" cols="80">{{ inputText }}</textarea><br><br>
     
         <button type="submit" name="action" value="generateButton">生成</button><br><br>
     
         <label for="outputText">輸出框：</label><br>
-        <textarea id="outputText" name="outputText" rows="10" cols="50" readonly>{{ outputText }}</textarea><br><br>
+        <textarea id="outputText" name="outputText" rows="15" cols="80" readonly>{{ outputText }}</textarea><br><br>
     </form>
     
     <button type="button" id="downloadButton">下載</button>
