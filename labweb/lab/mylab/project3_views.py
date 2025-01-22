@@ -64,6 +64,7 @@ domestic_keywords = [
     '臺灣', '台北', '臺中', '臺南', '臺9縣', '全台', '全臺'
 ]
 
+#自動化從新聞網站抓取新聞資料
 def fetch_news(url):
     try:
         headers = {
@@ -73,49 +74,31 @@ def fetch_news(url):
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
 
-        # 使用多個可能的 class 名稱來找到文章區塊
         articles = soup.find_all(['article', 'div'], class_=['IFHyqb', 'xrnccd', 'IBr9hb', 'NiLAwe'])
-
         news_list = []
+
+        allowed_sources_set = set(ALLOWED_SOURCES)  # 將 ALLOWED_SOURCES 轉換為集合
+
         for article in articles:
             try:
-                # 尋找標題和連結（增加更多可能的 class）
-                title_element = article.find(['a', 'h3', 'h4'], class_=['JtKRv', 'ipQwMb', 'DY5T1d', 'gPFEn'])
-                if not title_element:
-                    title_element = article.find('a', recursive=True)  # 遞迴搜尋所有 a 標籤
-                
+                title_element = article.find(['a', 'h3', 'h4'], class_=['JtKRv', 'ipQwMb', 'DY5T1d', 'gPFEn']) or article.find('a', recursive=True)
                 if not title_element:
                     continue
 
                 title = title_element.get_text(strip=True)
                 link = title_element.get('href', '')
+                link = f'https://news.google.com/{link[2:]}' if link.startswith('./') else f'https://news.google.com{link}' if link.startswith('/') else link
 
-                # 處理 Google News 的相對 URL
-                if link.startswith('./'):
-                    link = 'https://news.google.com/' + link[2:]
-                elif link.startswith('/'):
-                    link = 'https://news.google.com' + link
-
-                # 尋找新聞來源（增加更多可能的 class 和搜尋方式）
-                source_element = article.find(['div', 'a'], class_=['vr1PYe', 'wEwyrc', 'SVJrMe', 'NmQAAc'])
-                if not source_element:
-                    # 嘗試找到包含 "BBC" 的元素
-                    source_element = article.find(lambda tag: tag.name in ['div', 'a'] and 'BBC' in tag.get_text())
-
+                source_element = article.find(['div', 'a'], class_=['vr1PYe', 'wEwyrc', 'SVJrMe', 'NmQAAc']) or article.find(lambda tag: tag.name in ['div', 'a'] and 'BBC' in tag.get_text())
                 if not source_element:
                     continue
 
                 source_name = source_element.get_text(strip=True)
-                
-                # 特別處理 BBC 來源名稱
-                if 'BBC' in source_name:
-                    source_name = 'BBC News 中文'
+                source_name = 'BBC News 中文' if 'BBC' in source_name else source_name
 
-                # 檢查是否為允許的來源
-                if source_name not in ALLOWED_SOURCES:
+                if source_name not in allowed_sources_set:  # 使用集合進行查找
                     continue
 
-                # 尋找時間（增加更多可能的 class）
                 time_element = article.find(['time', 'div'], class_=['UOVeFe', 'hvbAAd', 'WW6dff', 'LfVVr'])
                 date_str = time_element.get_text(strip=True) if time_element else '未知'
                 date = parse_date(date_str)
@@ -138,7 +121,8 @@ def fetch_news(url):
     except Exception as e:
         print(f"抓取新聞時發生錯誤: {str(e)}")
         return []
-    
+
+# 解析 google news上的日期字符串
 def parse_date(date_str):
     current_date = datetime.now()
     
@@ -179,15 +163,26 @@ def setup_chrome_driver():
     driver = webdriver.Chrome(service=service, options=chrome_options)
     return driver
 
+#從 Google News 的 URL 中提取出最終的 URL
 def extract_final_url(google_news_url):
     match = re.search(r'(https?://[^&]+)', google_news_url)
     if match:
         return match.group(1)
     return google_news_url
 
+# 從指定的新聞來源 URL 中抓取文章的內容
 def fetch_article_content(driver, sources_urls):
     results = {}
     summaries = {}
+    
+    content_selectors = {
+        'Newtalk新聞': 'div.articleBody.clearfix p',
+        '經濟日報': 'section.article-body__editor p',
+        '自由時報': 'div.text p',
+        '中時新聞': 'div.article-body p',
+        'BBC News 中文': 'div.bbc-1cvxiy9 p'
+    }
+
     for source_name, url in sources_urls.items():
         if source_name not in ALLOWED_SOURCES:
             continue
@@ -198,38 +193,18 @@ def fetch_article_content(driver, sources_urls):
                 EC.presence_of_element_located((By.CSS_SELECTOR, 'p'))
             )
             
-            # 更新選擇器以包含 BBC
-            content_selectors = {
-                'Newtalk新聞': 'div.articleBody.clearfix p',
-                '經濟日報': 'section.article-body__editor p',
-                '自由時報': 'div.text p',
-                '中時新聞': 'div.article-body p',
-                'BBC News 中文': 'div.bbc-1cvxiy9 p'
-            }
-            
             selector = content_selectors.get(source_name)
             if not selector:  # 如果沒有對應的選擇器，跳過
                 continue
-                
+            
+            # 提取內容
+            paragraphs = driver.find_elements(By.CSS_SELECTOR, selector)
+            content = '\n'.join(p.text.strip() for p in paragraphs if p.text.strip())
+            summary = content[:100] if content else '未找到內容'
+            
             # 特別處理 BBC 新聞
             if source_name == 'BBC News 中文':
-                response = requests.get(url)
-                if response.status_code == 200:
-                    soup = BeautifulSoup(response.content, 'html.parser')
-                    content_div = soup.find('div', class_='bbc-1cvxiy9')
-                    if content_div:
-                        paragraphs = content_div.find_all('p')
-                        content = '\n'.join([p.get_text(strip=True) for p in paragraphs])
-                        summary = content[:100] if content else '未找到內容'
-                        results[source_name] = content if content else '未找到內容'
-                        summaries[source_name] = summary
-                        continue
-            
-            # 其他報社的原有處理邏輯
-            paragraphs = driver.find_elements(By.CSS_SELECTOR, selector)
-            content = '\n'.join([p.text.strip() for p in paragraphs if p.text.strip()])
-            
-            summary = content[:100] if content else '未找到內容'
+                content = '\n'.join(p.get_text(strip=True) for p in driver.find_elements(By.CSS_SELECTOR, selector))
             
             results[source_name] = content if content else '未找到內容'
             summaries[source_name] = summary
@@ -243,47 +218,41 @@ def fetch_article_content(driver, sources_urls):
 
 def extract_image_url(driver, sources_urls):
     results = {}
+    
+    image_selectors = {
+        'Newtalk新聞': "div.news_img img",
+        '經濟日報': "section.article-body__editor img",
+        '自由時報': "div.image-popup-vertical-fit img",
+        '中時新聞': "div.article-body img",
+        'BBC News 中文': "div.bbc-1cvxiy9 img"
+    }
+
     for source_name, url in sources_urls.items():
         if source_name not in ALLOWED_SOURCES:
             continue
             
         try:
             driver.get(url)
-            # 更新圖片選擇器以包含 BBC
-            image_selectors = {
-                'Newtalk新聞': "div.news_img img",
-                '經濟日報': "section.article-body__editor img",
-                '自由時報': "div.image-popup-vertical-fit img",
-                '中時新聞': "div.article-body img",
-                'BBC News 中文': "div.bbc-1cvxiy9 img"
-            }
-            
-            # 特別處理 BBC 新聞圖片
-            if source_name == 'BBC News 中文':
-                response = requests.get(url)
-                if response.status_code == 200:
-                    soup = BeautifulSoup(response.content, 'html.parser')
-                    content_div = soup.find('div', class_='bbc-1cvxiy9')
-                    if content_div:
-                        first_image = content_div.find('img')
-                        if first_image and 'src' in first_image.attrs:
-                            results[source_name] = first_image['src']
-                            continue
-            
             selector = image_selectors.get(source_name)
             if not selector:  # 如果沒有對應的選擇器，跳過
                 continue
-                
-            try:
-                image_element = WebDriverWait(driver, 5).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, selector))
-                )
-                image_url = image_element.get_attribute('src') or image_element.get_attribute('data-src')
-                results[source_name] = image_url or ''  # 改為空字串
-            except Exception as e:
-                print(f"圖片擷取失敗: {e}")
-                results[source_name] = ''  # 改為空字串
-                
+            
+            # 特別處理 BBC 新聞圖片
+            if source_name == 'BBC News 中文':
+                content_div = driver.find_element(By.CSS_SELECTOR, 'div.bbc-1cvxiy9')
+                if content_div:
+                    first_image = content_div.find_element(By.TAG_NAME, 'img')
+                    if first_image and 'src' in first_image.get_attribute('outerHTML'):
+                        results[source_name] = first_image.get_attribute('src')
+                        continue
+            
+            # 提取其他來源的圖片
+            image_element = WebDriverWait(driver, 5).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, selector))
+            )
+            image_url = image_element.get_attribute('src') or image_element.get_attribute('data-src')
+            results[source_name] = image_url or ''  # 改為空字串
+            
         except Exception as e:
             print(f"圖片擷取錯誤: {e}")
             results[source_name] = ''  # 改為空字串
