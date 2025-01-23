@@ -180,7 +180,7 @@ def fetch_article_content(driver, sources_urls):
         '經濟日報': 'section.article-body__editor p',
         '自由時報': 'div.text p',
         '中時新聞': 'div.article-body p',
-        'BBC News 中文': 'div.bbc-1cvxiy9 p'
+        'BBC News 中文': 'div.bbc-1cvxiy9 p'  # 確保選擇器正確
     }
 
     for source_name, url in sources_urls.items():
@@ -204,7 +204,9 @@ def fetch_article_content(driver, sources_urls):
             
             # 特別處理 BBC 新聞
             if source_name == 'BBC News 中文':
-                content = '\n'.join(p.get_text(strip=True) for p in driver.find_elements(By.CSS_SELECTOR, selector))
+                # 確保選擇器正確，並提取內容
+                bbc_paragraphs = driver.find_elements(By.CSS_SELECTOR, 'div.bbc-1cvxiy9 p')
+                content = '\n'.join(p.text.strip() for p in bbc_paragraphs if p.text.strip())
             
             results[source_name] = content if content else '未找到內容'
             summaries[source_name] = summary
@@ -1322,7 +1324,7 @@ def update_daily_records(request, news_id):
 def crawler_first_stage(request):
     try:
         start_time = time.time()
-        day = "1"
+        day = "3"
         
         # Google News 搜尋 URL
         urls = [
