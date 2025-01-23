@@ -239,17 +239,22 @@ def extract_image_url(driver, sources_urls):
             
             # 特別處理 BBC 新聞圖片
             if source_name == 'BBC News 中文':
-                content_div = driver.find_element(By.CSS_SELECTOR, 'div.bbc-1cvxiy9')
-                if content_div:
-                    first_image = content_div.find_element(By.TAG_NAME, 'img')
-                    if first_image and 'src' in first_image.get_attribute('outerHTML'):
-                        results[source_name] = first_image.get_attribute('src')
-                        continue
-            
+                try:
+                    content_div = driver.find_element(By.CSS_SELECTOR, 'div.bbc-1cvxiy9')
+                    if content_div:
+                        first_image = content_div.find_element(By.TAG_NAME, 'img')
+                        if first_image and 'src' in first_image.get_attribute('outerHTML'):
+                            results[source_name] = first_image.get_attribute('src')
+                            continue
+                except Exception as e:
+                    print(f"無法找到 BBC 新聞圖片: {e}")  # 新增錯誤處理
+
             # 提取其他來源的圖片
             image_element = WebDriverWait(driver, 5).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, selector))
             )
+            
+            # 提取圖片
             image_url = image_element.get_attribute('src') or image_element.get_attribute('data-src')
             results[source_name] = image_url or ''  # 改為空字串
             
@@ -1317,39 +1322,13 @@ def update_daily_records(request, news_id):
 def crawler_first_stage(request):
     try:
         start_time = time.time()
-        day = "3"
-        
-        # 連接資料庫並清空上次的資料
-        conn = sqlite3.connect('news.db')
-        cursor = conn.cursor()
-        
-        # 清空資料表（如果存在的話）
-        cursor.execute('''
-        DROP TABLE IF EXISTS raw_news
-        ''')
-        
-        # 重新建立資料表，將 source 改為 publisher 並新增 author
-        cursor.execute('''
-        CREATE TABLE raw_news (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            publisher TEXT,         -- 發布媒體
-            author TEXT,           -- 作者（與發布媒體相同）
-            title TEXT,            -- 標題
-            link TEXT,             -- 連結
-            content TEXT,          -- 內文 
-            date TEXT,             -- 時間
-            image TEXT,            -- 圖片
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-        ''')
-        
-        conn.commit()
-        conn.close()
+        day = "1"
         
         # Google News 搜尋 URL
         urls = [
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E7%81%AB%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際大火
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%87%8E%E7%81%AB%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'#新增國際野火
+            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#地震
+            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E7%81%AB%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',  # 新增國際大火
+            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%87%8E%E7%81%AB%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'  # 新增國際野火
         ]
         
         all_news_items = []
@@ -1393,8 +1372,8 @@ def crawler_first_stage(request):
                 content_results, _ = fetch_article_content(driver, sources_urls)
                 image_results = extract_image_url(driver, sources_urls)
 
-                content = content_results.get(source_name, '')  # 改為空字串
-                image_url = image_results.get(source_name, '')  # 改為空字串
+                content = content_results.get(source_name, '')  # 確保空值為空字串
+                image_url = image_results.get(source_name, '')  # 確保空值為空字串
 
                 # 準備要存入 CSV 的資料
                 result = {
@@ -1414,44 +1393,6 @@ def crawler_first_stage(request):
                 print(f"已儲存新聞: {result['標題']}")
 
             driver.quit()
-
-            # 將資料存入資料庫
-            conn = sqlite3.connect('news.db')
-            cursor = conn.cursor()
-
-            # 修改資料表結構，使用英文欄位名稱
-            cursor.execute('''
-            CREATE TABLE IF NOT EXISTS raw_news (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                publisher TEXT,         -- 發布媒體
-                author TEXT,           -- 作者（與發布媒體相同）
-                title TEXT,            -- 標題
-                link TEXT,             -- 連結
-                content TEXT,          -- 內文
-                date TEXT,             -- 時間
-                image TEXT,            -- 圖片
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-            ''')
-            
-            # 修改插入語句
-            news_df = pd.read_csv(first_stage_file)
-            for _, row in news_df.iterrows():
-                cursor.execute('''
-                INSERT INTO raw_news (publisher, author, title, link, content, date, image)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-                ''', (
-                    row['來源'],
-                    row['來源'],
-                    row['標題'],
-                    row['連結'],
-                    row['內文'],
-                    row['時間'],
-                    row['圖片']
-                ))
-            
-            conn.commit()
-            conn.close()
 
             end_time = time.time()
             elapsed_time = int(end_time - start_time)
@@ -1483,69 +1424,46 @@ def crawler_first_stage(request):
             'message': f'爬蟲執行失敗：{str(e)}'
         }, status=500)
 
-def rewrite_title(title):
-    """
-    使用 xAI 改寫標題
-    """
-    prompt = f"""
-    以下是新聞的標題，請生成一個有吸引力且通順的新標題：
-    
-    原標題：{title}
-    
-    請用簡潔有力的方式改寫。
-    """
-    
-    response = chat_with_xai(prompt, xai_api_key, model_name, "")
-    return response.strip()#返回一個去除前後空白字符的字串
-
-input_csv = "w2.csv"
-output_csv = "w3.csv"
-
-# 讀取 CSV 檔案
-df = pd.read_csv(input_csv)
-
-# 增加一列存放改寫標題的結果
-df['rewritten_title'] = [rewrite_title(row['標題']) for _, row in df.iterrows()]
-
-# 存成新的 CSV 檔案
-df.to_csv(output_csv, index=False)
-
-print(f"處理完成，結果已存至 {output_csv}")
-
     
 @require_GET
 def view_raw_news(request):
     try:
-        conn = sqlite3.connect('news.db')
-        cursor = conn.cursor()
+        # 定義 CSV 檔案名稱
+        csv_file = 'w2.csv'
         
-        cursor.execute('''
-        SELECT publisher, author, title, link, content, date, image 
-        FROM raw_news 
-        ORDER BY date DESC
-        ''')
-        
-        rows = cursor.fetchall()
-        
+        # 檢查 CSV 檔案是否存在
+        if not os.path.exists(csv_file):
+            return JsonResponse({'error': 'CSV 檔案不存在'}, status=404)
+
+        # 從 CSV 檔案讀取資料
+        news_df = pd.read_csv(csv_file)
+
+        # 準備 JSON 格式的新聞列表
         news_list = []
-        for row in rows:
+        for _, row in news_df.iterrows():
+            # 限制內文長度為 100 字
+            content = row.get('內文', '') or ''
+            if len(content) > 100:
+                content = content[:100] + '...'
+
             news_item = {
-                '來源': row[0] or '',  # 確保空值為空字串
-                '作者': row[1] or '',
-                '標題': row[2] or '',
-                '連結': row[3] or '',
-                '內文': row[4] or '',
-                '時間': row[5] or '',
-                '圖片': row[6] or ''
+                '來源': row.get('來源', '') or '',  # 確保空值為空字串
+                '作者': row.get('來源', '') or '',  # 假設作者與來源相同
+                '標題': row.get('標題', '') or '',
+                '連結': row.get('連結', '') or '',
+                '內文': content,  # 限制後的內文
+                '時間': row.get('時間', '') or '',
+                '圖片': row.get('圖片', '') or ''
             }
             news_list.append(news_item)
-            
-        conn.close()
-        return JsonResponse(news_list, safe=False)
+
+        # 使用 json_dumps_params 進行美化
+        return JsonResponse(news_list, safe=False, json_dumps_params={'ensure_ascii': False, 'indent': 4})
         
     except Exception as e:
-        if 'conn' in locals():
-            conn.close()
         print(f"Error in view_raw_news: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
+
+
+
     
