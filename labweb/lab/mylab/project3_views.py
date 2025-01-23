@@ -1,4 +1,3 @@
-#爬蟲 - 暫存在DataFrame - ai處理 - 進sqlite
 from django.shortcuts import render
 import pandas as pd
 import os
@@ -17,9 +16,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime, timedelta
 import json
-from django.http import JsonResponse
-from .models import News
-from django.views.decorators.csrf import csrf_exempt
 import threading
 
 # API 調用頻率控制
@@ -68,7 +64,7 @@ domestic_keywords = [
     '臺灣', '台北', '臺中', '臺南', '臺9縣', '全台', '全臺'
 ]
 
-# google news 抓取新聞
+#自動化從新聞網站抓取新聞資料
 def fetch_news(url):
     try:
         headers = {
@@ -78,49 +74,31 @@ def fetch_news(url):
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
 
-        # 使用多個可能的 class 名稱來找到文章區塊
         articles = soup.find_all(['article', 'div'], class_=['IFHyqb', 'xrnccd', 'IBr9hb', 'NiLAwe'])
-
         news_list = []
+
+        allowed_sources_set = set(ALLOWED_SOURCES)  # 將 ALLOWED_SOURCES 轉換為集合
+
         for article in articles:
             try:
-                # 尋找標題和連結（增加更多可能的 class）
-                title_element = article.find(['a', 'h3', 'h4'], class_=['JtKRv', 'ipQwMb', 'DY5T1d', 'gPFEn'])
-                if not title_element:
-                    title_element = article.find('a', recursive=True)  # 遞迴搜尋所有 a 標籤
-                
+                title_element = article.find(['a', 'h3', 'h4'], class_=['JtKRv', 'ipQwMb', 'DY5T1d', 'gPFEn']) or article.find('a', recursive=True)
                 if not title_element:
                     continue
 
                 title = title_element.get_text(strip=True)
                 link = title_element.get('href', '')
+                link = f'https://news.google.com/{link[2:]}' if link.startswith('./') else f'https://news.google.com{link}' if link.startswith('/') else link
 
-                # 處理 Google News 的相對 URL
-                if link.startswith('./'):
-                    link = 'https://news.google.com/' + link[2:]
-                elif link.startswith('/'):
-                    link = 'https://news.google.com' + link
-
-                # 尋找新聞來源（增加更多可能的 class 和搜尋方式）
-                source_element = article.find(['div', 'a'], class_=['vr1PYe', 'wEwyrc', 'SVJrMe', 'NmQAAc'])
-                if not source_element:
-                    # 嘗試找到包含 "BBC" 的元素
-                    source_element = article.find(lambda tag: tag.name in ['div', 'a'] and 'BBC' in tag.get_text())
-
+                source_element = article.find(['div', 'a'], class_=['vr1PYe', 'wEwyrc', 'SVJrMe', 'NmQAAc']) or article.find(lambda tag: tag.name in ['div', 'a'] and 'BBC' in tag.get_text())
                 if not source_element:
                     continue
 
                 source_name = source_element.get_text(strip=True)
-                
-                # 特別處理 BBC 來源名稱
-                if 'BBC' in source_name:
-                    source_name = 'BBC News 中文'
+                source_name = 'BBC News 中文' if 'BBC' in source_name else source_name
 
-                # 檢查是否為允許的來源
-                if source_name not in ALLOWED_SOURCES:
+                if source_name not in allowed_sources_set:  # 使用集合進行查找
                     continue
 
-                # 尋找時間（增加更多可能的 class）
                 time_element = article.find(['time', 'div'], class_=['UOVeFe', 'hvbAAd', 'WW6dff', 'LfVVr'])
                 date_str = time_element.get_text(strip=True) if time_element else '未知'
                 date = parse_date(date_str)
@@ -143,8 +121,8 @@ def fetch_news(url):
     except Exception as e:
         print(f"抓取新聞時發生錯誤: {str(e)}")
         return []
-    
-# 解析日期
+
+# 解析 google news上的日期字符串
 def parse_date(date_str):
     current_date = datetime.now()
     
@@ -171,7 +149,6 @@ def parse_date(date_str):
 
     return date.strftime('%Y-%m-%d')
 
-# 設定 Chrome 驅動程式
 def setup_chrome_driver():
     chrome_options = Options()
     chrome_options.add_argument('--headless')
@@ -186,17 +163,26 @@ def setup_chrome_driver():
     driver = webdriver.Chrome(service=service, options=chrome_options)
     return driver
 
-# 提取最終 URL
+#從 Google News 的 URL 中提取出最終的 URL
 def extract_final_url(google_news_url):
     match = re.search(r'(https?://[^&]+)', google_news_url)
     if match:
         return match.group(1)
     return google_news_url
 
-# 提取文章內文
+# 從指定的新聞來源 URL 中抓取文章的內容
 def fetch_article_content(driver, sources_urls):
     results = {}
     summaries = {}
+    
+    content_selectors = {
+        'Newtalk新聞': 'div.articleBody.clearfix p',
+        '經濟日報': 'section.article-body__editor p',
+        '自由時報': 'div.text p',
+        '中時新聞': 'div.article-body p',
+        'BBC News 中文': 'div.bbc-1cvxiy9 p'
+    }
+
     for source_name, url in sources_urls.items():
         if source_name not in ALLOWED_SOURCES:
             continue
@@ -207,38 +193,18 @@ def fetch_article_content(driver, sources_urls):
                 EC.presence_of_element_located((By.CSS_SELECTOR, 'p'))
             )
             
-            # 更新選擇器以包含 BBC
-            content_selectors = {
-                'Newtalk新聞': 'div.articleBody.clearfix p',
-                '經濟日報': 'section.article-body__editor p',
-                '自由時報': 'div.text p',
-                '中時新聞': 'div.article-body p',
-                'BBC News 中文': 'div.bbc-1cvxiy9 p'
-            }
-            
             selector = content_selectors.get(source_name)
             if not selector:  # 如果沒有對應的選擇器，跳過
                 continue
-                
+            
+            # 提取內容
+            paragraphs = driver.find_elements(By.CSS_SELECTOR, selector)
+            content = '\n'.join(p.text.strip() for p in paragraphs if p.text.strip())
+            summary = content[:100] if content else '未找到內容'
+            
             # 特別處理 BBC 新聞
             if source_name == 'BBC News 中文':
-                response = requests.get(url)
-                if response.status_code == 200:
-                    soup = BeautifulSoup(response.content, 'html.parser')
-                    content_div = soup.find('div', class_='bbc-1cvxiy9')
-                    if content_div:
-                        paragraphs = content_div.find_all('p')
-                        content = '\n'.join([p.get_text(strip=True) for p in paragraphs])
-                        summary = content[:100] if content else '未找到內容'
-                        results[source_name] = content if content else '未找到內容'
-                        summaries[source_name] = summary
-                        continue
-            
-            # 其他報社的原有處理邏輯
-            paragraphs = driver.find_elements(By.CSS_SELECTOR, selector)
-            content = '\n'.join([p.text.strip() for p in paragraphs if p.text.strip()])
-            
-            summary = content[:100] if content else '未找到內容'
+                content = '\n'.join(p.get_text(strip=True) for p in driver.find_elements(By.CSS_SELECTOR, selector))
             
             results[source_name] = content if content else '未找到內容'
             summaries[source_name] = summary
@@ -250,55 +216,60 @@ def fetch_article_content(driver, sources_urls):
             
     return results, summaries
 
-# 提取圖片 URL
 def extract_image_url(driver, sources_urls):
     results = {}
+    
+    image_selectors = {
+        'Newtalk新聞': "div.news_img img",
+        '經濟日報': "section.article-body__editor img",
+        '自由時報': "div.image-popup-vertical-fit img",
+        '中時新聞': "div.article-body img",
+        'BBC News 中文': "div.bbc-1cvxiy9 img"
+    }
+
     for source_name, url in sources_urls.items():
         if source_name not in ALLOWED_SOURCES:
             continue
             
         try:
             driver.get(url)
-            # 更新圖片選擇器以包含 BBC
-            image_selectors = {
-                'Newtalk新聞': "div.news_img img",
-                '經濟日報': "section.article-body__editor img",
-                '自由時報': "div.image-popup-vertical-fit img",
-                '中時新聞': "div.article-body img",
-                'BBC News 中文': "div.bbc-1cvxiy9 img"
-            }
-            
-            # 特別處理 BBC 新聞圖片
-            if source_name == 'BBC News 中文':
-                response = requests.get(url)
-                if response.status_code == 200:
-                    soup = BeautifulSoup(response.content, 'html.parser')
-                    content_div = soup.find('div', class_='bbc-1cvxiy9')
-                    if content_div:
-                        first_image = content_div.find('img')
-                        if first_image and 'src' in first_image.attrs:
-                            results[source_name] = first_image['src']
-                            continue
-            
             selector = image_selectors.get(source_name)
             if not selector:  # 如果沒有對應的選擇器，跳過
                 continue
-                
-            try:
-                image_element = WebDriverWait(driver, 5).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, selector))
-                )
-                image_url = image_element.get_attribute('src') or image_element.get_attribute('data-src')
-                results[source_name] = image_url or ''  # 改為空字串
-            except Exception as e:
-                print(f"圖片擷取失敗: {e}")
-                results[source_name] = ''  # 改為空字串
-                
+            
+            # 特別處理 BBC 新聞圖片
+            if source_name == 'BBC News 中文':
+                content_div = driver.find_element(By.CSS_SELECTOR, 'div.bbc-1cvxiy9')
+                if content_div:
+                    first_image = content_div.find_element(By.TAG_NAME, 'img')
+                    if first_image and 'src' in first_image.get_attribute('outerHTML'):
+                        results[source_name] = first_image.get_attribute('src')
+                        continue
+            
+            # 提取其他來源的圖片
+            image_element = WebDriverWait(driver, 5).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, selector))
+            )
+            image_url = image_element.get_attribute('src') or image_element.get_attribute('data-src')
+            results[source_name] = image_url or ''  # 改為空字串
+            
         except Exception as e:
             print(f"圖片擷取錯誤: {e}")
             results[source_name] = ''  # 改為空字串
             
     return results
+
+
+# 加載並摘要 CSV 資料
+def load_and_summarize_csv(file_path):
+    try:
+        data = pd.read_csv(file_path)
+        if "內文" in data.columns:
+            return data  # 成功讀取時返回資料
+        else:
+            raise ValueError("CSV 檔案中缺少必要的欄位：內文")  # 若缺少必要欄位則拋出錯誤
+    except Exception as e:
+        return str(e)  # 返回錯誤訊息
 
 # X.AI 聊天功能
 def chat_with_xai(prompt, api_key, model_name, context=""):
@@ -314,7 +285,7 @@ def chat_with_xai(prompt, api_key, model_name, context=""):
             }
 
             messages = [
-                {"role": "system", "content": "你是一個新聞分析助手，專門判斷新聞是否屬於同一事件。"},
+                {"role": "system", "content": "你是一個新聞分析助手。"},
                 {"role": "user", "content": prompt}
             ]
 
@@ -356,9 +327,9 @@ def is_disaster_news(title, content):
     使用 X.AI 判斷新聞是否主要報導自然災害事件
     """
     prompt = f"""
-    請判斷以下新聞是否主要在報導自然災害或天然災害事件本身，只需回答 true 或 false：
+    請判斷以下新聞是否主要在報導自然災害事件本身，只需回答 true 或 false：
     
-    允許的災害類型：大雨、豪雨、暴雨、淹水、洪水、水災、颱風、颶風、風災、地震、海嘯、乾旱、旱災、野火
+    允許的災害類型：大雨、豪雨、暴雨、淹水、洪水、水災、颱風、颶風、風災、地震、海嘯、乾旱、旱災、大火、野火
 
     新聞標題：{title}
     新聞內容：{content[:500]}
@@ -390,7 +361,7 @@ def is_disaster_news(title, content):
 # 主程式
 def main():
     start_time = time.time()
-    day="1"
+    day="3"
     # Google News 搜 URL
     urls = [
         # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%xA8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
@@ -403,24 +374,26 @@ def main():
         # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#地震
         # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E7%81%AB%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際大火
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%87%8E%E7%81%AB%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際野火
         #加上bbc關鍵字
         # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際洪水
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際海嘯
-        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際地震
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E7%81%AB%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際大火
         # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%87%8E%E7%81%AB%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'#新增國際野火
     ]
     
@@ -435,14 +408,208 @@ def main():
 
         driver = setup_chrome_driver()
 
+        output_file = 'w.csv'
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+        # 新增欄位：摘要、地點、災害
+        summaries = []
+        locations = []
+        disasters = []
+
+        for index, item in news_df.iterrows():
+            source_name = item['來源']
+            original_url = item['連結']
+            final_url = extract_final_url(original_url)
+            sources_urls = {source_name: final_url}
+
+            # 擷取內容和圖片
+            content_results, summary_results = fetch_article_content(driver, sources_urls)
+            image_results = extract_image_url(driver, sources_urls)
+
+            content = content_results.get(source_name, '未找到內容')
+            image_url = image_results.get(source_name, 'null')
+
+            # 生成簡短的事件描述
+            content_prompt = f"""
+            請根據以下新聞內容，生成一段災害事件描述。描述應包含以下要素（如新聞中有提及）：
+
+            1. 對於颱風事件：
+               - 颱風編號和名稱
+               - 目前位置和強度
+               - 移動方向和速度
+               - 預計影響範圍
+               - 可能造成的影響（如降雨、強風等）
+
+            2. 對於地震事件：
+               - 發生地點
+               - 地震規模和震源深度
+               - 是否發布海嘯警報
+               - 如果是群震，需說明發生頻率和最大震級
+               - 災情和民眾反應
+
+            3. 對於其他災害：
+               - 災害類型和規模
+               - 影響範圍
+               - 災情描述
+               - 人員傷亡或撤離情況
+               - 救援或應對措施
+
+            請確保資訊準確且前後連貫。
+            不要加入新聞中未提及的推測性內容。
+
+            範例格式：
+            颱風：「第26號颱風帕布生成，預計朝中南半島方向移動，對台灣無直接影響，外圍水氣將導致全台降雨機率增加」
+            地震：「萬那杜發生規模7.4的淺層地震，震源深度10公里，發布海嘯警報」
+            群震：「銀川市在17小時內共發生9次地震，最大震級為2.6級。居民擔心更大地震來襲，部分人選擇在車內或空曠區域過夜」
+
+            新聞內容：
+            {content}
+            """
+            content_summary = chat_with_xai(content_prompt, xai_api_key, model_name, "").strip() or "無法生成事件描述"
+
+            # 提問並取得摘要、地點與災害
+            question_summary = f"""
+            請根據以下新聞內容，生成一段事件摘要。摘要應包含以下要素（如新聞中有提及）：
+
+            1. 對於地震事件：
+            - 發生時間（含時區說明）
+            - 具體地點（含國家/地區名）
+            - 地震規模和震源深度
+            - 發布單位（如地質調查所、氣象部門等）
+            - 是否發布海嘯警報
+            - 影響範圍和預警情況
+            - 傷亡和損失情況（如有）
+
+            2. 對於颱風事件：
+            - 颱風編號、名稱和等級
+            - 目前位置和強度
+            - 移動方向和速度
+            - 預計路徑
+            - 各地警報發布情況
+            - 可能帶來的影響（降雨量、風速等）
+            - 防災應變措施
+
+            3. 對於水災/洪災事件：
+            - 發生時間和地點
+            - 降雨量或洪水規模
+            - 淹水範圍和深度
+            - 受災情況（含人員傷亡、財產損失）
+            - 救援行動和疏散情況
+            - 相關單位應變措施
+
+            4. 對於其他災害事件：
+            - 災害類型和規模
+            - 發生時間和地點
+            - 影響範圍
+            - 傷亡和損失統計
+            - 救援行動進展
+            - 相關單位回應
+
+            摘要格式要求：
+            1. 使用完整句子描述
+            2. 按時間順序陳述
+            3. 確保資訊準確性
+            4. 重要數據需包含單位
+            5. 避免主觀評論
+
+            範例格式：
+            地震：「台灣時間12月17日上午9點47分，太平洋島國萬那杜發生規模7.4強震，震源深度僅10公里，可能引發海嘯。氣象署與太平洋海嘯警報中心已發布警報，提醒可能面臨海嘯威脅。」
+            颱風：「第16號颱風小犬持續增強，中心位置在台灣東南方海面，以每小時15公里速度向西北移動。預計48小時內暴風圈可能籠罩台灣東部海域，氣象局已發布海上颱風警報。」
+            {content}
+            """
+            
+            question_location = f"""
+            請根據以下新聞內容提取所有相關地點：
+
+            檢核標準：
+            - 地點是否完整（不遺漏任何提到的地點）
+            - 格式是否一致（每個字串一個地點）
+            - 描述是否準確（地理位置準確性）
+            - 層級是否合適（行政區劃準確性）
+
+            範例格式：
+            颱風新聞：["南沙島海面", "中南半島", "台灣"]
+            地震新聞：["日本福島縣", "宮城縣", "東京都"]
+            水災新聞：["泰國曼谷", "大城府", "巴吞他尼府"]
+
+            {content}
+            """
+            question_disaster = f"""
+            請從以下新聞內容中提取主要的災害類型，只需列出災害名稱，限制在10個字以內。
+            如果有多個災害，只列出最主要或最嚴重的災害。
+            相同類型的災害只需列出一次。
+
+            範例格式：
+            地震
+            颱風
+            洪水
+            土石流
+
+            新聞內容：
+            {content}
+            """
+
+            summary_answer = chat_with_xai(question_summary, xai_api_key, model_name, content)
+            location_answer = chat_with_xai(question_location, xai_api_key, model_name, content)
+            disaster_answer = chat_with_xai(question_disaster, xai_api_key, model_name, content)
+
+            # 使用災害新聞判斷
+            is_disaster = is_disaster_news(item['標題'], content)
+
+            if not is_disaster:
+                print(f"非災害相關新聞，跳過: {item['標題']}")
+                continue
+
+            # 根據地點判斷是否為國內新聞
+            is_domestic = any(keyword in location_answer for keyword in domestic_keywords)
+            region = '國內' if is_domestic else '國外'
+
+            if content != '未找到內容':
+                csv_summary = content
+
+                # 收集結果
+                summaries.append(summary_answer)
+                locations.append(location_answer)
+                disasters.append(disaster_answer)
+
+                result = {
+                    '標題': item['標題'],
+                    '連結': original_url,
+                    '內文': content_summary,  # 使用新生成的簡短描述
+                    '來源': source_name,
+                    '時間': item['時間'],
+                    '圖片': image_url,
+                    '地區': region,
+                    '摘要': summary_answer,
+                    '地點': location_answer,
+                    '災害': disaster_answer
+                }
+
+                # 儲存資料到 CSV
+                output_df = pd.DataFrame([result])
+                output_df.to_csv(output_file, mode='a', header=not os.path.exists(output_file), index=False, encoding='utf-8')
+
+                print(f"標題: {result['標題']}")
+                print(f"連結: {result['連結']}")
+                print(f"內文: {result['內文'][:50]}...")
+                print(f"來源: {result['來源']}")
+                print(f"時間: {result['時間']}")
+                print(f"圖片: {result['圖片']}")
+                print(f"地區: {result['地區']}")
+                print(f"摘要: {result['摘要']}")
+                print(f"地點: {result['地點']}")
+                print(f"災害: {result['災害']}")
+                print('-' * 80)
+
+        driver.quit()
+
         # 儲存資料到 SQLite
         db_name = 'w.db'
         table_name = 'news'
 
         conn = sqlite3.connect(db_name)
         cursor = conn.cursor()
-        
-        # 創建資料表
         cursor.execute(f'''
         CREATE TABLE IF NOT EXISTS {table_name} (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -462,199 +629,46 @@ def main():
         )
         ''')
 
-        # 清空資料表
         cursor.execute(f'DELETE FROM {table_name}')
         conn.commit()
 
-        try:
-            for index, item in news_df.iterrows():
-                source_name = item['來源']
-                original_url = item['連結']
-                final_url = extract_final_url(original_url)
-                sources_urls = {source_name: final_url}
+        w_df = pd.read_csv('w.csv')
+        w_df['時間'] = pd.to_datetime(w_df['時間'], format='%Y-%m-%d', errors='coerce')
+        w_df = w_df.sort_values(by='時間', ascending=False)
 
-                # 擷取內容和圖片
-                content_results, summary_results = fetch_article_content(driver, sources_urls)
-                image_results = extract_image_url(driver, sources_urls)
+        for _, row in w_df.iterrows():
+            cursor.execute(f'''
+            SELECT COUNT(*) FROM {table_name} WHERE event = ? AND link = ?
+            ''', (row['標題'], row['連結']))
+            exists = cursor.fetchone()[0]
+            print(f"Checking existence for: {row['標題']} - {row['連結']}, Exists: {exists}")
 
-                content = content_results.get(source_name, '未找到內容')
-                image_url = image_results.get(source_name, 'null')
+            if exists == 0:
+                cursor.execute(f'''
+                INSERT INTO {table_name} (
+                    event, image, link, content, source, date, recent_update,
+                    region, location, disaster, summary, daily_records, links
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    row['標題'],                # event
+                    row['圖片'],                # image
+                    row['連結'],                # link
+                    row['內文'],                # content
+                    row['來源'],                # source
+                    row['時間'].strftime('%Y-%m-%d'),  # date
+                    row['時間'].strftime('%Y-%m-%d'),  # recent_update (使用相同日期)
+                    row['地區'],                # region
+                    row['地點'],                # location
+                    row['災害'],                # disaster
+                    row['摘要'],                # summary
+                    json.dumps([]),             # daily_records (空陣列)
+                    json.dumps([row['連結']])   # links (包含原始連結)
+                ))
+                print(f"Inserted: {row['標題']}")
 
-                # 生成簡短的事件描述
-                content_prompt = f"""
-                請根據以下新聞內容，生成一段災害事件描述。描述應包含以下要素（如新聞中有提及）：
-
-                1. 對於颱風事件：
-                   - 颱風編號和名稱
-                   - 目前位置和強度
-                   - 移動方向和速度
-                   - 預計影響範圍
-                   - 可能造成的影響（如降雨、強風等）
-
-                2. 對於地震事件：
-                   - 發生地點
-                   - 地震規模和震源深度
-                   - 是否發布海嘯警報
-                   - 如果是群震，需說明發生頻率和最大震級
-                   - 災情和民眾反應
-
-                3. 對於其他災害：
-                   - 災害類型和規模
-                   - 影響範圍
-                   - 災情描述
-                   - 人員傷亡或撤離情況
-                   - 救援或應對措施
-
-                請確保資訊準確且前後連貫。
-                不要加入新聞中未提及的推測性內容。
-
-                範例格式：
-                颱風：「第26號颱風帕布生成，預計朝中南半島方向移動，對台灣無直接影響，外圍水氣將導致全台降雨機率增加」
-                地震：「萬那杜發生規模7.4的淺層地震，震源深度10公里，發布海嘯警報」
-                群震：「銀川市在17小時內共發生9次地震，最大震級為2.6級。居民擔心更大地震來襲，部分人選擇在車內或空曠區域過夜」
-
-                新聞內容：
-                {content}
-                """
-                content_summary = chat_with_xai(content_prompt, xai_api_key, model_name, "").strip() or "無法生成事件描述"
-
-                # 提問並取得摘要、地點與災害
-                question_summary = f"""
-                請根據以下新聞內容，生成一段事件摘要。摘要應包含以下要素（如新聞中有提及）：
-
-                1. 對於地震事件：
-                - 發生時間（含時區說明）
-                - 具體地點（含國家/地區名）
-                - 地震規模和震源深度
-                - 發布單位（如地質調查所、氣象部門等）
-                - 是否發布海嘯警報
-                - 影響範圍和預警情況
-                - 傷亡和損失情況（如有）
-
-                2. 對於颱風事件：
-                - 颱風編號、名稱和等級
-                - 目前位置和強度
-                - 移動方向和速度
-                - 預計路徑
-                - 各地警報發布情況
-                - 可能帶來的影響（降雨量、風速等）
-                - 防災應變措施
-
-                3. 對於水災/洪災事件：
-                - 發生時間和地點
-                - 降雨量或洪水規模
-                - 淹水範圍和深度
-                - 受災情況（含人員傷亡、財產損失）
-                - 救援行動和疏散情況
-                - 相關單位應變措施
-
-                4. 對於其他災害事件：
-                - 災害類型和規模
-                - 發生時間和地點
-                - 影響範圍
-                - 傷亡和損失統計
-                - 救援行動進展
-                - 相關單位回應
-
-                摘要格式要求：
-                1. 使用完整句子描述
-                2. 按時間順序陳述
-                3. 確保資訊準確性
-                4. 重要數據需包含單位
-                5. 避免主觀評論
-
-                範例格式：
-                地震：「台灣時間12月17日上午9點47分，太平洋島國萬那杜發生規模7.4強震，震源深度僅10公里，可能引發海嘯。氣象署與太平洋海嘯警報中心已發布警報，提醒可能面臨海嘯威脅。」
-                颱風：「第16號颱風小犬持續增強，中心位置在台灣東南方海面，以每小時15公里速度向西北移動。預計48小時內暴風圈可能籠罩台灣東部海域，氣象局已發布海上颱風警報。」
-                {content}
-                """
-                
-                question_location = f"""
-                請根據以下新聞內容提取所有相關地點：
-
-                檢核標準：
-                - 地點是否完整（不遺漏任何提到的地點）
-                - 格式是否一致（每個字串一個地點）
-                - 描述是否準確（地理位置準確性）
-                - 層級是否合適（行政區劃準確性）
-
-                範例格式：
-                颱風新聞：["南沙島海面", "中南半島", "台灣"]
-                地震新聞：["日本福島縣", "宮城縣", "東京都"]
-                水災新聞：["泰國曼谷", "大城府", "巴吞他尼府"]
-
-                {content}
-                """
-                question_disaster = f"""
-                請從以下新聞內容中提取主要的災害類型，只需列出災害名稱，限制在10個字以內。
-                如果有多個災害，只列出最主要或最嚴重的災害。
-                相同類型的災害只需列出一次。
-
-                範例格式：
-                地震
-                颱風
-                洪水
-                土石流
-
-                新聞內容：
-                {content}
-                """
-
-                summary_answer = chat_with_xai(question_summary, xai_api_key, model_name, content)
-                location_answer = chat_with_xai(question_location, xai_api_key, model_name, content)
-                disaster_answer = chat_with_xai(question_disaster, xai_api_key, model_name, content)
-
-                # 使用災害新聞判斷
-                is_disaster = is_disaster_news(item['標題'], content)
-
-                if not is_disaster:
-                    print(f"非災害相關新聞，跳過: {item['標題']}")
-                    continue
-
-                # 根據地點判斷是否為國內新聞
-                is_domestic = any(keyword in location_answer for keyword in domestic_keywords)
-                region = '國內' if is_domestic else '國外'
-
-                if content != '未找到內容':
-                    # 直接插入資料到 SQLite
-                    cursor.execute(f'''
-                    INSERT INTO {table_name} (
-                        event, image, link, content, source, date, recent_update,
-                        region, location, disaster, summary, daily_records, links
-                    )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    ''', (
-                        item['標題'],                # event
-                        image_url,                   # image
-                        original_url,                # link
-                        content_summary,             # content
-                        source_name,                 # source
-                        item['時間'],                # date
-                        item['時間'],                # recent_update
-                        region,                      # region
-                        location_answer,             # location
-                        disaster_answer,             # disaster
-                        summary_answer,              # summary
-                        json.dumps([]),              # daily_records
-                        json.dumps([original_url])   # links
-                    ))
-                    conn.commit()
-
-                    print(f"標題: {item['標題']}")
-                    print(f"連結: {original_url}")
-                    print(f"內文: {content_summary[:50]}...")
-                    print(f"來源: {source_name}")
-                    print(f"時間: {item['時間']}")
-                    print(f"圖片: {image_url}")
-                    print(f"地區: {region}")
-                    print(f"摘要: {summary_answer}")
-                    print(f"地點: {location_answer}")
-                    print(f"災害: {disaster_answer}")
-                    print('-' * 80)
-
-        finally:
-            driver.quit()
-            conn.close()
+        conn.commit()
+        conn.close()
 
         end_time = time.time()
         elapsed_time = int(end_time - start_time)
@@ -670,32 +684,43 @@ def main():
 
         print(f'爬取新聞並儲存資料共耗時 {time_str}')
         print('新聞更新已完成！')
-        print('爬取後的內容已成功儲存到 SQLite 資料庫中')
+        print('爬取後的內容已成功儲存到 CSV 和 SQLite 資料庫中')
 
 if __name__ == "__main__":
     main()
 
-# 從 SQLite 資料庫中提取新聞資料並更新新聞
+
 def fetch_news_data():
-    conn = sqlite3.connect('w.db')
+    db_name = 'w.db'
+    table_name = 'news'
+
+    conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
+
+    cursor.execute(f'SELECT id, title, link, content, source, date, image, region, summary, location, disaster FROM {table_name}')    
+    news_data = cursor.fetchall()
+
+    conn.close()
+
+    news_list = []
+    for row in news_data:
+        news_list.append({
+            'id': row[0],
+            'title': row[1],
+            'link': row[2],
+            'content': row[3],
+            'source': row[4],
+            'date': row[5],
+            'image': row[6],
+            'region': row[7],
+            "summary": row[8].replace("\n", " ").replace("-", "").strip(),
+            "location": row[9].replace("\n", " ").replace("-", "").strip(),
+            "disaster": row[10].replace("\n", " ").replace("-", "").strip()
+        })
     
-    try:
-        cursor.execute("""
-            SELECT id, event, image, link, content, source, date, 
-                   recent_update, region, location, disaster, 
-                   summary, daily_records, links 
-            FROM news
-            ORDER BY date DESC
-        """)
-        news_data = cursor.fetchall()
-        print(f"讀取到 {len(news_data)} 條新聞")
-        return news_data
-    except sqlite3.Error as e:
-        print(f"資料庫讀取錯誤：{e}")
-        return []
-    finally:
-        conn.close()
+    return news_list
+
+from django.http import JsonResponse
 
 def update_news(request):
     main()  # 執行爬取新聞的函數
@@ -703,6 +728,12 @@ def update_news(request):
 
 
 # views.py
+from django.http import JsonResponse
+from django.shortcuts import render
+from .models import News
+import json
+from django.views.decorators.csrf import csrf_exempt
+
 # 處理新聞列表及搜尋功能
 def news_view(request):
     query = request.GET.get('search', '')
@@ -1279,4 +1310,242 @@ def update_daily_records(request, news_id):
     
     return JsonResponse({"error": "Method not allowed"}, status=405)
 
+
+#測試爬蟲：開始爬蟲url http://localhost:8000/api/crawler/first-stage/
+#測試爬蟲：開啟後端api http://localhost:8000/api/raw-news/    
+@require_GET
+def crawler_first_stage(request):
+    try:
+        start_time = time.time()
+        day = "3"
+        
+        # 連接資料庫並清空上次的資料
+        conn = sqlite3.connect('news.db')
+        cursor = conn.cursor()
+        
+        # 清空資料表（如果存在的話）
+        cursor.execute('''
+        DROP TABLE IF EXISTS raw_news
+        ''')
+        
+        # 重新建立資料表，將 source 改為 publisher 並新增 author
+        cursor.execute('''
+        CREATE TABLE raw_news (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            publisher TEXT,         -- 發布媒體
+            author TEXT,           -- 作者（與發布媒體相同）
+            title TEXT,            -- 標題
+            link TEXT,             -- 連結
+            content TEXT,          -- 內文 
+            date TEXT,             -- 時間
+            image TEXT,            -- 圖片
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+        
+        conn.commit()
+        conn.close()
+        
+        # Google News 搜尋 URL
+        urls = [
+            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E7%81%AB%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際大火
+            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%87%8E%E7%81%AB%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'#新增國際野火
+        ]
+        
+        all_news_items = []
+        start_crawl_time = time.time()
+        for url in urls:
+            news_items = fetch_news(url)
+            all_news_items.extend(news_items)
+        
+        if all_news_items:
+            news_df = pd.DataFrame(all_news_items)
+            news_df = news_df.drop_duplicates(subset='標題', keep='first')
+            
+            end_crawl_time = time.time()
+            crawl_time = int(end_crawl_time - start_crawl_time)
+            hours, remainder = divmod(crawl_time, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            
+            time_str = ''
+            if hours > 0:
+                time_str += f'{hours}小時'
+            if minutes > 0 or hours > 0:
+                time_str += f'{minutes}分'
+            time_str += f'{seconds}秒'
+            
+            print(f'Google News 爬取完成，耗時：{time_str}')
+
+            driver = setup_chrome_driver()
+
+            # 刪除舊的 CSV 檔案（如果存在）
+            first_stage_file = 'w2.csv'
+            if os.path.exists(first_stage_file):
+                os.remove(first_stage_file)
+
+            for index, item in news_df.iterrows():
+                source_name = item['來源']
+                original_url = item['連結']
+                final_url = extract_final_url(original_url)
+                sources_urls = {source_name: final_url}
+
+                # 擷取內容和圖片
+                content_results, _ = fetch_article_content(driver, sources_urls)
+                image_results = extract_image_url(driver, sources_urls)
+
+                content = content_results.get(source_name, '')  # 改為空字串
+                image_url = image_results.get(source_name, '')  # 改為空字串
+
+                # 準備要存入 CSV 的資料
+                result = {
+                    '標題': item['標題'],
+                    '連結': original_url,
+                    '內文': content or '',  # 確保空值為空字串
+                    '來源': source_name,
+                    '時間': item['時間'],
+                    '圖片': image_url or ''  # 確保空值為空字串
+                }
+
+                # 儲存資料到 CSV
+                output_df = pd.DataFrame([result])
+                output_df.to_csv(first_stage_file, mode='a', header=not os.path.exists(first_stage_file), 
+                               index=False, encoding='utf-8')
+
+                print(f"已儲存新聞: {result['標題']}")
+
+            driver.quit()
+
+            # 將資料存入資料庫
+            conn = sqlite3.connect('news.db')
+            cursor = conn.cursor()
+
+            # 修改資料表結構，使用英文欄位名稱
+            cursor.execute('''
+            CREATE TABLE IF NOT EXISTS raw_news (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                publisher TEXT,         -- 發布媒體
+                author TEXT,           -- 作者（與發布媒體相同）
+                title TEXT,            -- 標題
+                link TEXT,             -- 連結
+                content TEXT,          -- 內文
+                date TEXT,             -- 時間
+                image TEXT,            -- 圖片
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            ''')
+            
+            # 修改插入語句
+            news_df = pd.read_csv(first_stage_file)
+            for _, row in news_df.iterrows():
+                cursor.execute('''
+                INSERT INTO raw_news (publisher, author, title, link, content, date, image)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    row['來源'],
+                    row['來源'],
+                    row['標題'],
+                    row['連結'],
+                    row['內文'],
+                    row['時間'],
+                    row['圖片']
+                ))
+            
+            conn.commit()
+            conn.close()
+
+            end_time = time.time()
+            elapsed_time = int(end_time - start_time)
+            hours, remainder = divmod(elapsed_time, 3600)
+            minutes, seconds = divmod(remainder, 60)
+
+            time_str = ''
+            if hours > 0:
+                time_str += f'{hours} 小時 '
+            if minutes > 0 or hours > 0:
+                time_str += f'{minutes} 分 '
+            time_str += f'{seconds} 秒'
+
+            return JsonResponse({
+                'status': 'success',
+                'message': f'第一階段爬蟲完成！耗時：{time_str}',
+                'csv_file': first_stage_file,
+                'total_news': len(news_df)
+            })
+
+        return JsonResponse({
+            'status': 'error',
+            'message': '沒有找到新聞'
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': f'爬蟲執行失敗：{str(e)}'
+        }, status=500)
+
+def rewrite_title(title):
+    """
+    使用 xAI 改寫標題
+    """
+    prompt = f"""
+    以下是新聞的標題，請生成一個有吸引力且通順的新標題：
+    
+    原標題：{title}
+    
+    請用簡潔有力的方式改寫。
+    """
+    
+    response = chat_with_xai(prompt, xai_api_key, model_name, "")
+    return response.strip()#返回一個去除前後空白字符的字串
+
+input_csv = "w2.csv"
+output_csv = "w3.csv"
+
+# 讀取 CSV 檔案
+df = pd.read_csv(input_csv)
+
+# 增加一列存放改寫標題的結果
+df['rewritten_title'] = [rewrite_title(row['標題']) for _, row in df.iterrows()]
+
+# 存成新的 CSV 檔案
+df.to_csv(output_csv, index=False)
+
+print(f"處理完成，結果已存至 {output_csv}")
+
+    
+@require_GET
+def view_raw_news(request):
+    try:
+        conn = sqlite3.connect('news.db')
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+        SELECT publisher, author, title, link, content, date, image 
+        FROM raw_news 
+        ORDER BY date DESC
+        ''')
+        
+        rows = cursor.fetchall()
+        
+        news_list = []
+        for row in rows:
+            news_item = {
+                '來源': row[0] or '',  # 確保空值為空字串
+                '作者': row[1] or '',
+                '標題': row[2] or '',
+                '連結': row[3] or '',
+                '內文': row[4] or '',
+                '時間': row[5] or '',
+                '圖片': row[6] or ''
+            }
+            news_list.append(news_item)
+            
+        conn.close()
+        return JsonResponse(news_list, safe=False)
+        
+    except Exception as e:
+        if 'conn' in locals():
+            conn.close()
+        print(f"Error in view_raw_news: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
     
