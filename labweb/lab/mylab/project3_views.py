@@ -1324,7 +1324,7 @@ def update_daily_records(request, news_id):
 def crawler_first_stage(request):
     try:
         start_time = time.time()
-        day = "3"
+        day = "10"
         
         # Google News 搜尋 URL
         urls = [
@@ -1465,7 +1465,3 @@ def view_raw_news(request):
     except Exception as e:
         print(f"Error in view_raw_news: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
-
-
-
-    
