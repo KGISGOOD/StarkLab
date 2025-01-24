@@ -43,7 +43,7 @@ def test_groq_api(request):
                 }
 
                 messages = [
-                    {"role": "system", "content": "你是一個新聞分析助手，專門判斷新聞是否屬於同一事件。"},
+                    {"role": "system", "content": ""},
 
                 ]
 
