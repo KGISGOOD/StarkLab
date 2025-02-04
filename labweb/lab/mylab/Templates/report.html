@@ -8,9 +8,15 @@
 <body>
     <h1>應變報告生成</h1>
     
-    <!-- 訓練按鈕表單 -->
+    <!-- 災害階段選擇和訓練按鈕 -->
     <form action="{% url 'train_view' %}" method="POST">
         {% csrf_token %}
+        <label for="disasterPhase">選擇災害階段：</label>
+        <select id="disasterPhase" name="disasterPhase">
+            <option value="before">災前</option>
+            <option value="during">災中</option>
+            <option value="after">災後</option>
+        </select>
         <button type="submit" name="action" value="trainButton">訓練</button>
         <span id="train-status">{{ train_message }}</span>
     </form>

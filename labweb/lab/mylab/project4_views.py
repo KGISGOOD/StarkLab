@@ -68,7 +68,7 @@ def test_groq_api(request):
     return redirect('ai_report')
 
 
-def setup_chatbot(xai_api_key, model_name):
+def setup_chatbot(xai_api_key, model_name, training_prompt, disaster_phase):
 
     url = 'https://api.x.ai/v1/chat/completions'
     headers = {
@@ -79,46 +79,32 @@ def setup_chatbot(xai_api_key, model_name):
     # 從檔案中讀取資料並學習
     initial_messages = []
     
+    output_prompt = """
+    請用記錄的格式輸出新的一篇新聞稿：
+    新聞稿長度約五百字，並且附上標題。
+    第一段著重天氣：請描述天氣或災害，例如:地震、降雨等相關資訊。
+    第二段著重事實：請提供關於災情的具體事實，包含災害範圍、影響的區域以及其他相關的實際數據。
+    第三段水利署宣導內容：請說明水利署針對災情發出的防災與應對建議、宣導內容、防範措施。
+
+    日期格式部分：請使用「今(1)日」、「昨(1)日」等方式表示日期，並在新聞稿中提及具體日期時，按照「2024年11月1日」的格式呈現，請注意前後文的語境，確保日期表達流暢、自然。
+    """
+
+
     # 首先加入系統提示
     initial_messages.append({
         "role": "system",
-        "content": """
-        這是水利署的專案，目標是要就手邊的資訊進行新聞稿撰寫。請根據使用者提供的資訊，自動判斷分類（災害前、災害進行中、災害後），並以繁體中文（UTF-8)進行撰寫。
-
-        新聞稿撰寫格式：
-        1. 天氣狀況描述
-        2. 事實陳述（現場狀況、應變作為等）
-        3. 水利署宣導內容（防災整備、民眾配合事項等）
-
-        日期格式部分：例如2024年11月1日，請參考前後文意，採用「今(1)日」「昨(1)日」等格式撰寫。
-
-        如果資訊來源是會議記錄，請直接轉換為與民眾相關的事實陳述，不要提及任何會議相關內容或機關內部作業細節。
-
-        請依照以上格式撰寫新聞稿，並用對應的語氣與風格。新聞稿長度約五百字，並請附上標題。
-        
-        請直接輸出內容，不需加入任何標記符號或段落標題。
-        """
+        "content": training_prompt
     })
 
-    # 定義分類對應說明
-    category_descriptions = {
-        1: "災害前(防汛整備工作、滯洪池、防災管理、抽水機、河道疏濬、智慧防災、氣候變遷應對、洪水預警、防災數位轉型、淹水潛勢圖、防災聯繫)",
-        2: "災害進行中（應變小組、豪雨特報、水情監控、抽水機啟用、河川水位、土石流警戒、降雨情勢、災情掌握、緊急疏散、防災聯繫）",
-        3: "災害後（移動式抽水機、土壤含水量、坡地滑動、災情復原、供水正常、設施檢查、地震檢查、土石流警戒、疏散撤離、衛生消毒）"
-    }
+    # 讀取和過濾數據
+    filtered_data = load_and_filter_data(disaster_phase)
 
-    # 假設檔案的讀取與 pandas DataFrame 相關
-    data = pd.read_excel('learn.xlsx')  # 載入你的xlsx檔案
-
-    for _, row in data.iterrows():
-        title = row['標題']    # 標題
-        content = row['內容']  # 使用的內容
-        category = row['分類']
-
-        # 將每個新聞作為示例加入
+    for _, row in filtered_data.iterrows():
+        title = row['標題']
+        content = row['內容']
         initial_messages.append({
             "role": "system", 
-            "content": f"以下是{category_descriptions[category]}的新聞稿範例："
+            "content": f"以下是{disaster_phase}的新聞稿範例："
         })
         initial_messages.append({
             "role": "assistant", 
@@ -138,27 +124,59 @@ def setup_chatbot(xai_api_key, model_name):
         return {
             'headers': headers,
             'initial_messages': initial_messages,
-            'model': model_name
+            'model': model_name,
+            'output_prompt': output_prompt,
         }
     
     print(f"API 調用失敗 (狀態碼: {response.status_code})")
     return None
 
+def load_and_filter_data(disaster_phase):
+    try:
+        data = pd.read_excel('learn.xlsx')
+        if disaster_phase == 'before':
+            return data[data['分類'] == 1]
+        elif disaster_phase == 'during':
+            return data[data['分類'] == 2]
+        elif disaster_phase == 'after':
+            return data[data['分類'] == 3]
+        else:
+            print("無效的災害階段選擇")
+            return pd.DataFrame()
+    except Exception as e:
+        print(f"讀取檔案時發生錯誤: {str(e)}")
+        return pd.DataFrame() 
+
 def train_view(request):
     if request.method == 'POST':
-        print("訪問了 train_view")
-        try:
-            # 初始化 chatbot 並保存設置到 session
-            model_settings = setup_chatbot(xai_api_key, model_name)
-            if not model_settings:
-                request.session['train_message'] = "模型初始化失敗！"
-            else:
-                request.session['model_settings'] = model_settings
-                request.session['train_message'] = "模型初始化完成！"
-                
-        except Exception as e:
-            print(f"初始化錯誤: {str(e)}")
-            request.session['train_message'] = f"初始化過程發生錯誤：{str(e)}"
+        disaster_phase = request.POST.get('disasterPhase')
+        
+        # 根據選擇的災害階段設置不同的訓練提示
+        if disaster_phase == 'before':
+            training_prompt = '''
+            你是一個新聞稿撰寫助手，專門負責災害前的新聞稿撰寫。你的任務是學習並掌握過去災害前新聞稿的格式、寫作風格與口吻，並根據提供的資料，生成符合此風格的新聞稿。
+            如果資訊來源是會議記錄，不用把開會這件事情拿出來講，請專注於天災案件的資訊內容，並確保生成的新聞稿符合災害相關的事實。
+            '''
+        elif disaster_phase == 'during':
+            training_prompt = '''
+            你是一個新聞稿撰寫助手，專門負責災害進行中的新聞稿撰寫。你的任務是學習並掌握過去災害前新聞稿的格式、寫作風格與口吻，並根據提供的資料，生成符合此風格的新聞稿。
+            如果資訊來源是會議記錄，不用把開會這件事情拿出來講，請專注於天災案件的資訊內容，並確保生成的新聞稿符合災害相關的事實。
+            '''
+        elif disaster_phase == 'after':
+            training_prompt =  '''
+            你是一個新聞稿撰寫助手，專門負責災害後的新聞稿撰寫。你的任務是學習並掌握過去災害前新聞稿的格式、寫作風格與口吻，並根據提供的資料，生成符合此風格的新聞稿。
+            如果資訊來源是會議記錄，不用把開會這件事情拿出來講，請專注於天災案件的資訊內容，並確保生成的新聞稿符合災害相關的事實。
+            '''
+            
+        else:
+            training_prompt = "無效的選擇。"
+
+        model_settings = setup_chatbot(xai_api_key, model_name, training_prompt)
+        if not model_settings:
+            request.session['train_message'] = "模型初始化失敗！"
+        else:
+            request.session['model_settings'] = model_settings
+            request.session['train_message'] = "模型初始化完成！"
             
     return redirect('ai_report')
 
@@ -170,6 +188,8 @@ def chat_function(message, model_settings):
         url = 'https://api.x.ai/v1/chat/completions'
         messages = model_settings['initial_messages'].copy()
         messages.append({"role": "user", "content": message})
+        messages.append({"role": "system", "content": model_settings['output_prompt']})
+
         
         data = {
             "messages": messages,
