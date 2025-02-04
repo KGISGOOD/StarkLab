@@ -80,8 +80,7 @@ def setup_chatbot(xai_api_key, model_name, training_prompt, disaster_phase):
     initial_messages = []
     
     output_prompt = """
-    請用記錄的格式輸出新的一篇新聞稿：
-    新聞稿長度約五百字，並且附上標題。
+    請用記錄的格式輸出新的一篇新聞稿，新聞稿長度約五百字，並且附上標題。
     第一段著重天氣：請描述天氣或災害，例如:地震、降雨等相關資訊。
     第二段著重事實：請提供關於災情的具體事實，包含災害範圍、影響的區域以及其他相關的實際數據。
     第三段水利署宣導內容：請說明水利署針對災情發出的防災與應對建議、宣導內容、防範措施。
@@ -169,7 +168,7 @@ def train_view(request):
             '''
             
         else:
-            training_prompt = "無效的選擇。"
+            training_prompt = "無效。"
 
         model_settings = setup_chatbot(xai_api_key, model_name, training_prompt)
         if not model_settings:
