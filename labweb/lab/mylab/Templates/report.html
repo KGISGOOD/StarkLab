@@ -11,6 +11,7 @@
     <!-- 災害階段選擇和訓練按鈕 -->
     <form action="{% url 'train_view' %}" method="POST">
         {% csrf_token %}
+        <p style="display: inline;">Step 1.</p>
         <label for="disasterPhase">選擇災害階段：</label>
         <select id="disasterPhase" name="disasterPhase">
             <option value="before">災前</option>
@@ -22,17 +23,18 @@
     </form>
     <br>
 
-    <!-- 測試 API 按鈕表單 -->
+    <!-- 測試 API 按鈕表單
     <form action="{% url 'test_groq_api' %}" method="POST">
         {% csrf_token %}
         <button type="submit" name="action" value="testButton">測試 API</button>
         <span id="test-status">{{ test_message }}</span>
     </form>
-    <br><br>
+    <br><br> -->
 
     <!-- 檔案上傳表單 -->
     <form action="{% url 'upload_file' %}" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
+        <p style="display: inline;">Step 2.</p>
         <label for="fileUpload">上傳檔案：</label>
         <input type="file" id="fileUpload" name="fileUpload" onchange="this.form.submit()"><br><br>
     </form>
@@ -42,13 +44,13 @@
         {% csrf_token %}
         <label for="inputText">輸入框：</label><br>
         <textarea id="inputText" name="inputText" rows="15" cols="80">{{ inputText }}</textarea><br><br>
-    
+        <p style="display: inline;">Step 3.</p>
         <button type="submit" name="action" value="generateButton">生成</button><br><br>
     
         <label for="outputText">輸出框：</label><br>
         <textarea id="outputText" name="outputText" rows="15" cols="80" readonly>{{ outputText }}</textarea><br><br>
     </form>
     
-    <button type="button" id="downloadButton">查看紀錄</button>
+    <!-- <button type="button" id="downloadButton">查看紀錄</button> -->
 </body>
 </html>

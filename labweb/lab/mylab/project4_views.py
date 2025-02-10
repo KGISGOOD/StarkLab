@@ -169,7 +169,7 @@ def train_view(request):
         else:
             training_prompt = "無效。"
 
-        model_settings = setup_chatbot(xai_api_key, model_name, training_prompt)
+        model_settings = setup_chatbot(xai_api_key, model_name, training_prompt, disaster_phase)
         if not model_settings:
             request.session['train_message'] = "模型初始化失敗！"
         else:
