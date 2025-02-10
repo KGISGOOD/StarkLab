@@ -30,7 +30,6 @@ model_name = "grok-beta"
 @csrf_exempt 
 def test_groq_api(request):
     if request.method == 'POST':
-        print("訪問了 test_groq_api")  # 添加調試信息
         action = request.POST.get('action')
         if action == 'testButton':
             try:
@@ -42,10 +41,7 @@ def test_groq_api(request):
                     'Authorization': f'Bearer {xai_api_key}'
                 }
 
-                messages = [
-                    {"role": "system", "content": ""},
-
-                ]
+                messages = [{"role": "user", "content": "測試"}]
 
                 data = {
                     "messages": messages,
