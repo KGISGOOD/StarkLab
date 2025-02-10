@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>應變報告生成</title>
+    <style>
+        p {
+            color: blue;
+            font-weight: bold; /* 加上粗體 */
+        }
+
+    </style>
 </head>
 <body>
     <h1>應變報告生成</h1>
@@ -14,9 +21,9 @@
         <p style="display: inline;">Step 1.</p>
         <label for="disasterPhase">選擇災害階段：</label>
         <select id="disasterPhase" name="disasterPhase">
-            <option value="before">災前</option>
-            <option value="during">災中</option>
-            <option value="after">災後</option>
+            <option value="災前">災前</option>
+            <option value="災中">災中</option>
+            <option value="災後">災後</option>
         </select>
         <button type="submit" name="action" value="trainButton">訓練</button>
         <span id="train-status">{{ train_message }}</span>

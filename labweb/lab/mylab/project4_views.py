@@ -78,11 +78,11 @@ def setup_chatbot(xai_api_key, model_name, training_prompt, disaster_phase):
     output_prompt = """
     請用剛剛記錄的格式輸出新的一篇新聞稿，新聞稿長度約五百字，並且附上標題。
 
-    第一段：請描述天氣或災害狀況，例如天氣情況，例如:降雨或地震相關資訊。
+    第一部分：請描述天氣或災害狀況，例如天氣情況，例如:降雨或地震相關資訊。
 
-    第二段：請陳述災情的具體事實，包括災害範圍、影響的區域、現場狀況、應變作為及相關數據，確保資訊具體且有條理。
+    第二部分：請陳述災情的具體事實，包括災害範圍、影響的區域、現場狀況、應變作為及相關數據，確保資訊具體且有條理。
 
-    第三段：請說明水利署針對災情發出的防災與應對建議，詳細列出防範措施、民眾應配合的事項，以及其他宣導內容。
+    第三部分：請說明水利署針對災情發出的防災與應對建議，詳細列出防範措施、民眾應配合的事項，以及其他宣導內容。
 
     日期格式部分：請使用「今(1)日」、「昨(1)日」等方式表示日期，並在新聞稿中提及具體日期時，按照「2024年11月1日」的格式呈現，確保日期表達流暢自然。
 
@@ -135,11 +135,11 @@ def setup_chatbot(xai_api_key, model_name, training_prompt, disaster_phase):
 def load_and_filter_data(disaster_phase):
     try:
         data = pd.read_excel('learn.xlsx')
-        if disaster_phase == 'before':
+        if disaster_phase == '災前':
             return data[data['分類'] == 1]
-        elif disaster_phase == 'during':
+        elif disaster_phase == '災中':
             return data[data['分類'] == 2]
-        elif disaster_phase == 'after':
+        elif disaster_phase == '災後':
             return data[data['分類'] == 3]
         else:
             print("無效的災害階段選擇")
@@ -153,21 +153,23 @@ def train_view(request):
         disaster_phase = request.POST.get('disasterPhase')
         
         # 根據選擇的災害階段設置不同的訓練提示
-        if disaster_phase == 'before':
+        if disaster_phase == '災前':
             training_prompt = '''
             你是一個新聞稿撰寫助手，專門負責災害前的新聞稿撰寫。你的任務是學習並掌握過去災害前新聞稿的格式、寫作風格與口吻，並根據提供的資料，生成符合此風格的新聞稿。
             '''
-        elif disaster_phase == 'during':
+        elif disaster_phase == '災中':
             training_prompt = '''
             你是一個新聞稿撰寫助手，專門負責災害進行中的新聞稿撰寫。你的任務是學習並掌握過去災害前新聞稿的格式、寫作風格與口吻，並根據提供的資料，生成符合此風格的新聞稿。
             '''
-        elif disaster_phase == 'after':
+        elif disaster_phase == '災後':
             training_prompt =  '''
             你是一個新聞稿撰寫助手，專門負責災害後的新聞稿撰寫。你的任務是學習並掌握過去災害前新聞稿的格式、寫作風格與口吻，並根據提供的資料，生成符合此風格的新聞稿。
             '''
             
         else:
             training_prompt = "無效。"
+
+        request.session['disaster_phase'] = disaster_phase
 
         model_settings = setup_chatbot(xai_api_key, model_name, training_prompt, disaster_phase)
         if not model_settings:
@@ -209,6 +211,9 @@ def chat_function(message, model_settings):
 def generate_view(request):
     if request.method == 'POST':
         input_text = request.POST.get('inputText')
+        disaster_phase = request.session.get('disaster_phase')  # 這裡從 session 中取得 disaster_phase
+
+        print(disaster_phase) 
         if input_text:
             # 從 session 中獲取模型設置
             model_settings = request.session.get('model_settings')
@@ -222,8 +227,8 @@ def generate_view(request):
             with open(csv_path, 'a', newline='', encoding='utf-8') as f:
                 writer = csv.writer(f)
                 if not file_exists:
-                    writer.writerow(['input', 'output'])  # 寫入標題行
-                writer.writerow([input_text, output])
+                    writer.writerow(['disaster_phase', 'input', 'output'])  # 寫入標題行
+                writer.writerow([disaster_phase,input_text, output])
                 
     return redirect('ai_report')
 
