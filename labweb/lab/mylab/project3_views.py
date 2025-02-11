@@ -170,54 +170,72 @@ def extract_final_url(google_news_url):
         return match.group(1)
     return google_news_url
 
-# 從指定的新聞來源 URL 中抓取文章的內容
+# 函數：獲取 og:url 或最終網址
+def get_og_url(url):
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+    try:
+        response = requests.get(url, headers=headers, timeout=10)
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.text, 'html.parser')
+            og_url_tag = soup.find('meta', property='og:url')
+            if og_url_tag and 'content' in og_url_tag.attrs:
+                return og_url_tag['content']
+        return url  # 如果未找到 og:url，返回原始 URL
+    except requests.RequestException as e:
+        print(f"請求 og:url 失敗: {e}")
+        return url
+
+# 函數：爬取文章內容和最終網址
 def fetch_article_content(driver, sources_urls):
     results = {}
     summaries = {}
-    
+    final_urls = {}  # 用於存儲最終網址
+
     content_selectors = {
         'Newtalk新聞': 'div.articleBody.clearfix p',
         '經濟日報': 'section.article-body__editor p',
         '自由時報': 'div.text p',
         '中時新聞': 'div.article-body p',
-        'BBC News 中文': 'div.bbc-1cvxiy9 p'  # 確保選擇器正確
+        'BBC News 中文': 'div.bbc-1cvxiy9 p'
     }
 
     for source_name, url in sources_urls.items():
         if source_name not in ALLOWED_SOURCES:
             continue
-            
+
         try:
-            driver.get(url)
+            # 獲取最終網址（og:url）
+            final_url = get_og_url(url)
+            final_urls[source_name] = final_url
+
+            # 使用 Selenium 爬取內容
+            driver.get(final_url)  # 使用最終網址
             WebDriverWait(driver, 5).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, 'p'))
             )
-            
+
             selector = content_selectors.get(source_name)
-            if not selector:  # 如果沒有對應的選擇器，跳過
+            if not selector:
                 continue
-            
-            # 提取內容
+
             paragraphs = driver.find_elements(By.CSS_SELECTOR, selector)
             content = '\n'.join(p.text.strip() for p in paragraphs if p.text.strip())
             summary = content[:100] if content else '未找到內容'
-            
-            # 特別處理 BBC 新聞
-            if source_name == 'BBC News 中文':
-                # 確保選擇器正確，並提取內容
-                bbc_paragraphs = driver.find_elements(By.CSS_SELECTOR, 'div.bbc-1cvxiy9 p')
-                content = '\n'.join(p.text.strip() for p in bbc_paragraphs if p.text.strip())
-            
+
             results[source_name] = content if content else '未找到內容'
             summaries[source_name] = summary
-            
+
         except Exception as e:
             print(f"抓取內容失敗: {e}")
             results[source_name] = '錯誤'
             summaries[source_name] = '錯誤'
-            
-    return results, summaries
+            final_urls[source_name] = url  # 如果失敗，返回原始 URL
 
+    return results, summaries, final_urls
+
+#圖片
 def extract_image_url(driver, sources_urls):
     results = {}
     
@@ -1345,12 +1363,13 @@ def crawler_first_stage(request):
             'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%87%8E%E7%81%AB%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'#新增國際野火        
             ]
         
+        # 主程式邏輯
         all_news_items = []
         start_crawl_time = time.time()
         for url in urls:
             news_items = fetch_news(url)
             all_news_items.extend(news_items)
-        
+
         if all_news_items:
             news_df = pd.DataFrame(all_news_items)
             news_df = news_df.drop_duplicates(subset='標題', keep='first')
@@ -1379,20 +1398,20 @@ def crawler_first_stage(request):
             for index, item in news_df.iterrows():
                 source_name = item['來源']
                 original_url = item['連結']
-                final_url = extract_final_url(original_url)
-                sources_urls = {source_name: final_url}
+                sources_urls = {source_name: original_url}
 
-                # 擷取內容和圖片
-                content_results, _ = fetch_article_content(driver, sources_urls)
-                image_results = extract_image_url(driver, sources_urls)
+                # 擷取內容和最終網址
+                content_results, _, final_urls = fetch_article_content(driver, sources_urls)
+                image_results = extract_image_url(driver, sources_urls)  # 照片部分保持不變
 
                 content = content_results.get(source_name, '')  # 確保空值為空字串
+                final_url = final_urls.get(source_name, original_url)  # 使用最終網址，若無則使用原始 URL
                 image_url = image_results.get(source_name, '')  # 確保空值為空字串
 
                 # 準備要存入 CSV 的資料
                 result = {
                     '標題': item['標題'],
-                    '連結': original_url,
+                    '連結': final_url,  # 使用最終網址
                     '內文': content or '',  # 確保空值為空字串
                     '來源': source_name,
                     '時間': item['時間'],
@@ -1402,7 +1421,7 @@ def crawler_first_stage(request):
                 # 儲存資料到 CSV
                 output_df = pd.DataFrame([result])
                 output_df.to_csv(first_stage_file, mode='a', header=not os.path.exists(first_stage_file), 
-                               index=False, encoding='utf-8')
+                                index=False, encoding='utf-8')
 
                 print(f"已儲存新聞: {result['標題']}")
 
