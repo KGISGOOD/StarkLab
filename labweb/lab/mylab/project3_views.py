@@ -170,22 +170,20 @@ def extract_final_url(google_news_url):
         return match.group(1)
     return google_news_url
 
-# 函數：獲取 og:url 或最終網址
-def get_og_url(url):
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-    }
+# 函數：獲取最終網址（處理 Google News 跳轉）
+def get_final_url(driver, url):
     try:
-        response = requests.get(url, headers=headers, timeout=10)
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.text, 'html.parser')
-            og_url_tag = soup.find('meta', property='og:url')
-            if og_url_tag and 'content' in og_url_tag.attrs:
-                return og_url_tag['content']
-        return url  # 如果未找到 og:url，返回原始 URL
-    except requests.RequestException as e:
-        print(f"請求 og:url 失敗: {e}")
-        return url
+        # 使用 Selenium 載入 Google News 跳轉頁面
+        driver.get(url)
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.TAG_NAME, 'a'))  # 等待頁面載入
+        )
+        # 獲取頁面中所有跳轉連結
+        final_url = driver.current_url  # 獲取當前頁面的 URL（跳轉後）
+        return final_url
+    except Exception as e:
+        print(f"獲取最終網址失敗: {e}")
+        return url  # 如果失敗，返回原始 URL
 
 # 函數：爬取文章內容和最終網址
 def fetch_article_content(driver, sources_urls):
@@ -206,13 +204,13 @@ def fetch_article_content(driver, sources_urls):
             continue
 
         try:
-            # 獲取最終網址（og:url）
-            final_url = get_og_url(url)
+            # 獲取最終網址（處理 Google News 跳轉）
+            final_url = get_final_url(driver, url)
             final_urls[source_name] = final_url
 
-            # 使用 Selenium 爬取內容
-            driver.get(final_url)  # 使用最終網址
-            WebDriverWait(driver, 5).until(
+            # 使用最終網址爬取內容
+            driver.get(final_url)
+            WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, 'p'))
             )
 
@@ -235,7 +233,6 @@ def fetch_article_content(driver, sources_urls):
 
     return results, summaries, final_urls
 
-#圖片
 def extract_image_url(driver, sources_urls):
     results = {}
     
