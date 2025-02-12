@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path, re_path
-from mylab import views, project1_views, project2_views, project3_views, project4_views
+from mylab import views, project1_views, project2_views, project3_views, project4_views, project5_views
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic.base import RedirectView
@@ -37,15 +37,21 @@ urlpatterns = [
     path("news/", project3_views.news_view, name='news_list'),  # 新增新聞列表視圖
     path("news/create/", project3_views.news_create, name='news_create'),  # 新增新聞創建視圖 (POST)
     path("update/", project3_views.update_news, name='update_news'),  # 新增更新爬蟲的視圖
-
     # 新增新聞 API 端點 ，讀取（GET）新聞資料 。對應的視圖函數：@require_GET  
     path('api/news/', project3_views.news_api, name='news_api'),
     path('api/news/sql/', project3_views.news_api_sql, name='news_api_sql'),
     # 更新特定新聞每日記錄的 API 端點。對應的視圖函數：@csrf_exempt
     path('api/news/<int:news_id>/daily-records/', project3_views.update_daily_records, name='update_daily_records'),
-
-    # 新增爬蟲執行的 URL 路徑
+        # 新增爬蟲執行的 URL 路徑(啟動爬蟲用的)
     path('run_crawler/', views.run_crawler, name='run_crawler'),
+   
+    # 測試爬蟲執行的 URL 路徑(啟動爬蟲用的)
+    path('api/crawler/first-stage/', project3_views.crawler_first_stage, name='crawler_first_stage'),
+    # # 查看爬蟲的原始資料api
+    path('api/raw-news/', project3_views.view_raw_news, name='view_raw_news'),
+    # 查看排版好的json api
+    path('api/raw-news-json/', project3_views.view_raw_news, name='view_raw_news'),
+
 
     # project4
     path("ai_report/", project4_views.ai_report, name='ai_report'),
@@ -53,6 +59,10 @@ urlpatterns = [
     path('test-api/', project4_views.test_groq_api, name='test_groq_api'),
     path('generate/', project4_views.generate_view, name='generate_view'),
     path('upload_file/', project4_views.upload_file, name='upload_file'),
+
+    # project5
+    path('voice_search/', project5_views.voice_search, name='voice_search'),
+    path('ask_ai/', project5_views.ask_ai, name='ask_ai'),
 
 
 
