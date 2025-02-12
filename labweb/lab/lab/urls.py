@@ -48,7 +48,7 @@ urlpatterns = [
     # 測試爬蟲執行的 URL 路徑(啟動爬蟲用的)
     path('api/crawler/first-stage/', project3_views.crawler_first_stage, name='crawler_first_stage'),
     # # 查看爬蟲的原始資料api
-    path('api/news/sql', project3_views.view_raw_news, name='view_raw_news'),
+    path('api/news/sql/', project3_views.view_raw_news, name='view_raw_news'),
 
 
 
