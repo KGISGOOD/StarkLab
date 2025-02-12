@@ -1334,126 +1334,125 @@ def update_daily_records(request, news_id):
 
 
 # #測試爬蟲：開始爬蟲url http://localhost:8000/api/crawler/first-stage/
-# #測試爬蟲：開啟後端api http://localhost:8000/api/raw-news/  
-# #測試api：查看排版好的json api http://localhost:8000/api/raw-news-json/  
-# @require_GET
-# def crawler_first_stage(request):
-#     try:
-#         start_time = time.time()
-#         day = "30"
+# #測試爬蟲：開啟後端api http://localhost:8000/api/news/sql/  
+@require_GET
+def crawler_first_stage(request):
+    try:
+        start_time = time.time()
+        day = "30"
         
-#         # Google News 搜尋 URL
-#         urls = [
-#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%xA8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-#             'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#地震
-#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-#             # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-#             'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%87%8E%E7%81%AB%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際野火           
-#             'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%87%8E%E7%81%AB%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'#新增國際野火        
-#             ]
+        # Google News 搜尋 URL
+        urls = [
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%xA8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#地震
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%87%8E%E7%81%AB%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際野火           
+            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%87%8E%E7%81%AB%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'#新增國際野火        
+            ]
         
-#         # 主程式邏輯
-#         all_news_items = []
-#         start_crawl_time = time.time()
-#         for url in urls:
-#             news_items = fetch_news(url)
-#             all_news_items.extend(news_items)
+        # 主程式邏輯
+        all_news_items = []
+        start_crawl_time = time.time()
+        for url in urls:
+            news_items = fetch_news(url)
+            all_news_items.extend(news_items)
 
-#         if all_news_items:
-#             news_df = pd.DataFrame(all_news_items)
-#             news_df = news_df.drop_duplicates(subset='標題', keep='first')
+        if all_news_items:
+            news_df = pd.DataFrame(all_news_items)
+            news_df = news_df.drop_duplicates(subset='標題', keep='first')
             
-#             end_crawl_time = time.time()
-#             crawl_time = int(end_crawl_time - start_crawl_time)
-#             hours, remainder = divmod(crawl_time, 3600)
-#             minutes, seconds = divmod(remainder, 60)
+            end_crawl_time = time.time()
+            crawl_time = int(end_crawl_time - start_crawl_time)
+            hours, remainder = divmod(crawl_time, 3600)
+            minutes, seconds = divmod(remainder, 60)
             
-#             time_str = ''
-#             if hours > 0:
-#                 time_str += f'{hours}小時'
-#             if minutes > 0 or hours > 0:
-#                 time_str += f'{minutes}分'
-#             time_str += f'{seconds}秒'
+            time_str = ''
+            if hours > 0:
+                time_str += f'{hours}小時'
+            if minutes > 0 or hours > 0:
+                time_str += f'{minutes}分'
+            time_str += f'{seconds}秒'
             
-#             print(f'Google News 爬取完成，耗時：{time_str}')
+            print(f'Google News 爬取完成，耗時：{time_str}')
 
-#             driver = setup_chrome_driver()
+            driver = setup_chrome_driver()
 
-#             # 刪除舊的 CSV 檔案（如果存在）
-#             first_stage_file = 'w2.csv'
-#             if os.path.exists(first_stage_file):
-#                 os.remove(first_stage_file)
+            # 刪除舊的 CSV 檔案（如果存在）
+            first_stage_file = 'w2.csv'
+            if os.path.exists(first_stage_file):
+                os.remove(first_stage_file)
 
-#             for index, item in news_df.iterrows():
-#                 source_name = item['來源']
-#                 original_url = item['連結']
-#                 sources_urls = {source_name: original_url}
+            for index, item in news_df.iterrows():
+                source_name = item['來源']
+                original_url = item['連結']
+                sources_urls = {source_name: original_url}
 
-#                 # 擷取內容和最終網址
-#                 content_results, _, final_urls = fetch_article_content(driver, sources_urls)
-#                 image_results = extract_image_url(driver, sources_urls)  # 照片部分保持不變
+                # 擷取內容和最終網址
+                content_results, _, final_urls = fetch_article_content(driver, sources_urls)
+                image_results = extract_image_url(driver, sources_urls)  # 照片部分保持不變
 
-#                 content = content_results.get(source_name, '')  # 確保空值為空字串
-#                 final_url = final_urls.get(source_name, original_url)  # 使用最終網址，若無則使用原始 URL
-#                 image_url = image_results.get(source_name, '')  # 確保空值為空字串
+                content = content_results.get(source_name, '')  # 確保空值為空字串
+                final_url = final_urls.get(source_name, original_url)  # 使用最終網址，若無則使用原始 URL
+                image_url = image_results.get(source_name, '')  # 確保空值為空字串
 
-#                 # 準備要存入 CSV 的資料
-#                 result = {
-#                     '標題': item['標題'],
-#                     '連結': final_url,  # 使用最終網址
-#                     '內文': content or '',  # 確保空值為空字串
-#                     '來源': source_name,
-#                     '時間': item['時間'],
-#                     '圖片': image_url or ''  # 確保空值為空字串
-#                 }
+                # 準備要存入 CSV 的資料
+                result = {
+                    '標題': item['標題'],
+                    '連結': final_url,  # 使用最終網址
+                    '內文': content or '',  # 確保空值為空字串
+                    '來源': source_name,
+                    '時間': item['時間'],
+                    '圖片': image_url or ''  # 確保空值為空字串
+                }
 
-#                 # 儲存資料到 CSV
-#                 output_df = pd.DataFrame([result])
-#                 output_df.to_csv(first_stage_file, mode='a', header=not os.path.exists(first_stage_file), 
-#                                 index=False, encoding='utf-8')
+                # 儲存資料到 CSV
+                output_df = pd.DataFrame([result])
+                output_df.to_csv(first_stage_file, mode='a', header=not os.path.exists(first_stage_file), 
+                                index=False, encoding='utf-8')
 
-#                 print(f"已儲存新聞: {result['標題']}")
+                print(f"已儲存新聞: {result['標題']}")
 
-#             driver.quit()
+            driver.quit()
 
-#             end_time = time.time()
-#             elapsed_time = int(end_time - start_time)
-#             hours, remainder = divmod(elapsed_time, 3600)
-#             minutes, seconds = divmod(remainder, 60)
+            end_time = time.time()
+            elapsed_time = int(end_time - start_time)
+            hours, remainder = divmod(elapsed_time, 3600)
+            minutes, seconds = divmod(remainder, 60)
 
-#             time_str = ''
-#             if hours > 0:
-#                 time_str += f'{hours} 小時 '
-#             if minutes > 0 or hours > 0:
-#                 time_str += f'{minutes} 分 '
-#             time_str += f'{seconds} 秒'
+            time_str = ''
+            if hours > 0:
+                time_str += f'{hours} 小時 '
+            if minutes > 0 or hours > 0:
+                time_str += f'{minutes} 分 '
+            time_str += f'{seconds} 秒'
 
-#             return JsonResponse({
-#                 'status': 'success',
-#                 'message': f'第一階段爬蟲完成！耗時：{time_str}',
-#                 'csv_file': first_stage_file,
-#                 'total_news': len(news_df)
-#             })
+            return JsonResponse({
+                'status': 'success',
+                'message': f'第一階段爬蟲完成！耗時：{time_str}',
+                'csv_file': first_stage_file,
+                'total_news': len(news_df)
+            })
 
-#         return JsonResponse({
-#             'status': 'error',
-#             'message': '沒有找到新聞'
-#         })
+        return JsonResponse({
+            'status': 'error',
+            'message': '沒有找到新聞'
+        })
 
-#     except Exception as e:
-#         return JsonResponse({
-#             'status': 'error',
-#             'message': f'爬蟲執行失敗：{str(e)}'
-#         }, status=500)
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': f'爬蟲執行失敗：{str(e)}'
+        }, status=500)
 
 # 檔案路徑
 CSV_FILE_PATH = 'w2.csv'

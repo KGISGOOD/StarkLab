@@ -39,18 +39,17 @@ urlpatterns = [
     path("update/", project3_views.update_news, name='update_news'),  # 新增更新爬蟲的視圖
     # 新增新聞 API 端點 ，讀取（GET）新聞資料 。對應的視圖函數：@require_GET  
     path('api/news/', project3_views.news_api, name='news_api'),
-    path('api/news/sql/', project3_views.news_api_sql, name='news_api_sql'),
+    # path('api/news/sql/', project3_views.news_api_sql, name='news_api_sql'),
     # 更新特定新聞每日記錄的 API 端點。對應的視圖函數：@csrf_exempt
     path('api/news/<int:news_id>/daily-records/', project3_views.update_daily_records, name='update_daily_records'),
         # 新增爬蟲執行的 URL 路徑(啟動爬蟲用的)
     path('run_crawler/', views.run_crawler, name='run_crawler'),
    
     # 測試爬蟲執行的 URL 路徑(啟動爬蟲用的)
-    # path('api/crawler/first-stage/', project3_views.crawler_first_stage, name='crawler_first_stage'),
+    path('api/crawler/first-stage/', project3_views.crawler_first_stage, name='crawler_first_stage'),
     # # 查看爬蟲的原始資料api
-    path('api/raw-news/', project3_views.view_raw_news, name='view_raw_news'),
-    # 查看排版好的json api
-    # path('api/raw-news-json/', project3_views.view_raw_news, name='view_raw_news'),
+    path('api/news/sql', project3_views.view_raw_news, name='view_raw_news'),
+
 
 
     # project4
