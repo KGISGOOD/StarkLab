@@ -1334,7 +1334,8 @@ def update_daily_records(request, news_id):
 
 
 #測試爬蟲：開始爬蟲url http://localhost:8000/api/crawler/first-stage/
-#測試爬蟲：開啟後端api http://localhost:8000/api/raw-news/    
+#測試爬蟲：開啟後端api http://localhost:8000/api/raw-news/  
+#測試api：查看排版好的json api http://localhost:8000/api/raw-news-json/  
 @require_GET
 def crawler_first_stage(request):
     try:
@@ -1454,42 +1455,54 @@ def crawler_first_stage(request):
             'message': f'爬蟲執行失敗：{str(e)}'
         }, status=500)
 
-    
+# 檔案路徑
+CSV_FILE_PATH = 'w2.csv'
+JSON_FILE_PATH = 'final.json'
+
 @require_GET
 def view_raw_news(request):
     try:
-        # 定義 CSV 檔案名稱
-        csv_file = 'w2.csv'
-        
-        # 檢查 CSV 檔案是否存在
-        if not os.path.exists(csv_file):
-            return JsonResponse({'error': 'CSV 檔案不存在'}, status=404)
+        # 取得請求格式 (json 或 csv)，預設為 json
+        data_format = request.GET.get('format', 'json').lower()
 
-        # 從 CSV 檔案讀取資料
-        news_df = pd.read_csv(csv_file)
+        if data_format == 'csv':
+            # 檢查 CSV 檔案是否存在
+            if not os.path.exists(CSV_FILE_PATH):
+                return JsonResponse({'error': 'CSV 檔案不存在'}, status=404)
 
-        # 準備 JSON 格式的新聞列表
-        news_list = []
-        for _, row in news_df.iterrows():
-            # 限制內文長度為 100 字
-            content = row.get('內文', '') or ''
-            if len(content) > 100:
-                content = content[:100] + '...'
+            # 讀取 CSV 檔案
+            news_df = pd.read_csv(CSV_FILE_PATH)
 
-            news_item = {
-                '來源': row.get('來源', '') or '',  # 確保空值為空字串
-                '作者': row.get('來源', '') or '',  # 假設作者與來源相同
-                '標題': row.get('標題', '') or '',
-                '連結': row.get('連結', '') or '',
-                '內文': content,  # 限制後的內文
-                '時間': row.get('時間', '') or '',
-                '圖片': row.get('圖片', '') or ''
-            }
-            news_list.append(news_item)
+            # 準備 JSON 格式的新聞列表
+            news_list = []
+            for _, row in news_df.iterrows():
+                content = row.get('內文', '') or ''
+                if len(content) > 100:
+                    content = content[:100] + '...'
 
-        # 使用 json_dumps_params 進行美化
-        return JsonResponse(news_list, safe=False, json_dumps_params={'ensure_ascii': False, 'indent': 4})
-        
+                news_item = {
+                    '來源': row.get('來源', '') or '',
+                    '作者': row.get('來源', '') or '',
+                    '標題': row.get('標題', '') or '',
+                    '連結': row.get('連結', '') or '',
+                    '內文': content,
+                    '時間': row.get('時間', '') or '',
+                    '圖片': row.get('圖片', '') or ''
+                }
+                news_list.append(news_item)
+
+            return JsonResponse(news_list, safe=False, json_dumps_params={'ensure_ascii': False, 'indent': 4})
+
+        else:
+            # 檢查 JSON 檔案是否存在
+            if not os.path.exists(JSON_FILE_PATH):
+                return JsonResponse({'error': 'JSON 檔案不存在'}, status=404)
+
+            # 讀取 JSON 檔案內容
+            with open(JSON_FILE_PATH, 'r', encoding='utf-8') as file:
+                data = json.load(file)
+
+            return JsonResponse(data, safe=False, json_dumps_params={'ensure_ascii': False, 'indent': 4})
+
     except Exception as e:
-        print(f"Error in view_raw_news: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
