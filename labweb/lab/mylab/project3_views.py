@@ -1333,13 +1333,13 @@ def update_daily_records(request, news_id):
     return JsonResponse({"error": "Method not allowed"}, status=405)
 
 
-# #測試爬蟲：開始爬蟲url http://localhost:8000/api/crawler/first-stage/
+# #測試爬蟲：開始爬蟲url http://localhost:8000/api/news/
 # #測試爬蟲：開啟後端api http://localhost:8000/api/news/sql/  
 @require_GET
 def crawler_first_stage(request):
     try:
         start_time = time.time()
-        day = "30"
+        day = "3"
         
         # Google News 搜尋 URL
         urls = [
