@@ -46,11 +46,11 @@ urlpatterns = [
     path('run_crawler/', views.run_crawler, name='run_crawler'),
    
     # 測試爬蟲執行的 URL 路徑(啟動爬蟲用的)
-    path('api/crawler/first-stage/', project3_views.crawler_first_stage, name='crawler_first_stage'),
+    # path('api/crawler/first-stage/', project3_views.crawler_first_stage, name='crawler_first_stage'),
     # # 查看爬蟲的原始資料api
     path('api/raw-news/', project3_views.view_raw_news, name='view_raw_news'),
     # 查看排版好的json api
-    path('api/raw-news-json/', project3_views.view_raw_news, name='view_raw_news'),
+    # path('api/raw-news-json/', project3_views.view_raw_news, name='view_raw_news'),
 
 
     # project4
@@ -61,8 +61,8 @@ urlpatterns = [
     path('upload_file/', project4_views.upload_file, name='upload_file'),
 
     # project5
-    path('voice_search/', project5_views.voice_search, name='voice_search'),
-    path('ask_ai/', project5_views.ask_ai, name='ask_ai'),
+    # path('voice_search/', project5_views.voice_search, name='voice_search'),
+    # path('ask_ai/', project5_views.ask_ai, name='ask_ai'),
 
 
 
