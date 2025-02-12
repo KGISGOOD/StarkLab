@@ -1335,7 +1335,6 @@ def update_daily_records(request, news_id):
 
 #測試爬蟲：開始爬蟲url http://localhost:8000/api/crawler/first-stage/
 #測試爬蟲：開啟後端api http://localhost:8000/api/raw-news/  
-#測試api：查看排版好的json api http://localhost:8000/api/raw-news-json/  
 @require_GET
 def crawler_first_stage(request):
     try:
@@ -1463,7 +1462,7 @@ JSON_FILE_PATH = 'final.json'
 def view_raw_news(request):
     try:
         # 取得請求格式 (json 或 csv)，預設為 json
-        data_format = request.GET.get('format', 'json').lower()
+        data_format = request.GET.get('format', 'csv').lower()
 
         if data_format == 'csv':
             # 檢查 CSV 檔案是否存在
