@@ -1334,6 +1334,7 @@ def update_daily_records(request, news_id):
 
 
 # #測試爬蟲：開始爬蟲url http://localhost:8000/api/news/
+# #測試爬蟲：ai處理 api http://localhost:8000/api/news/ai/
 # #測試爬蟲：開啟後端api http://localhost:8000/api/news/sql/  
 @require_GET
 def crawler_first_stage(request):
@@ -1343,16 +1344,16 @@ def crawler_first_stage(request):
         
         # Google News 搜尋 URL
         urls = [
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%xA8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-            'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%xA8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+            # 'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
             'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#地震
             'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
             'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
@@ -1454,7 +1455,548 @@ def crawler_first_stage(request):
             'message': f'爬蟲執行失敗：{str(e)}'
         }, status=500)
 
-# 檔案路徑
+#ai 處理
+xai_api_key = "xai-sEKM3YfLj81l66aMWyXpmasF8Xab7hvpcwtEY4WU0jIeJfEoWDPSjm5VjbH9bq9JDNN5SmAAIrGyjfPN"
+model_name = "grok-beta"
+
+def news_ai(request):
+
+    def chat_with_xai(prompt, api_key, model_name, context=""):
+        max_retries = 3
+        retry_delay = 2  # 初始延遲2秒
+        
+        for attempt in range(max_retries):
+            try:
+                url = 'https://api.x.ai/v1/chat/completions'
+                headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': f'Bearer {api_key}'
+                }
+    
+                messages = [
+                    {"role": "system", "content": "你是一個新聞分析助手"},
+                    {"role": "user", "content": prompt}
+                ]
+    
+                data = {
+                    "messages": messages,
+                    "model": model_name,
+                    "temperature": 0,
+                    "stream": False
+                }
+    
+                response = requests.post(url, headers=headers, json=data, timeout=30)
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    if result and 'choices' in result and result['choices']:
+                        content = result['choices'][0]['message']['content']
+                        return content
+                elif response.status_code == 429:
+                    if attempt < max_retries - 1:
+                        wait_time = retry_delay * (2 ** attempt)  # 指數退避
+                        print(f"API 速率限制，等待 {wait_time} 秒後重試...")
+                        time.sleep(wait_time)
+                        continue
+                
+                print(f"API 調用失敗 (狀態碼: {response.status_code})")
+                return "無法取得回應"  # 改為有意義的預設值
+    
+            except Exception as e:
+                print(f"API 錯誤: {str(e)}")
+                if attempt < max_retries - 1:
+                    wait_time = retry_delay * (2 ** attempt)
+                    print(f"等待 {wait_time} 秒後重試...")
+                    time.sleep(wait_time)
+                    continue
+                return "發生錯誤"  # 改為有意義的預設值
+            
+    #1.水利署_確認是否災害
+    import pandas as pd
+
+    # 加入重試機制參數
+    max_retries = 3
+    retry_delay = 2  # 初始延遲2秒
+
+    def is_disaster_news(title, content):
+        """
+        使用 X.AI 判斷新聞是否主要報導自然災害事件
+        """
+        prompt = f"""
+        請判斷以下新聞是否主要在報導自然災害事件本身，只需回答 true 或 false：
+        
+        允許的災害類型：大雨、豪雨、暴雨、淹水、洪水、水災、颱風、颶風、風災、地震、海嘯、乾旱、旱災、野火
+
+        新聞標題：{title}
+        新聞內容：{content[:500]}
+
+        判斷標準：
+        1. 新聞必須主要描述災害事件本身，包括：
+        - 災害的發生過程
+        - 災害造成的直接影響和損失
+        - 災害現場的情況描述
+        
+        2. 以下類型的新聞都回答false：
+        - 災後援助或捐贈活動的報導
+        - 國際救援行動的新聞
+        - 災後重建相關報導
+        - 防災政策討論
+        - 氣候變遷議題
+        - 歷史災害回顧
+        - 以災害為背景但主要報導其他事件的新聞
+        - 焦點在於名人、奢華生活或政治人物的災後反應新聞
+        - 以災害為背景，主要報導財產損失或奢華物品（如豪宅、奧運獎牌等）的新聞
+        - 關於災後名人影響、財產損失的報導，例如關於明星或名人家園被燒毀的報導
+        - 主要報導災後政府或政治人物的反應、決策或行動的新聞
+        - 主要報導災害後的公共健康建議、當局指示或預防措施（如防範措施、配戴口罩、N95等）新聞
+        - 內文無人員傷亡或是財務損失
+        - 農作物產量劇減、減少、損失，搶救動物
+        
+        3. 特別注意：
+        - 如果新聞主要在報導救援、捐助、外交等活動，即使提到災害也應該回答 false
+        - 如果新聞只是用災害作為背景，主要報導其他事件，應該回答 false
+        - 新聞的核心主題必須是災害事件本身才回答 true
+        """
+
+        for attempt in range(max_retries):
+            try:
+                response = chat_with_xai(prompt, xai_api_key, model_name, "")
+                return 'true' in response.lower()
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    wait_time = retry_delay * (2 ** attempt)  # 指數退避
+                    print(f"API 錯誤: {str(e)}. 等待 {wait_time} 秒後重試...")
+                    time.sleep(wait_time)
+                else:
+                    print(f"API 錯誤: {str(e)}. 已達到最大重試次數。")
+                    return False  # 或者可以返回其他合適的值來表示失敗
+
+    # 1. 讀取 CSV 檔案
+    df = pd.read_csv('w2.csv')
+
+    # 2. 逐行判斷是否為災害新聞，並新增欄位
+    # lambda學習
+    df['is_disaster'] = df.apply(lambda row: is_disaster_news(row['標題'], row['內文']), axis=1)
+
+    # 3. 過濾只保留 is_disaster 為 True 的行
+    df_true = df[df['is_disaster'] == True]
+
+    # 4. 將結果存儲到新的 CSV 檔案
+    print(df_true)
+    df_true.to_csv('true_new.csv', index=False, encoding='utf-8-sig')
+
+    #2.水利署＿判斷是否為相同事件
+    max_retries = 3
+    retry_delay = 2  # 初始延遲2秒
+
+    def extract_information(news_content):
+        """
+        使用 AI 提取國家、地點和災害三個欄位，根據新聞內文生成。
+        """
+        prompt = f"""
+        請根據以下新聞內容提取所有相關的國家、地點和災害：
+        允許的災害類型：大雨、豪雨、暴雨、淹水、洪水、水災、颱風、颶風、風災、地震、海嘯、乾旱、旱災、野火
+        
+        檢核標準：
+        - 國家是否完整，只能有一個國家
+        - 地點是否完整(不遺漏任何提到的地點，可以包含多個地點)
+        - 災害是否完整，只能有一個，並且必須只能是允許的災害類型。如果無法確定具體類型，請將災害歸類為最相似的允許災害
+        - 格式是否一致(每個字串一個項目)
+        - 描述是否準確(地理位置準確性)
+
+        特別注意：
+        - 如果出現像是 火山噴發 等不是允許的災害類型的災害，則依照內文敘述將其歸類到最相似的允許災害，例如野火
+        - 如果出現像是 洪水,水災,颱風 多個允許災害出現，則依照內文敘述將其歸類到最相似的允許災害，例如颱風
+        - 如果出現像是 法國,馬達加斯加,莫三比克 三個國家，則依照內文敘述將其歸類到一個國家，例如法國
+        
+        請直接輸出以下格式(用換行區分):
+        國家: ["國家1"]
+        地點: ["地點1", "地點2"]
+        災害: ["災害1"]
+        
+        新聞內容:
+        {news_content}
+        """
+
+        for attempt in range(max_retries):
+            try:
+                # 假設 chat_with_xai 是整合 AI 的函數
+                response = chat_with_xai(prompt, xai_api_key, model_name, "")
+                
+                # 打印 AI 回傳的內容以進行檢查
+                print("AI 回傳內容:", response)
+
+                # 分析結果提取
+                response_lines = response.strip().split("\n")
+                result = {
+                    "國家": "",
+                    "地點": "",
+                    "災害": ""
+                }
+
+                for line in response_lines:
+                    key, _, value = line.partition(":")  # 分割出鍵和值
+                    if key == "國家":
+                        result["國家"] = value.strip().strip('[""]').replace('", "', ',')
+                    elif key == "地點":
+                        result["地點"] = value.strip().strip('[""]').replace('", "', ',')
+                    elif key == "災害":
+                        result["災害"] = value.strip().strip('[""]').replace('", "', ',')
+                
+                return result
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    wait_time = retry_delay * (2 ** attempt)  # 指數退避
+                    print(f"API 錯誤: {str(e)}. 等待 {wait_time} 秒後重試...")
+                    time.sleep(wait_time)
+                else:
+                    print(f"API 錯誤: {str(e)}. 已達到最大重試次數。")
+                    return {"國家": "", "地點": "", "災害": ""}  # 返回空結果表示失敗
+
+    # 讀取資料
+    df = pd.read_csv('true_new.csv')  # 這是原始檔案，包含「新聞內容」欄位
+
+    # 根據內文欄位生成國家、地點和災害，並將其存放到新的欄位
+    df['分析結果'] = df['內文'].apply(extract_information)
+
+    # 將結果展開為多個欄位
+    df['國家'] = df['分析結果'].apply(lambda x: x['國家'])
+    df['地點'] = df['分析結果'].apply(lambda x: x['地點'])
+    df['災害'] = df['分析結果'].apply(lambda x: x['災害'])
+
+    # 移除不必要的中間欄位
+    df = df.drop(columns=['分析結果'])
+
+    # 將結果寫入新的 CSV 檔案
+    df.to_csv('add_locations.csv', index=False, encoding='utf-8')
+
+    print("資訊生成完成，已儲存為 add_locations.csv")
+
+    #3.水利署_event
+    max_retries = 3
+    retry_delay = 2  # 初始延遲2秒
+
+    def extract_information(news_title, news_content):
+        prompt = f"""
+        event欄位根據資料集新聞標題和內文，判斷是否報導相同的災害事件，並分配完全一致的事件名稱。需確保事件名稱的唯一性和一致性，避免因地點表述的細微差異（如州、縣、城市等層級不同）導致錯誤的分類。
+        
+        檢核標準：
+        - 必須同時使用新聞標題和內文來判斷是否為相同的災害事件。
+        - 若標題和內文描述的災害事件相同（即涉及相同災害類型、時間範圍），則必須分配完全相同的事件名稱，即使地點描述存在差異（例如「嘉義」與「嘉義縣」或「加州」與「洛杉磯」）。
+        - 若標題和內文涉及不同的災害事件（例如不同時間或災害類型），則應分配不同的事件名稱。
+        - 災害類型包含：大雨、豪雨、暴雨、淹水、洪水、水災、颱風、颶風、風災、地震、海嘯、乾旱、旱災、野火。
+        - content欄位根據內文生成50-100字的摘要，需精確反映災害的核心信息。
+        - summary欄位根據內文生成損失與災害的統整，需包含具體損失數據（如死亡人數、撤離人數、財產損失）及災害影響範圍。
+        - 必須確保標題和內文中的關鍵詞（如災害類型、時間）與事件名稱的高度對應性，避免因表述差異導致誤判。
+        - 若多篇新聞報導的是相同災害事件（即相同災害類型和時間範圍），則event欄位必須使用完全相同的名稱，不因地點的具體差異（包括州、縣、城市等層級差異）而被分到不同的event。例如：「台灣嘉義地震」與「台灣嘉義縣地震」應視為相同事件；「美國加州野火」與「美國洛杉磯野火」也應視為相同事件。
+        - event欄位應根據「國家+地點+災害類型」組合成一個標準化、唯一的識別名稱。地點應以涵蓋範圍最廣或最常用的地點名稱為主，避免因州、縣、城市等層級差異導致名稱不同。
+        - 若多篇新聞報導相同災害事件（例如：同一個野火事件、同一次地震），即使標題或內文描述的具體細節（包括地點層級）不同，event欄位的名稱也必須完全一致。
+        - 時間範圍的判斷：若災害事件持續多日，應視為同一事件，除非明確提到不同的災害發生（例如不同時間點的獨立地震）。
+        
+        生成event時注意：
+        - 國家、地點和災害類型的組合必須簡潔且標準化：
+        - 國家：使用標準國家名稱（如「美國」、「日本」、「台灣」）。
+        - 地點：忽略州、縣、城市等層級差異，選擇涵蓋範圍最廣或最常用的地點名稱。若地點表述差異僅為層級不同（如「嘉義」與「嘉義縣」或「加州」與「洛杉磯」），應統一使用涵蓋範圍較廣的地點名稱。
+        - 災害類型：使用檢核標準中的災害類型名稱，避免使用同義詞或變體（如「山火」應統一為「野火」）。
+        - 例如：
+        - 若多篇新聞提到「嘉義地震」、「嘉義縣地震」，應統一命名為「台灣嘉義地震」。
+        - 若多篇新聞提到「洛杉磯野火」、「加州野火」，應統一命名為「美國加州野火」。
+        - 若災害事件涉及多個地點但屬於同一災害類型和時間範圍，應選擇涵蓋範圍最廣的地點名稱，並確保所有相關新聞的event名稱一致。
+        
+        請直接輸出以下格式(用換行區分):
+        event: "國家+地點+災害類型"
+        content: "<50-100字摘要>"
+        summary: "<損失與災害的統整>"
+        
+        新聞標題:
+        {news_title}
+        
+        新聞內容:
+        {news_content}
+        """
+
+        for attempt in range(max_retries):
+            try:
+                response = chat_with_xai(prompt, xai_api_key, model_name, "")
+                
+                print("AI 回傳內容:", response)
+
+                response_lines = response.strip().split("\n")
+                result = {
+                    "event": "",
+                    "content": "",
+                    "summary": ""
+                }
+
+                for line in response_lines:
+                    key, _, value = line.partition(":")
+                    if key == "event":
+                        result["event"] = value.strip().strip('"').replace(" ", "")  # 移除所有空格
+                    elif key == "content":
+                        result["content"] = value.strip().strip('"')
+                    elif key == "summary":
+                        result["summary"] = value.strip().strip('"')
+                
+                return result
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    wait_time = retry_delay * (2 ** attempt)  # 指數退避
+                    print(f"API 錯誤: {str(e)}. 等待 {wait_time} 秒後重試...")
+                    time.sleep(wait_time)
+                else:
+                    print(f"API 錯誤: {str(e)}. 已達到最大重試次數。")
+                    return {"event": "", "content": "", "summary": ""}  # 返回空結果表示失敗
+
+    df = pd.read_csv('add_locations.csv')
+
+    df['分析結果'] = df.apply(lambda row: extract_information(row['標題'], row['內文']), axis=1)
+
+    df['event'] = df['分析結果'].apply(lambda x: x['event'])
+    df['content'] = df['分析結果'].apply(lambda x: x['content'])
+    df['summary'] = df['分析結果'].apply(lambda x: x['summary'])
+
+    df = df.drop(columns=['分析結果'])
+
+    df.to_csv('add_events.csv', index=False, encoding='utf-8')
+
+    print("資訊生成完成，已儲存為 add_events.csv")
+
+    #4.水利署＿region
+    # 國內關鍵字清單
+    domestic_keywords = [
+        '台灣', '台北', '新北', '基隆', '新竹市', '桃園', '新竹縣', '宜蘭', 
+        '台中', '苗栗', '彰化', '南投', '雲林', '高雄', '台南', '嘉義', 
+        '屏東', '澎湖', '花東', '花蓮', '台9線', '金門', '馬祖', '綠島', '蘭嶼',
+        '臺灣', '台北', '臺中', '臺南', '臺9縣', '全台', '全臺'
+    ]
+
+    # 匯入 CSV 檔案
+    input_file = 'add_events.csv'  # 替換成你的檔案名稱
+
+    try:
+        # 讀取 CSV 檔案
+        df = pd.read_csv(input_file)
+
+        # 確保內文欄位存在
+        if '內文' not in df.columns:
+            raise ValueError("CSV 檔案中沒有 '內文' 欄位")
+
+        # 新增 region 欄位
+        def determine_region(content):
+            is_domestic = any(keyword in content for keyword in domestic_keywords)
+            return '國內' if is_domestic else '國外'
+
+        # 使用 apply 方法對每則新聞進行判斷
+        df['region'] = df['內文'].apply(determine_region)
+
+        # 將結果存回新的 CSV 檔案
+        output_file = 'region.csv'
+        df.to_csv(output_file, index=False, encoding='utf-8')
+        print(f"新增欄位 region 完成，結果已儲存到 {output_file}")
+
+    except Exception as e:
+        print(f"處理過程中出現錯誤：{str(e)}")
+
+    #7.水利署_overview
+    max_retries = 3
+    retry_delay = 2  # 初始延遲2秒
+
+    def generate_overview(group):
+        """
+        使用 AI 根據相同 event 的 summary 欄位生成災害資訊的總整理（overview）。
+        """
+        combined_content = " ".join(group)  # group 是 summary 欄位的 Series
+        prompt = f"""
+        根據以下所有相關事件的摘要（summary），生成一個總整理的災害資訊摘要（overview）。
+
+        檢核標準：
+        - 災害資訊摘要必須涵蓋核心內容，表述準確。
+        - 摘要應包含災害的時間、地點、災害類型、影響範圍及後續發展。
+        - 若有多個事件，應按時間順序或重要性統整。
+        - 字數控制在 100-150 字。
+
+        示例：
+        - 2024年12月23日，第26號颱風帕布生成，預計朝中南半島方向移動，對台灣無直接影響，但外圍水氣將導致全台轉雨。
+        - 2024年12月17日，南太平洋島國萬那杜發生規模7.4的淺層地震，震源深度僅10公里，隨後發布海嘯警報。
+        - 2025年1月6日，薩爾瓦多發生規模6.1地震，震源深度87公里。1月10日，該國再次發生規模5.8地震，震源深度95公里，首都居民感受到強烈震動，紛紛逃到街上。目前尚無災損或傷亡消息。
+
+        相關事件摘要（summary）：
+        {combined_content}
+
+        請直接輸出：
+        overview: "<災害資訊摘要>"
+        """
+
+        for attempt in range(max_retries):
+            try:
+                # 假設 chat_with_xai 是整合 AI 的函數
+                response = chat_with_xai(prompt, xai_api_key, model_name, "")
+                
+                # 提取 overview
+                overview_line = response.strip().split(":")
+                return overview_line[1].strip().strip('"')
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    wait_time = retry_delay * (2 ** attempt)  # 指數退避
+                    print(f"API 錯誤: {str(e)}. 等待 {wait_time} 秒後重試...")
+                    time.sleep(wait_time)
+                else:
+                    print(f"API 錯誤: {str(e)}. 已達到最大重試次數。")
+                    return ""  # 返回空字符串表示失敗
+
+    # 讀取資料
+    df = pd.read_csv('region.csv')  # 假設原始檔案包含「event」和「summary」欄位
+
+    # 直接指定 summary 欄位
+    content_column = 'summary'
+
+    # 新增 overview 欄位：根據相同的 event 統整 summary 欄位生成
+    df['overview'] = df.groupby('event')[content_column].transform(generate_overview)
+
+    # 將結果寫入新的 CSV 檔案
+    df.to_csv('add_overview.csv', index=False, encoding='utf-8')
+
+    print("災害資訊生成完成，已儲存為 add_overview.csv")
+
+    #8.水利署_合併
+    #補齊欄位
+    # 讀取 CSV 檔案
+    df = pd.read_csv('add_overview.csv')  # 假設原始檔案名為 add_overview.csv
+
+    # 定義欄位名稱對應關係
+    column_mapping = {
+        '標題': 'title',
+        '連結': 'url',
+        '來源': 'publisher',
+        '時間': 'date',
+        '圖片': 'cover'
+    }
+
+    # 執行欄位名稱更改
+    df = df.rename(columns=column_mapping)
+
+    # 2. 刪除不要的欄位
+    columns_to_drop = ['內文', 'is_disaster', '災害']
+    df = df.drop(columns=columns_to_drop, errors='ignore')  # errors='ignore' 確保即使欄位不存在也不會報錯
+
+    # 3. 補上缺失欄位
+    # recent_update：選擇 date 欄位中最新的時間
+    if 'date' in df.columns:
+        df['date'] = pd.to_datetime(df['date'], errors='coerce')  # 確保 date 欄位是日期格式
+        df['recent_update'] = df['date'].max()  # 選取最新的時間
+    else:
+        df['recent_update'] = pd.NaT  # 如果 date 欄位不存在，填入 NaT（缺失值）
+
+    # location：將「國家」和「地點」合併成一個欄位
+    if '國家' in df.columns and '地點' in df.columns:
+        df['location'] = df['國家'].fillna('') + ' ' + df['地點'].fillna('')  # 合併「國家」和「地點」，並處理缺失值
+        df['location'] = df['location'].str.strip()  # 去除多餘的空格
+    else:
+        df['location'] = ''  # 如果「國家」或「地點」欄位不存在，則新增空的 location 欄位
+
+    # 4. 新增 author 和 publish_date 欄位
+    # author：與 publisher 欄位相同
+    if 'publisher' in df.columns:
+        df['author'] = df['publisher']
+    else:
+        df['author'] = ''  # 如果 publisher 欄位不存在，則填入空字串
+
+    # publish_date：與 date 欄位相同
+    if 'date' in df.columns:
+        df['publish_date'] = df['date']
+    else:
+        df['publish_date'] = pd.NaT  # 如果 date 欄位不存在，則填入 NaT（缺失值）
+
+    # 5. 刪除「國家」和「地點」欄位
+    columns_to_drop_after_merge = ['國家', '地點']
+    df = df.drop(columns=columns_to_drop_after_merge, errors='ignore')  # errors='ignore' 確保即使欄位不存在也不會報錯
+
+    # 6. 輸出到新的 CSV 檔案
+    output_file = '補齊欄位.csv'
+    df.to_csv(output_file, index=False, encoding='utf-8')
+
+    print(f"處理完成，已輸出到 {output_file}")
+
+    #合併欄位
+    import json
+
+    # 讀取 CSV 檔案
+    df = pd.read_csv('補齊欄位.csv')
+
+    # 初始化一個空的列表，用來存放最終的結構
+    result = []
+
+    # 按照 event 進行分組，所有具有相同 'event' 值的行會被分到同一組
+    for event, group in df.groupby('event'):
+        # 選擇第一個新聞的數據作為基本信息
+        first_row = group.iloc[0]
+        
+        # 處理 cover 欄位，若為 NaN 則設為空字串
+        cover = first_row['cover'] if pd.notna(first_row['cover']) else ""
+        
+        # 找到該 event 組內最新的日期作為 recent_update
+        recent_update = group['date'].max()
+        
+        # 找到該 event 組內最早的日期作為 date
+        earliest_date = group['date'].min()
+        
+        # 初始化當前事件的字典
+        event_data = {
+            "event": event,
+            "region": first_row['region'],
+            "cover": cover,
+            "date": earliest_date,  # 使用該 event 組內最早的日期
+            "recent_update": recent_update,  # 使用該 event 組內最新的日期
+            "location": first_row['location'].split(',') if pd.notna(first_row['location']) else [],
+            "overview": first_row['overview'],
+            "daily_records": [],
+            "links": []
+        }
+
+        # 處理 daily_records，遍歷所有資料
+        for _, row in group.iterrows():
+            daily_record = {
+                "date": row['date'],
+                "content": row['content'],
+                "location": row['location'].split(',') if pd.notna(row['location']) else []
+            }
+            event_data["daily_records"].append(daily_record)
+
+        # 排序 daily_records 按照日期由舊到新
+        event_data["daily_records"].sort(key=lambda x: x["date"])
+
+        # 處理 links
+        for _, row in group.iterrows():
+            link = {
+                "source": {
+                    "publisher": row['publisher'],
+                    "author": row['author']
+                },
+                "url": row['url'],
+                "title": row['title'],
+                "publish_date": row['publish_date'],
+                "location": row['location'].split(',') if pd.notna(row['location']) else [],
+                "summary": row['summary']
+            }
+            event_data["links"].append(link)
+
+        # 將每個事件的數據添加到結果列表中
+        result.append(event_data)
+
+    # 將結果列表轉換為 JSON 格式並寫入檔案
+    with open('final.json', 'w', encoding='utf-8') as json_file:
+        json.dump(result, json_file, ensure_ascii=False, indent=2)
+
+    print("JSON 文件已生成並命名為 'final.json'。")
+
+    return JsonResponse({"message": "新聞AI運行完成"})
+
+
+
+
+
+
+# 檔案處理
 CSV_FILE_PATH = 'w2.csv'
 JSON_FILE_PATH = 'final.json'
 
