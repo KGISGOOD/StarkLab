@@ -1,0 +1,111 @@
+@import url("https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css");
+@import url("https://fonts.googleapis.com/css?family=Noto+Sans+TC:500,700,600,400|Noto+Sans:500,700,800,400|Space+Grotesk:500,400");
+/* The following line is used to measure usage of this code. You can remove it if you want. */
+@import url("https://px.animaapp.com/61976754b610a07d5711d75d.619767566bdd592eb60575a1.ddB3cU2.hcp.png");
+
+.screen a {
+  display: contents;
+  text-decoration: none;
+}
+
+.container-center-horizontal {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  pointer-events: none;
+  width: 100%;
+}
+
+.container-center-horizontal > * {
+  flex-shrink: 0;
+  pointer-events: auto;
+}
+
+.valign-text-middle {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.logo-1 {
+  height: 76px;
+  position: relative;
+  width: 126px;
+}
+
+.footer {
+  align-items: flex-start;
+  background-color: var(--navy-blue);
+  border-radius: 45px 45px 0px 0px;
+  display: flex;
+  flex-direction: column;
+  gap: 50px;
+  height: 277px;
+  left: 50px;
+  padding: 40px 60px 50px;
+  position: absolute;
+  top: 0;
+  width: 1278px;
+}
+
+.contact-us {
+  align-items: flex-start;
+  display: inline-flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 27px;
+  position: relative;
+}
+
+.heading {
+  align-items: flex-start;
+  display: inline-flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  position: relative;
+}
+
+.email-d04921004ntuedutw {
+  letter-spacing: 0;
+  line-height: normal;
+  margin-top: -1.00px;
+  position: relative;
+  width: fit-content;
+}
+
+.group-33 {
+  align-items: flex-start;
+  cursor: pointer;
+  display: flex;
+  gap: 17px;
+  height: 55px;
+  min-width: 172px;
+  padding: 6px 3px;
+}
+
+.arrow-3 {
+  height: 20px;
+  width: 19px;
+}
+
+.rectangle-79 {
+  height: 244px;
+  width: 244px;
+}
+
+.x1-2 {
+  height: 245px;
+  width: 240px;
+}
+
+.label-2 {
+  letter-spacing: 0;
+  line-height: normal;
+  margin-top: -1.00px;
+  position: relative;
+  width: fit-content;
+}

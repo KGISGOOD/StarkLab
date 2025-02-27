@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <!--<meta name=description content="This site was generated with Anima. www.animaapp.com"/>-->
+    <!-- <link rel="shortcut icon" type=image/png href="https://animaproject.s3.amazonaws.com/home/favicon.png" /> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=yes">
+    <link rel="shortcut icon" type="image/png" href="https://animaproject.s3.amazonaws.com/home/favicon.png" />
+    <meta name="og:type" content="website" />
+    <meta name="twitter:card" content="photo" />
+    <title>首頁</title>
+    <link rel="stylesheet" type="text/css" href="css/stark_lab_home.css" />
+    <link rel="stylesheet" type="text/css" href="css/styleguide.css" />
+    <link rel="stylesheet" type="text/css" href="css/globals.css" />
+     <!-- 加入摺疊卡片的 JavaScript -->
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.card').forEach(card => {
+          const plusIcon = card.querySelector('.plus-icon');
+          const content = card.querySelector('.fin-tech, .tech-edu, .med-tech, .intel-trans');
+          
+          plusIcon.addEventListener('click', () => {
+            const isExpanded = card.classList.contains('expanded');
+            
+            // 收合其他展開的卡片
+            document.querySelectorAll('.card.expanded').forEach(expandedCard => {
+              if (expandedCard !== card) {
+                expandedCard.classList.remove('expanded');
+                const expandedContent = expandedCard.querySelector('.fin-tech, .tech-edu, .med-tech, .intel-trans');
+                if (expandedContent) {
+                  expandedContent.style.height = '0';
+                }
+              }
+            });
+            
+            // 切換當前卡片狀態
+            if (!isExpanded) {
+              card.classList.add('expanded');
+              content.style.height = content.scrollHeight + 'px';
+            } else {
+              card.classList.remove('expanded');
+              content.style.height = '0';
+            }
+          });
+        });
+      });
+      </script>
+  </head>
+  <body style="margin: 0; background: #ffffff">
+    
+    <input type="hidden" id="anPageName" name="page" value="stark_lab_home" />
+    <div class="container-center-horizontal">
+      <div class="stark_lab_home screen">
+        <div class="overlap-group5">
+          <div class="landing-page">  
+            <div class="navigation-bar">
+              <img class="logo-1" src="img/------logo-1@2x.png" alt="logo 1" />
+              <div class="navbar notosanstc-semi-bold-black-20px">
+                <a href="stark_lab_home.html"
+                  ><div class="navbar-link-text notosanstc-semi-bold-black-20px">首頁</div>
+                </a>
+                <a href="stark_lab_project.html" 
+                  ><div class="navbar-link-text notosanstc-semi-bold-black-20px">研究專案</div>
+                </a>
+                <a href="stark_lab_member.html"
+                  ><div class="navbar-link-text notosanstc-semi-bold-black-20px">成員介紹</div>
+                </a>
+                <a href="stark_lab_professor.html"
+                  ><div class="navbar-link-text notosanstc-semi-bold-black-20px">論文研究</div>
+                </a>
+              </div>
+            </div>
+            <img class="line-31-1" src="img/line-31-1.svg" alt="Line 31-1" />
+            <header class="header">
+              <div class="frame-13 frame">
+                <h1 class="pioneering-solutions">Pioneering Solutions at the Forefront of Digital Innovation</h1>
+                <div class="text_label">
+                  歡迎來到我們的網站！我們是一支專注於人工智慧應用開發的專業團隊，擁有無限的活力與創新精神。我們的專業領域橫跨金融、教育、醫療及防災等多個行業，致力於提供前沿的人工智慧解決方案。<br />透過先進科技，我們致力於解決行業內的複雜挑戰、優化流程，並不斷探索提升效率的創新方法。我們的使命是將創新思維轉化為強大的AI驅動應用，以產生深遠的社會影響力。
+                </div>
+              </div>
+            </header>
+          </div>
+          <img class="x1-1" src="img/---1-1.png" alt="1 1" />
+        </div>
+        <div class="process-block">
+            <!-- 金融科技卡片 -->
+            <div class="card" role="button" aria-expanded="false" tabindex="0">
+              <div class="content">
+                <div class="label">
+                  <div class="number-4">01</div>
+                  <p class="fintech">金融科技 Fintech</p>
+                </div>
+              <span class="plus-icon" aria-label="展開/收合" role="img"></span>
+              </div>
+              <img class="line-25" src="img/line-25.svg" alt="Line 25">
+              <div class="fin-tech" role="region" aria-hidden="true">
+                金融科技（FinTech）融合了金融服務與創新技術，旨在通過數位化手段改進和優化金融產品及服務。我們專注於開發智能化解決方案，讓金融交易更便捷、安全，並推動新型態的金融創新。
+              </div>
+            </div>
+            <!-- 科技教育卡片 -->
+            <div class="card" role="button" aria-expanded="false" tabindex="0">
+              <div class="content">
+                <div class="label">
+                  <div class="number-4">02</div>
+                  <p class="science-and-technology-education">科技教育 Science and technology education</p>
+                </div>
+                <span class="plus-icon" aria-label="展開/收合" role="img"></span>
+              </div>
+              <img class="line-25" src="img/line-25.svg" alt="Line 25">
+              <div class="tech-edu" role="region" aria-hidden="true">
+                科技教育致力於將最新的科技融入教學，提升學習體驗。我們專注於開發互動性強、適應性高的教育工具，幫助學習者掌握21世紀所需的技術技能，並縮短教育資源的差距。
+              </div>
+            </div>
+            <!-- 科技醫療卡片 -->
+            <div class="card" role="button" aria-expanded="false" tabindex="0">
+              <div class="content">
+                <div class="label">
+                  <div class="number-4">03</div>
+                  <p class="medical-science-and-technology">科技醫療 Medical science and technology</p>
+                </div>
+                <span class="plus-icon" aria-label="展開/收合" role="img"></span>
+              </div>
+              <img class="line-25" src="img/line-25.svg" alt="Line 25">
+              <div class="med-tech" role="region" aria-hidden="true">
+                科技醫療融合了前沿技術與醫療服務，致力改善醫療環境，改善醫療人力緊繃的狀況。我們開發智能醫療系統，從數據分析到遠程醫療，優惠患者體驗並提升健康管理的效果。
+              </div>
+            </div>
+            <!-- 智能轉型卡片 -->
+            <div class="card" role="button" aria-expanded="false" tabindex="0">
+              <div class="content">
+                <div class="label">
+                  <div class="number-4">04</div>
+                  <div class="intelligent-transformation">智能轉型 Intelligent transformation</div>
+                </div>
+                <span class="plus-icon" aria-label="展開/收合" role="img"></span>
+              </div>
+              <img class="line-25" src="img/line-25.svg" alt="Line 25">
+              <div class="intel-trans" role="region" aria-hidden="true">
+                智能轉型幫助企業和組織應用人工智能、大數據等新興技術來優化運營流程，提升競爭力。我們提供量身定制的轉型方案，助力客戶在數位時代保持領先地位，實現可持續發展。
+              </div>
+            </div>
+          </div>
+        <div class="group-1"><div class="project">專案 project</div></div>
+        <div class="group-52">
+          <div class="overlap-group3">
+            <div class="flex-col">
+              <div class="line-bot notosanstc-medium-white-30px">
+                <span class="notosanstc-medium-white-30px">用</span><span class="span1">Line Bot<br /></span
+                ><span class="notosanstc-medium-white-30px">學習金融知識</span>
+              </div>
+              <a href="stark_lab_project_linebot.html">
+                <div class="group-33">
+                  <div class="overlap-group"><img class="arrow-3" src="img/arrow-3.svg" alt="Arrow 3" /></div>
+                  <div class="text-1 text notosanstc-bold-white-20px">點擊看更多</div>
+                </div></a
+              >
+            </div>
+            <img class="rectangle-79" src="img/rectangle-79@2x.png" alt="Rectangle 79" />
+          </div>
+          <div class="overlap-group2">
+            <div class="flex-col-1">
+              <div class="text-15 text">基本面爬蟲</div>
+              <div class="group-34">
+                <div class="overlap-group1"><img class="arrow-3" src="img/arrow-3-1.svg" alt="Arrow 3" /></div>
+                <div class="text-1 text notosanstc-bold-navy-blue-20px">點擊看更多</div>
+              </div>
+            </div>
+            <img class="x1-2" src="img/---1-2@2x.png" alt="1 2" />
+          </div>
+        </div>
+        <div class="overlap-group4">
+          <div class="footer">
+            <div class="navigation-and-contacts">
+              <div class="frame-26 frame">
+                <div class="contact-us">
+                  <div class="heading">
+                    <div class="label-1"><div class="label-2 notosans-bold-navy-blue-20px">Contact us:</div></div>
+                  </div>
+                  <div class="info">
+                    <div class="email-d04921004ntuedutw notosans-normal-white-18px">Email: D04921004@ntu.edu.tw</div>
+                    <p class="address-100 notosanstc-normal-white-18px">
+                      <span class="notosanstc-normal-white-18px"
+                        >Address: 100台北市中正區貴陽街一段56號 No. 56, Sec. 1, Guiyang St., Zhongzheng Dist., Taipei
+                        City<br /><br />
+                        ©2025 Soochow University Starklab . All Rights Reserved.</span
+                      >
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <img class="group-30" src="img/group-30-1@2x.png" alt="Group 30" />
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

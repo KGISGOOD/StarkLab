@@ -1,0 +1,316 @@
+/* screen - profeesor page */
+
+.stark_lab_professor {
+  align-items: center;
+  background-color: var(--white);
+  display: flex;
+  flex-direction: column;
+  height: 2618px;
+  width: 1440px;
+}
+
+.stark_lab_professor .overlap-group5 {
+  height: 76px;
+  margin-top: 60px;
+  position: relative;
+  width: 1440px;
+}
+
+.stark_lab_professor .navigation-bar {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  left: 0;
+  padding: 0px 100px;
+  position: absolute;
+  top: 0;
+  width: 1440px;
+}
+
+.stark_lab_professor .navbar {
+  align-items: center;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 40px;
+  justify-content: center;
+  position: relative;
+}
+
+.stark_lab_professor .navbar-link-text {
+  cursor: pointer;
+  letter-spacing: 0;
+  line-height: 28px;
+  margin-top: -1.00px;
+  position: relative;
+  white-space: nowrap;
+  width: fit-content;
+}
+
+.stark_lab_professor .line-30 {
+  height: 2px;
+  left: 1258px;
+  position: absolute;
+  top: 56px;
+  width: 85px;
+}
+
+.stark_lab_professor .flex-row {
+  align-items: flex-end;
+  display: flex;
+  height: 123px;
+  margin-right: 6.26px;
+  margin-top: 69px;
+  min-width: 1234px;
+}
+
+.stark_lab_professor .overlap-group {
+  align-self: flex-start;
+  height: 107px;
+  position: relative;
+  width: 116px;
+}
+
+.stark_lab_professor .vector {
+  height: 102px;
+  left: 6px;
+  position: absolute;
+  top: 5px;
+  width: 110px;
+}
+
+.stark_lab_professor .mask-group {
+  height: 102px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 110px;
+}
+
+.stark_lab_professor .flex-col {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 0.3px;
+  margin-left: 40px;
+  min-height: 92px;
+  width: 179px;
+}
+
+.stark_lab_professor .text-5 {
+  letter-spacing: 0;
+  line-height: normal;
+  min-height: 56px;
+  width: 122px;
+}
+
+.stark_lab_professor .assistant-professor {
+  color: var(--navy-blue);
+  font-family: var(--font-family-noto_sans);
+  font-size: var(--font-size-m);
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: normal;
+  min-height: 26px;
+  width: 179px;
+}
+
+.stark_lab_professor .group-29 {
+  align-items: flex-start;
+  display: flex;
+  gap: 14px;
+  margin-left: 542px;
+  min-width: 358px;
+}
+
+.stark_lab_professor .intersect {
+  height: 33px;
+  object-fit: cover;
+  width: 33px;
+}
+
+.stark_lab_professor .httpsorcidorg0000-0000-0000-0000 {
+  align-self: center;
+  color: #363636;
+  font-family: var(--font-family-noto_sans);
+  font-size: 16.4px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: normal;
+  margin-bottom: 0.96px;
+  min-height: 22px;
+  min-width: 309px;
+}
+
+.stark_lab_professor .line-32 {
+  height: 4px;
+  margin-right: 21.0px;
+  margin-top: 44px;
+  width: 1261px;
+  position: relative;
+}
+
+.stark_lab_professor .group-25 {
+  align-items: flex-start;
+  align-self: flex-start;
+  display: flex;
+  margin-left: 100px;
+  margin-top: 57px;
+  min-width: 275px;
+}
+
+.stark_lab_professor .overlap-group1 {
+  align-items: flex-start;
+  background-color: var(--navy-blue);
+  border-radius: 9px;
+  display: flex;
+  height: 62px;
+  min-width: 273px;
+  padding: 8px 15px;
+}
+
+.stark_lab_professor .journal-papers {
+  letter-spacing: 0;
+  line-height: normal;
+  min-height: 44px;
+}
+
+.stark_lab_professor .text {
+  letter-spacing: 0;
+  line-height: 50px;
+  margin-left: 22.0px;
+  margin-top: 46px;
+  min-height: 399px;
+  width: 1218px;
+}
+
+.stark_lab_professor .line-3 {
+  height: 4px;
+  margin-right: 21.0px;
+  margin-top: 59px;
+  width: 1261px;
+}
+
+.stark_lab_professor .group-26 {
+  align-items: flex-start;
+  align-self: flex-start;
+  display: flex;
+  margin-left: 100px;
+  margin-top: 57px;
+  min-width: 343px;
+}
+
+.stark_lab_professor .overlap-group2 {
+  align-items: flex-start;
+  background-color: var(--navy-blue);
+  border-radius: 9px;
+  display: flex;
+  height: 62px;
+  min-width: 341px;
+  padding: 8px 15px;
+}
+
+.stark_lab_professor .conference-papers {
+  letter-spacing: 0;
+  line-height: normal;
+  min-height: 35px;
+  white-space: nowrap;
+}
+
+.stark_lab_professor .group-27 {
+  align-items: flex-start;
+  align-self: flex-start;
+  display: flex;
+  margin-left: 100px;
+  margin-top: 57px;
+  min-width: 133px;
+}
+
+.stark_lab_professor .overlap-group3 {
+  align-items: center;
+  background-color: var(--navy-blue);
+  border-radius: 9px;
+  display: flex;
+  height: 62px;
+  justify-content: center;
+  min-width: 131px;
+  padding: 8px 7px;
+}
+
+.stark_lab_professor .books {
+  letter-spacing: 0;
+  line-height: normal;
+  min-height: 35px;
+  white-space: nowrap;
+}
+
+.stark_lab_professor .overlap-group4 {
+  height: 277px;
+  margin-top: 147px;
+  position: relative;
+  width: 1378px;
+}
+
+.stark_lab_professor .navigation-and-contacts {
+  align-items: flex-start;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 66px;
+  height: 157px;
+  position: relative;
+}
+
+.stark_lab_professor .frame-26 {
+  align-items: flex-start;
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 120px;
+  margin-bottom: -52.00px;
+  position: relative;
+}
+
+.stark_lab_professor .label {
+  align-items: flex-start;
+  background-color: var(--white);
+  border-radius: 7px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0px 7px;
+  position: relative;
+}
+
+.stark_lab_professor .label-1 {
+  letter-spacing: 0;
+  line-height: normal;
+  margin-top: -1.00px;
+  position: relative;
+  width: fit-content;
+}
+
+.stark_lab_professor .info {
+  align-items: flex-start;
+  display: inline-flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+}
+
+.stark_lab_professor .address-100 {
+  letter-spacing: 0;
+  line-height: normal;
+  position: relative;
+  width: 514px;
+}
+
+.stark_lab_professor .group-30 {
+  height: 30px;
+  left: 1152px;
+  position: absolute;
+  top: 166px;
+  width: 114px;
+}
+
