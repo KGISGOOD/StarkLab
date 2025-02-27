@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 # 現有的視圖
 def home(request):
-    return render(request, 'index.html')
+    return render(request, 'stark_lab_home.html')
 
 def about(request):
     return render(request, 'about.html')
