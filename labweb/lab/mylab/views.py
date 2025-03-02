@@ -9,6 +9,12 @@ logger = logging.getLogger(__name__)
 def home(request):
     return render(request, 'stark_lab_home.html')
 
+def member(request):
+    return render(request, 'stark_lab_member.html')
+
+
+
+
 def about(request):
     return render(request, 'about.html')
 

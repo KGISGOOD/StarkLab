@@ -9,6 +9,16 @@ urlpatterns = [
     # 實驗室
     path("admin/", admin.site.urls),
     path("", views.home, name="home"),
+    path("member/", views.member, name="member"),
+
+
+
+
+
+
+
+
+
     path("about/", views.about),
     path("contact/", views.contact),
     path("gallery/", views.gallery),
