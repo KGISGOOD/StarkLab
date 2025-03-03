@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
   <head>
@@ -9,9 +10,14 @@
     <meta name="og:type" content="website" />
     <meta name="twitter:card" content="photo" />
     <title>論文研究</title>
-    <link rel="stylesheet" type="text/css" href="css/stark_lab_professor.css" />
+    <!-- <link rel="stylesheet" type="text/css" href="css/stark_lab_professor.css" />
     <link rel="stylesheet" type="text/css" href="css/styleguide.css" />
-    <link rel="stylesheet" type="text/css" href="css/globals.css" />
+    <link rel="stylesheet" type="text/css" href="css/globals.css" /> -->
+
+    <link rel="stylesheet" href="{% static 'css/stark_lab_professor.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styleguide.css' %}">
+    <link rel="stylesheet" href="{% static 'css/globals.css' %}">
+
   </head>
   <body style="margin: 0; background: #ffffff">
     <input type="hidden" id="anPageName" name="page" value="stark_lab_professor" />
@@ -22,16 +28,16 @@
             <img class="logo-1" src="img/------logo-1@2x.png" alt="logo 1" />
             <a href="stark_lab_home.html">
               <div class="navbar notosanstc-semi-bold-black-20px">
-                <a href="stark_lab_home.html"
+                <a href="/"
                   ><div class="navbar-link-text notosanstc-semi-bold-black-20px">首頁</div>
                 </a>
-                <a href="stark_lab_project.html" 
+                <a href="/project/" 
                   ><div class="navbar-link-text notosanstc-semi-bold-black-20px">研究專案</div>
                 </a>
-                <a href="stark_lab_member.html"
+                <a href="/member/"
                   ><div class="navbar-link-text notosanstc-semi-bold-black-20px">成員介紹</div>
                 </a>
-                <a href="stark_lab_professor.html"
+                <a href="/professor/"
                   ><div class="navbar-link-text notosanstc-semi-bold-black-20px">論文研究</div>
                 </a>
               </div>

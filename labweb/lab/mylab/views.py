@@ -12,6 +12,16 @@ def home(request):
 def member(request):
     return render(request, 'stark_lab_member.html')
 
+def professor(request):
+    return render(request, 'stark_lab_professor.html')
+
+def project(request):
+    return render(request, 'stark_lab_project.html')
+
+def project_linebot(request):
+    return render(request, 'stark_lab_linebot.html')
+
+
 
 
 
