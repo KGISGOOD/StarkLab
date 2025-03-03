@@ -1,0 +1,300 @@
+/* screen - project page */
+
+.stark_lab_project {
+  align-items: flex-start;
+  background-color: var(--white);
+  display: flex;
+  flex-direction: column;
+  height: 1518px;
+  width: 1440px;
+}
+
+.stark_lab_project .overlap-group3 {
+  height: 76px;
+  margin-top: 60px;
+  position: relative;
+  width: 1440px;
+}
+
+.stark_lab_project .navigation-bar {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  left: 0;
+  padding: 0px 100px;
+  position: absolute;
+  top: 0;
+  width: 1440px;
+}
+
+.stark_lab_project .navbar {
+  align-items: center;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 40px;
+  justify-content: center;
+  position: relative;
+}
+
+
+.stark_lab_project .line-30 {
+  height: 2px;
+  left: 1018px;
+  position: absolute;
+  top: 56px;
+  width: 85px;
+}
+
+.stark_lab_project .project {
+  color: var(--navy-blue);
+  font-family: var(--font-family-noto_sans);
+  font-size: var(--font-size-xxxxxl);
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: normal;
+  margin-left: 100px;
+  margin-top: 103px;
+  min-height: 65px;
+  width: 573px;
+}
+
+.stark_lab_project .overlap-group-container {
+  align-items: flex-start;
+  align-self: center;
+  display: flex;
+  gap: 19px;
+  margin-right: 19.0px;
+  margin-top: 71px;
+  min-width: 1275px;
+}
+
+.stark_lab_project .overlap-group5 {
+  align-items: flex-start;
+  background-color: var(--navy-blue);
+  border: 1px solid;
+  border-color: var(--black);
+  border-radius: 57px;
+  box-shadow: 0px 7px 0px #000000;
+  display: flex;
+  gap: 63px;
+  height: 330px;
+  min-width: 628px;
+  padding: 42px 68px;
+}
+
+.stark_lab_project .flex-col {
+  align-items: flex-start;
+  align-self: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: 61px;
+  margin-bottom: 1px;
+  min-height: 191px;
+  width: 180px;
+}
+
+.stark_lab_project .line-bot {
+  letter-spacing: 0;
+  line-height: normal;
+  min-height: 75px;
+}
+
+.stark_lab_project .span1 {
+  color: var(--white);
+  font-family: var(--font-family-noto_sans);
+  font-size: var(--font-size-xxl);
+  font-weight: 500;
+}
+
+.stark_lab_project .overlap-group {
+  align-items: flex-start;
+  background-color: var(--white);
+  border-radius: 21px;
+  display: flex;
+  height: 42px;
+  justify-content: flex-end;
+  min-width: 42px;
+  padding: 11.0px 10.9px;
+}
+
+.stark_lab_project .text-2 {
+  align-self: center;
+  letter-spacing: 0;
+  line-height: 28px;
+  margin-bottom: 3.0px;
+  min-width: 100px;
+  white-space: nowrap;
+}
+
+.stark_lab_project .overlap-group4 {
+  align-items: flex-start;
+  background-color: var(--grey);
+  border: 1px solid;
+  border-color: var(--black);
+  border-radius: 57px;
+  box-shadow: 0px 7px 0px #000000;
+  display: flex;
+  gap: 71px;
+  height: 330px;
+  min-width: 628px;
+  padding: 34px 70px;
+}
+
+.stark_lab_project .flex-col-1 {
+  gap: 100px;
+  margin-bottom: 9px;
+}
+
+.stark_lab_project .text-24 {
+  color: var(--navy-blue);
+  font-family: var(--font-family-noto_sans_tc);
+  font-size: var(--font-size-xxl);
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: normal;
+  min-height: 36px;
+  white-space: nowrap;
+}
+
+.stark_lab_project .group-3 {
+  align-items: flex-start;
+  display: flex;
+  gap: 17px;
+  height: 55px;
+  min-width: 172px;
+  padding: 6px 3px;
+}
+
+.stark_lab_project .overlap-group2 {
+  align-items: flex-start;
+  background-color: var(--navy-blue);
+  border-radius: 21px;
+  display: flex;
+  height: 42px;
+  justify-content: flex-end;
+  min-width: 42px;
+  padding: 11.0px 10.9px;
+}
+
+.stark_lab_project .overlap-group6 {
+  align-items: flex-start;
+  background-color: var(--navy-blue);
+  border: 1px solid;
+  border-color: var(--black);
+  border-radius: 57px;
+  box-shadow: 0px 7px 0px #000000;
+  display: flex;
+  gap: 122px;
+  height: 330px;
+  margin-left: 73px;
+  margin-top: 60px;
+  min-width: 628px;
+  padding: 30px 68px;
+}
+
+.stark_lab_project .flex-col-2 {
+  gap: 93px;
+  margin-bottom: 13px;
+}
+
+.stark_lab_project .text-22 {
+  letter-spacing: 0;
+  line-height: normal;
+  min-height: 43px;
+}
+
+.stark_lab_project .x1 {
+  height: 269px;
+  object-fit: cover;
+  width: 170px;
+}
+
+.stark_lab_project .group-36 {
+  align-self: center;
+  height: 277px;
+  margin-top: 146px;
+  position: relative;
+  width: 1378px;
+}
+
+.stark_lab_project .navigation-and-contacts {
+  align-items: flex-start;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 66px;
+  height: 157px;
+  position: relative;
+}
+
+.stark_lab_project .frame-26 {
+  align-items: flex-start;
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 120px;
+  margin-bottom: -52.00px;
+  position: relative;
+}
+
+.stark_lab_project .label {
+  align-items: flex-start;
+  background-color: var(--white);
+  border-radius: 7px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0px 7px;
+  position: relative;
+}
+
+.stark_lab_project .label-1 {
+  letter-spacing: 0;
+  line-height: normal;
+  margin-top: -1.00px;
+  position: relative;
+  width: fit-content;
+}
+
+.stark_lab_project .info {
+  align-items: flex-start;
+  display: inline-flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+}
+
+.stark_lab_project .address-100 {
+  letter-spacing: 0;
+  line-height: normal;
+  position: relative;
+  width: 490px;
+}
+
+.stark_lab_project .group-30 {
+  height: 30px;
+  left: 1152px;
+  position: absolute;
+  top: 208px;
+  width: 114px;
+}
+
+.stark_lab_project .flex-col-3 {
+  align-items: flex-start;
+  align-self: flex-end;
+  display: flex;
+  flex-direction: column;
+  min-height: 191px;
+  width: 172px;
+}
+
+.stark_lab_project .navbar-link-text {
+  cursor: pointer;
+  letter-spacing: 0;
+  line-height: 28px;
+  margin-top: -1.00px;
+  position: relative;
+  white-space: nowrap;
+  width: fit-content;
+}
