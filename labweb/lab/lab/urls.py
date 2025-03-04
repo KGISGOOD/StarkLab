@@ -14,7 +14,7 @@ urlpatterns = [
     path("member/", views.member, name="member"),
     path("professor/", views.professor, name="professor"),
     path("project/", views.project, name="project"),
-
+    path("project_linebot/", views.project_linebot, name="project_linebot"),
 
 
 

@@ -6,11 +6,11 @@ from .project3_views import main  # 導入原本的爬蟲主函數
 logger = logging.getLogger(__name__)
 
 # 現有的視圖
-def home(request):
-    return render(request, 'index.html')
-
 # def home(request):
-#     return render(request, 'stark_lab_home.html')
+#     return render(request, 'index.html')
+
+def home(request):
+    return render(request, 'stark_lab_home.html')
 
 
 
@@ -24,7 +24,7 @@ def project(request):
     return render(request, 'stark_lab_project.html')
 
 def project_linebot(request):
-    return render(request, 'stark_lab_linebot.html')
+    return render(request, 'stark_lab_project_linebot.html')
 
 
 
