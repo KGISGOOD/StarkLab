@@ -27,7 +27,7 @@ ALLOWED_SOURCES = {
     'Newtalk新聞',
     '經濟日報',
     '自由時報',
-    '中時新聞',
+    '中時新聞網',
     'BBC News 中文'
 }
  
@@ -47,45 +47,69 @@ domestic_keywords = [
     '臺灣', '台北', '臺中', '臺南', '臺9縣', '全台', '全臺'
 ]
 
-#自動化從新聞網站抓取新聞資料
+# 設定ai _api最大重試次數和初始延遲時間
+max_retries = 3  # 最大重試次數
+retry_delay = 2  # 初始延遲2秒
+
+#從google news抓取資料(標題、新聞來源、時間)
 def fetch_news(url):
     try:
+        # 設置 HTTP 請求的標頭，模擬瀏覽器行為
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
+        # 發送 GET 請求到指定的 url，並包含標頭
         response = requests.get(url, headers=headers)
+        # 檢查請求是否成功，若不成功則引發異常
         response.raise_for_status()
+        # 使用 BeautifulSoup 解析 HTML 內容
         soup = BeautifulSoup(response.text, 'html.parser')
 
+        # 查找所有符合條件的 article 或 div 標籤
         articles = soup.find_all(['article', 'div'], class_=['IFHyqb', 'xrnccd', 'IBr9hb', 'NiLAwe'])
+        # 初始化一個空列表，用於存儲抓取到的新聞項目
         news_list = []
 
-        allowed_sources_set = set(ALLOWED_SOURCES)  # 將 ALLOWED_SOURCES 轉換為集合
+        # 將 ALLOWED_SOURCES 轉換為集合，以便於快速查找
+        allowed_sources_set = set(ALLOWED_SOURCES)
 
+        # 遍歷每一個抓取到的 article
         for article in articles:
             try:
+                # 查找文章中的標題元素
                 title_element = article.find(['a', 'h3', 'h4'], class_=['JtKRv', 'ipQwMb', 'DY5T1d', 'gPFEn']) or article.find('a', recursive=True)
                 if not title_element:
-                    continue
+                    continue  # 如果找不到標題元素，則跳過當前文章
 
+                # 提取標題的文本內容
                 title = title_element.get_text(strip=True)
+                # 獲取標題元素的 href 屬性，即新聞的連結
                 link = title_element.get('href', '')
+                # 根據 link 的格式進行處理，將相對路徑轉換為絕對路徑
                 link = f'https://news.google.com/{link[2:]}' if link.startswith('./') else f'https://news.google.com{link}' if link.startswith('/') else link
 
+                # 查找新聞來源的元素
                 source_element = article.find(['div', 'a'], class_=['vr1PYe', 'wEwyrc', 'SVJrMe', 'NmQAAc']) or article.find(lambda tag: tag.name in ['div', 'a'] and 'BBC' in tag.get_text())
                 if not source_element:
-                    continue
+                    continue  # 如果找不到來源元素，則跳過當前文章
 
+                # 提取來源的文本內容
                 source_name = source_element.get_text(strip=True)
+                # 如果來源名稱中包含 'BBC'，則將其標記為 'BBC News 中文'
                 source_name = 'BBC News 中文' if 'BBC' in source_name else source_name
 
-                if source_name not in allowed_sources_set:  # 使用集合進行查找
-                    continue
+                # 檢查來源名稱是否在允許的來源集合中
+                if source_name not in allowed_sources_set:
+                    continue  # 如果不在，則跳過當前文章
 
+                # 查找文章中的時間元素
                 time_element = article.find(['time', 'div'], class_=['UOVeFe', 'hvbAAd', 'WW6dff', 'LfVVr'])
+                # 提取時間的文本內容，如果找不到時間元素，則設置為 '未知'
                 date_str = time_element.get_text(strip=True) if time_element else '未知'
+                # 調用 parse_date 函數解析日期字符串
                 date = parse_date(date_str)
 
+                # 創建一個字典，包含標題、連結、來源和時間
                 news_item = {
                     '標題': title,
                     '連結': link,
@@ -93,17 +117,18 @@ def fetch_news(url):
                     '時間': date
                 }
 
+                # 將 news_item 添加到 news_list 列表中
                 news_list.append(news_item)
 
             except Exception as e:
-                print(f"處理文章時發生錯誤: {str(e)}")
-                continue
+                print(f"處理文章時發生錯誤: {str(e)}")  # 如果在處理文章的過程中發生異常，則打印錯誤信息
+                continue  # 繼續處理下一篇文章
 
-        return news_list
+        return news_list  # 返回抓取到的所有新聞項目列表
 
     except Exception as e:
-        print(f"抓取新聞時發生錯誤: {str(e)}")
-        return []
+        print(f"抓取新聞時發生錯誤: {str(e)}")  # 如果在整個 try 區塊中發生異常，則打印錯誤信息
+        return []  # 返回空列表
 
 # 解析 google news上的日期字符串
 def parse_date(date_str):
@@ -133,25 +158,19 @@ def parse_date(date_str):
     return date.strftime('%Y-%m-%d')
 
 def setup_chrome_driver():
-    chrome_options = Options()
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    chrome_options.add_argument('--disable-gpu')
-    chrome_options.add_argument('--disable-software-rasterizer')
+    chrome_options = Options()  # 創建一個 ChromeOptions 物件，用於設置 Chrome 瀏覽器的選項
+    chrome_options.add_argument('--headless')  # 設置為無頭模式，不顯示瀏覽器界面
+    chrome_options.add_argument('--no-sandbox')  # 禁用沙盒模式，通常在 CI/CD 環境中使用
+    chrome_options.add_argument('--disable-dev-shm-usage')  # 禁用 /dev/shm 使用，解決資源限制問題
+    chrome_options.add_argument('--disable-gpu')  # 禁用 GPU 加速，避免某些環境中的問題
+    chrome_options.add_argument('--disable-software-rasterizer')  # 禁用軟體光柵化器，進一步減少資源使用
     chrome_options.add_argument('--ignore-certificate-errors')  # 新增：忽略憑證錯誤
-    chrome_options.add_argument('--ignore-ssl-errors')         # 新增：忽略 SSL 錯誤
+    chrome_options.add_argument('--ignore-ssl-errors')  # 新增：忽略 SSL 錯誤
     
-    service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=chrome_options)
-    return driver
+    service = Service(ChromeDriverManager().install())  # 使用 ChromeDriverManager 安裝 ChromeDriver 並創建服務
+    driver = webdriver.Chrome(service=service, options=chrome_options)  # 創建 Chrome 瀏覽器的 WebDriver 實例
+    return driver  # 返回創建的 WebDriver 實例
 
-#從 Google News 的 URL 中提取出最終的 URL
-def extract_final_url(google_news_url):
-    match = re.search(r'(https?://[^&]+)', google_news_url)
-    if match:
-        return match.group(1)
-    return google_news_url
 
 # 函數：獲取最終網址（處理 Google News 跳轉）
 def get_final_url(driver, url):
@@ -168,12 +187,16 @@ def get_final_url(driver, url):
         print(f"獲取最終網址失敗: {e}")
         return url  # 如果失敗，返回原始 URL
 
-# 函數：爬取文章內容和最終網址
+# 函數：爬取文章內容
 def fetch_article_content(driver, sources_urls):
+    # 初始化一個字典，用於存儲每個來源的內容
     results = {}
+    # 初始化一個字典，用於存儲每個來源的摘要
     summaries = {}
-    final_urls = {}  # 用於存儲最終網址
+    # 初始化一個字典，用於存儲最終網址
+    final_urls = {}
 
+    # 定義不同新聞來源的內容選擇器
     content_selectors = {
         'Newtalk新聞': 'div.articleBody.clearfix p',
         '經濟日報': 'section.article-body__editor p',
@@ -182,43 +205,56 @@ def fetch_article_content(driver, sources_urls):
         'BBC News 中文': 'div.bbc-1cvxiy9 p'
     }
 
+    # 遍歷每個來源名稱和對應的 URL
     for source_name, url in sources_urls.items():
+        # 如果來源不在允許的來源中，則跳過
         if source_name not in ALLOWED_SOURCES:
             continue
 
         try:
             # 獲取最終網址（處理 Google News 跳轉）
             final_url = get_final_url(driver, url)
-            final_urls[source_name] = final_url
+            final_urls[source_name] = final_url  # 存儲最終網址
 
             # 使用最終網址爬取內容
-            driver.get(final_url)
+            driver.get(final_url)  # 載入最終網址
+            # 等待頁面中出現至少一個段落元素
             WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, 'p'))
             )
 
+            # 根據來源名稱獲取對應的內容選擇器
             selector = content_selectors.get(source_name)
-            if not selector:
+            if not selector:  # 如果沒有對應的選擇器，則跳過
                 continue
 
+            # 獲取所有符合選擇器的段落元素
             paragraphs = driver.find_elements(By.CSS_SELECTOR, selector)
+            # 提取段落的文本內容，並將其合併為一個字符串
             content = '\n'.join(p.text.strip() for p in paragraphs if p.text.strip())
+            # 獲取內容的前 100 個字符作為摘要
             summary = content[:100] if content else '未找到內容'
 
+            # 存儲內容和摘要
             results[source_name] = content if content else '未找到內容'
             summaries[source_name] = summary
 
         except Exception as e:
+            # 如果抓取內容失敗，打印錯誤信息
             print(f"抓取內容失敗: {e}")
-            results[source_name] = '錯誤'
-            summaries[source_name] = '錯誤'
+            results[source_name] = '錯誤'  # 設置結果為錯誤
+            summaries[source_name] = '錯誤'  # 設置摘要為錯誤
             final_urls[source_name] = url  # 如果失敗，返回原始 URL
 
+    # 返回所有來源的內容、摘要和最終網址
     return results, summaries, final_urls
 
+# 爬取圖片 URL
 def extract_image_url(driver, sources_urls):
+    # 初始化一個字典，用於存儲每個來源的圖片 URL
     results = {}
     
+    # 定義不同新聞來源的圖片選擇器
     image_selectors = {
         'Newtalk新聞': "div.news_img img",
         '經濟日報': "section.article-body__editor img",
@@ -227,12 +263,16 @@ def extract_image_url(driver, sources_urls):
         'BBC News 中文': "div.bbc-1cvxiy9 img"
     }
 
+    # 遍歷每個來源名稱和對應的 URL
     for source_name, url in sources_urls.items():
+        # 如果來源不在允許的來源中，則跳過
         if source_name not in ALLOWED_SOURCES:
             continue
             
         try:
+            # 載入來源的 URL
             driver.get(url)
+            # 根據來源名稱獲取對應的圖片選擇器
             selector = image_selectors.get(source_name)
             if not selector:  # 如果沒有對應的選擇器，跳過
                 continue
@@ -240,9 +280,12 @@ def extract_image_url(driver, sources_urls):
             # 特別處理 BBC 新聞圖片
             if source_name == 'BBC News 中文':
                 try:
+                    # 查找 BBC 新聞的內容區域
                     content_div = driver.find_element(By.CSS_SELECTOR, 'div.bbc-1cvxiy9')
                     if content_div:
+                        # 查找該區域中的第一張圖片
                         first_image = content_div.find_element(By.TAG_NAME, 'img')
+                        # 如果找到圖片且其外部 HTML 包含 'src'，則提取圖片 URL
                         if first_image and 'src' in first_image.get_attribute('outerHTML'):
                             results[source_name] = first_image.get_attribute('src')
                             continue
@@ -254,14 +297,15 @@ def extract_image_url(driver, sources_urls):
                 EC.presence_of_element_located((By.CSS_SELECTOR, selector))
             )
             
-            # 提取圖片
+            # 提取圖片的 URL
             image_url = image_element.get_attribute('src') or image_element.get_attribute('data-src')
-            results[source_name] = image_url or ''  # 改為空字串
+            results[source_name] = image_url or ''  # 如果沒有找到圖片，則設置為空字串
             
         except Exception as e:
-            print(f"圖片擷取錯誤: {e}")
-            results[source_name] = ''  # 改為空字串
+            print(f"圖片擷取錯誤: {e}")  # 如果抓取圖片過程中發生錯誤，則打印錯誤信息
+            results[source_name] = ''  # 如果發生錯誤，則設置為空字串
             
+    # 返回所有來源的圖片 URL
     return results
 
 # #測試爬蟲：開始爬蟲url http://localhost:8000/api/news/
@@ -275,20 +319,20 @@ def crawler_first_stage(request):
         
         # Google News 搜尋 URL
         urls = [
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%xA8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#地震
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E7%81%AB%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際大火
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%xA8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#國際大雨
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#國際豪雨
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#國際暴雨
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#國際淹水
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#國際洪水
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#國際水災    
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#國際颱風
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#國際颶風    
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#國際風災
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#國際海嘯
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#國際地震
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#國際乾旱
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#國際旱災
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E7%81%AB%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際大火＝野火
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%87%8E%E7%81%AB%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際野火
         # 加上bbc關鍵字
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
@@ -304,49 +348,49 @@ def crawler_first_stage(request):
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E4%B9%BE%E6%97%B1%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%97%B1%E7%81%BD%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
-        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E7%81%AB%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際大火
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E7%81%AB%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際大火＝野火
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%87%8E%E7%81%AB%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'#新增國際野火      
             ]
         
         # 主程式邏輯
-        all_news_items = []
-        start_crawl_time = time.time()
-        for url in urls:
-            news_items = fetch_news(url)
-            all_news_items.extend(news_items)
+        all_news_items = []  # 初始化一個空列表，用於存儲所有抓取到的新聞項目
+        start_crawl_time = time.time()  # 記錄爬取開始的時間
+        for url in urls:  # 遍歷每個要抓取的 URL
+            news_items = fetch_news(url)  # 使用 fetch_news 函數抓取新聞項目
+            all_news_items.extend(news_items)  # 將抓取到的新聞項目添加到 all_news_items 列表中
 
-        if all_news_items:
-            news_df = pd.DataFrame(all_news_items)
-            news_df = news_df.drop_duplicates(subset='標題', keep='first')
-            
-            end_crawl_time = time.time()
-            crawl_time = int(end_crawl_time - start_crawl_time)
-            hours, remainder = divmod(crawl_time, 3600)
-            minutes, seconds = divmod(remainder, 60)
-            
-            time_str = ''
-            if hours > 0:
-                time_str += f'{hours}小時'
-            if minutes > 0 or hours > 0:
-                time_str += f'{minutes}分'
-            time_str += f'{seconds}秒'
-            
-            print(f'Google News 爬取完成，耗時：{time_str}')
+        if all_news_items:  # 如果抓取到的新聞項目不為空
+            news_df = pd.DataFrame(all_news_items)  # 將新聞項目轉換為 DataFrame
+            news_df = news_df.drop_duplicates(subset='標題', keep='first')  # 刪除重複的標題，保留第一個
 
-            driver = setup_chrome_driver()
+            end_crawl_time = time.time()  # 記錄爬取結束的時間
+            crawl_time = int(end_crawl_time - start_crawl_time)  # 計算爬取所花費的時間
+            hours, remainder = divmod(crawl_time, 3600)  # 將總秒數轉換為小時和剩餘秒數
+            minutes, seconds = divmod(remainder, 60)  # 將剩餘秒數轉換為分鐘和秒數
+            
+            time_str = ''  # 初始化時間字符串
+            if hours > 0:  # 如果有小時數
+                time_str += f'{hours}小時'  # 添加小時數到時間字符串
+            if minutes > 0 or hours > 0:  # 如果有分鐘數或小時數
+                time_str += f'{minutes}分'  # 添加分鐘數到時間字符串
+            time_str += f'{seconds}秒'  # 添加秒數到時間字符串
+            
+            print(f'Google News 爬取完成，耗時：{time_str}')  # 打印爬取完成的消息和耗時
+
+            driver = setup_chrome_driver()  # 設置 Chrome 驅動
 
             # 刪除舊的 CSV 檔案（如果存在）
-            first_stage_file = 'w2.csv'
-            if os.path.exists(first_stage_file):
-                os.remove(first_stage_file)
+            first_stage_file = 'w2.csv'  # 定義要儲存的 CSV 檔案名稱
+            if os.path.exists(first_stage_file):  # 如果檔案存在
+                os.remove(first_stage_file)  # 刪除舊的 CSV 檔案
 
-            for index, item in news_df.iterrows():
-                source_name = item['來源']
-                original_url = item['連結']
-                sources_urls = {source_name: original_url}
+            for index, item in news_df.iterrows():  # 遍歷每一行新聞項目
+                source_name = item['來源']  # 獲取來源名稱
+                original_url = item['連結']  # 獲取原始連結
+                sources_urls = {source_name: original_url}  # 將來源名稱和連結組成字典
 
                 # 擷取內容和最終網址
-                content_results, _, final_urls = fetch_article_content(driver, sources_urls)
+                content_results, _, final_urls = fetch_article_content(driver, sources_urls)  # 獲取內容和最終網址
                 image_results = extract_image_url(driver, sources_urls)  # 照片部分保持不變
 
                 content = content_results.get(source_name, '')  # 確保空值為空字串
@@ -355,52 +399,40 @@ def crawler_first_stage(request):
 
                 # 準備要存入 CSV 的資料
                 result = {
-                    '標題': item['標題'],
+                    '標題': item['標題'],  # 新聞標題
                     '連結': final_url,  # 使用最終網址
                     '內文': content or '',  # 確保空值為空字串
-                    '來源': source_name,
-                    '時間': item['時間'],
+                    '來源': source_name,  # 新聞來源
+                    '時間': item['時間'],  # 新聞時間
                     '圖片': image_url or ''  # 確保空值為空字串
                 }
 
                 # 儲存資料到 CSV
-                output_df = pd.DataFrame([result])
+                output_df = pd.DataFrame([result])  # 將結果轉換為 DataFrame
                 output_df.to_csv(first_stage_file, mode='a', header=not os.path.exists(first_stage_file), 
-                                index=False, encoding='utf-8')
+                                index=False, encoding='utf-8')  # 追加寫入 CSV 檔案
 
-                print(f"已儲存新聞: {result['標題']}")
+                print(f"已儲存新聞: {result['標題']}")  # 打印已儲存的新聞標題
 
-            driver.quit()
+            driver.quit()  # 關閉 Chrome 驅動
 
-            end_time = time.time()
-            elapsed_time = int(end_time - start_time)
-            hours, remainder = divmod(elapsed_time, 3600)
-            minutes, seconds = divmod(remainder, 60)
-
-            time_str = ''
-            if hours > 0:
-                time_str += f'{hours} 小時 '
-            if minutes > 0 or hours > 0:
-                time_str += f'{minutes} 分 '
-            time_str += f'{seconds} 秒'
-
-            return JsonResponse({
+            return JsonResponse({  # 返回成功的 JSON 響應
                 'status': 'success',
-                'message': f'第一階段爬蟲完成！耗時：{time_str}',
-                'csv_file': first_stage_file,
-                'total_news': len(news_df)
+                'message': f'第一階段爬蟲完成！耗時：{time_str}',  # 爬蟲完成的消息
+                'csv_file': first_stage_file,  # 返回的 CSV 檔案名稱
+                'total_news': len(news_df)  # 返回抓取到的新聞數量
             })
 
-        return JsonResponse({
+        return JsonResponse({  # 如果沒有找到新聞，返回錯誤的 JSON 響應
             'status': 'error',
             'message': '沒有找到新聞'
         })
 
-    except Exception as e:
-        return JsonResponse({
+    except Exception as e:  # 捕捉任何異常
+        return JsonResponse({  # 返回錯誤的 JSON 響應
             'status': 'error',
-            'message': f'爬蟲執行失敗：{str(e)}'
-        }, status=500)
+            'message': f'爬蟲執行失敗：{str(e)}'  # 返回錯誤信息
+        }, status=500)  # 設置 HTTP 狀態碼為 500
 
 #ai 處理
 xai_api_key = "xai-sEKM3YfLj81l66aMWyXpmasF8Xab7hvpcwtEY4WU0jIeJfEoWDPSjm5VjbH9bq9JDNN5SmAAIrGyjfPN"
@@ -409,8 +441,6 @@ model_name = "grok-beta"
 def news_ai(request):
 
     def chat_with_xai(prompt, api_key, model_name, context=""):
-        max_retries = 3
-        retry_delay = 2  # 初始延遲2秒
         
         for attempt in range(max_retries):
             try:
@@ -459,12 +489,7 @@ def news_ai(request):
                 return "發生錯誤"  # 改為有意義的預設值
             
     #1.水利署_確認是否災害
-    import pandas as pd
-
     # 加入重試機制參數
-    max_retries = 3
-    retry_delay = 2  # 初始延遲2秒
-
     def is_disaster_news(title, content):
         """
         使用 X.AI 判斷新聞是否主要報導自然災害事件
@@ -532,10 +557,8 @@ def news_ai(request):
     print(df_true)
     df_true.to_csv('true_new.csv', index=False, encoding='utf-8-sig')
 
-    #2.水利署＿判斷是否為相同事件
-    max_retries = 3
-    retry_delay = 2  # 初始延遲2秒
 
+    #2.水利署＿判斷是否為相同事件
     def extract_information(news_content):
         """
         使用 AI 提取國家、地點和災害三個欄位，根據新聞內文生成。
@@ -620,9 +643,6 @@ def news_ai(request):
     print("資訊生成完成，已儲存為 add_locations.csv")
 
     #3.水利署_event
-    max_retries = 3
-    retry_delay = 2  # 初始延遲2秒
-
     def extract_information(news_title, news_content):
         prompt = f"""
         event欄位根據資料集新聞標題和內文，判斷是否報導相同的災害事件，並分配完全一致的事件名稱。需確保事件名稱的唯一性和一致性，避免因地點表述的細微差異（如州、縣、城市等層級不同）導致錯誤的分類。
@@ -746,9 +766,6 @@ def news_ai(request):
         print(f"處理過程中出現錯誤：{str(e)}")
 
     #7.水利署_overview
-    max_retries = 3
-    retry_delay = 2  # 初始延遲2秒
-
     def generate_overview(group):
         """
         使用 AI 根據相同 event 的 summary 欄位生成災害資訊的總整理（overview）。
@@ -809,7 +826,7 @@ def news_ai(request):
     #8.水利署_合併
     #補齊欄位
     # 讀取 CSV 檔案
-    df = pd.read_csv('add_overview.csv')  # 假設原始檔案名為 add_overview.csv
+    df = pd.read_csv('add_overview.csv')  
 
     # 定義欄位名稱對應關係
     column_mapping = {
@@ -870,9 +887,6 @@ def news_ai(request):
     print(f"處理完成，已輸出到 {output_file}")
 
     #合併欄位
-    import json
-    import pandas as pd
-
     # 讀取 CSV 檔案
     df = pd.read_csv('補齊欄位.csv')
 
@@ -919,7 +933,7 @@ def news_ai(request):
         # 排序 daily_records 按照日期由舊到新
         event_data["daily_records"].sort(key=lambda x: x["date"])
 
-        # **去除 links 中 title 重複的資料**
+        # 去除 links 中 title 重複的資料
         unique_links = group.drop_duplicates(subset=["title"])
 
         for _, row in unique_links.iterrows():
@@ -944,8 +958,6 @@ def news_ai(request):
         json.dump(result, json_file, ensure_ascii=False, indent=2)
 
     print("JSON 文件已生成並命名為 'final.json'。")
-
-
     return JsonResponse({"message": "新聞AI運行完成"})
 
 # 檔案處理
