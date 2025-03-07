@@ -27,7 +27,7 @@ ALLOWED_SOURCES = {
     'Newtalk新聞',
     '經濟日報',
     '自由時報',
-    '中時新聞網',
+    # '中時新聞網',
     'BBC News 中文'
 }
  
@@ -201,7 +201,7 @@ def fetch_article_content(driver, sources_urls):
         'Newtalk新聞': 'div.articleBody.clearfix p',
         '經濟日報': 'section.article-body__editor p',
         '自由時報': 'div.text p',
-        '中時新聞': 'div.article-body p',
+        # '中時新聞網': 'div.article-body p',
         'BBC News 中文': 'div.bbc-1cvxiy9 p'
     }
 
@@ -259,7 +259,7 @@ def extract_image_url(driver, sources_urls):
         'Newtalk新聞': "div.news_img img",
         '經濟日報': "section.article-body__editor img",
         '自由時報': "div.image-popup-vertical-fit img",
-        '中時新聞': "div.article-body img",
+        # '中時新聞': "div.article-body img",
         'BBC News 中文': "div.bbc-1cvxiy9 img"
     }
 
