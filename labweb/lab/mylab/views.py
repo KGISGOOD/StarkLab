@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 import logging
-from .project3_views import main  # 導入原本的爬蟲主函數
+from .project3_views import crawler_first_stage  # 導入原本的爬蟲主函數
 
 logger = logging.getLogger(__name__)
 
