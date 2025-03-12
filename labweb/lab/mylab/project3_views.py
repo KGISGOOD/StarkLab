@@ -778,18 +778,21 @@ def news_ai(request):
             combined_content = " ".join(group['summary'].dropna())
         else:
             reference_date = group['時間'].dropna().astype(str).min()
-            overview_date = reference_date  # 預設使用時間欄位
+            overview_date = reference_date if pd.notna(reference_date) else "未知時間"
+
+            # 嘗試從內文中提取更準確的日期
             for content in group['內文'].dropna():
                 date_match = re.search(r'(\d{4})年(\d{1,2})月(\d{1,2})日', content)
                 if date_match:
                     year, month, day = date_match.groups()
                     overview_date = f"{year}-{int(month):02d}-{int(day):02d}"
                     break
+
             combined_content = " ".join(group['summary'].dropna()) + " " + " ".join(group['內文'].dropna())
-        
+
         if not combined_content.strip():
             return "無法生成摘要，資料不足"
-        
+
         prompt = f"""
         根據以下所有相關事件的摘要（summary）和內文，生成一個總整理的災害資訊摘要（overview），不得自行增加不相干的內容。
         請務必從摘要和內文中提取災害發生的時間，並將該時間放在摘要的最前面：
@@ -808,10 +811,10 @@ def news_ai(request):
         請直接輸出：
         overview: "<災害資訊摘要>"
         """
-        
+
         response = chat_with_xai(prompt, xai_api_key, model_name, "")
         print("API 回應:", response)
-        
+
         if response:
             overview_line = response.strip().split(":")
             clean_overview = overview_line[1].strip().strip('"').replace("*", "") if len(overview_line) > 1 else "無法生成摘要"
@@ -819,16 +822,22 @@ def news_ai(request):
         else:
             return "無法生成摘要"
 
-    # 假設 DataFrame 來自 CSV
+    # 讀取 CSV
     df = pd.read_csv('region.csv')
+
+    # 確保 'event' 欄位為字符串，避免 groupby 產生問題
+    df['event'] = df['event'].astype(str)
+
+    # 只保留需要的欄位
     content_columns = ['summary', '內文', '時間']
 
-    def apply_overview(group):
-        return generate_overview(group, xai_api_key, model_name)
+    # 針對每個 event 群組生成 overview，確保對應正確
+    overview_dict = df.groupby('event')[content_columns].apply(lambda group: generate_overview(group, xai_api_key, model_name)).to_dict()
 
-    df['overview'] = df.groupby('event')[content_columns].apply(apply_overview).reset_index(level=0, drop=True)
+    # 將生成的 overview 正確映射回原始 DataFrame
+    df['overview'] = df['event'].map(overview_dict)
 
-    # 再次檢查，針對 NaN 重新生成 overview（僅使用 summary）
+    # 重新檢查，對 NaN 或 "無法生成摘要" 的 overview 進行修正（僅使用 summary）
     df['overview'] = df.apply(
         lambda row: generate_overview(df[df['event'] == row['event']], xai_api_key, model_name, use_summary_only=True)
         if pd.isna(row['overview']) or row['overview'].strip() == "無法生成摘要" else row['overview'],
