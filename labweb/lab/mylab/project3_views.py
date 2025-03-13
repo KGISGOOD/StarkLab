@@ -768,53 +768,52 @@ def news_ai(request):
 
     #7.水利署_overview
     # 解析模糊時間（如「今日」、「昨日」）
-    def generate_overview(group, xai_api_key, model_name, use_summary_only=False):
-        """
-        使用 AI 生成災害資訊摘要。
-        - 預設根據 summary、內文 和 時間
-        - 如果 use_summary_only=True，則僅使用 summary 內容
-        """
-        if use_summary_only:
-            combined_content = " ".join(group['summary'].dropna())
-        else:
-            reference_date = group['時間'].dropna().astype(str).min()
-            overview_date = reference_date if pd.notna(reference_date) else "未知時間"
+    def extract_standard_date(text):
+        """檢查內文是否包含標準格式的日期，例如 YYYY年M月D日，並回傳找到的時間"""
+        date_pattern = r"\b(\d{4}年\d{1,2}月\d{1,2}日)\b"
+        match = re.search(date_pattern, text)
+        return match.group(1) if match else None
 
-            # 嘗試從內文中提取更準確的日期
-            for content in group['內文'].dropna():
-                date_match = re.search(r'(\d{4})年(\d{1,2})月(\d{1,2})日', content)
-                if date_match:
-                    year, month, day = date_match.groups()
-                    overview_date = f"{year}-{int(month):02d}-{int(day):02d}"
-                    break
-
-            combined_content = " ".join(group['summary'].dropna()) + " " + " ".join(group['內文'].dropna())
+    def generate_overview(group, xai_api_key, model_name):
+        """根據新聞事件生成摘要，並確保時間處理正確"""
+        combined_content = " ".join(group['summary'].dropna()) + " " + " ".join(group['內文'].dropna())
 
         if not combined_content.strip():
             return "無法生成摘要，資料不足"
-
+        
+        extracted_date = extract_standard_date(combined_content)
+        
+        if extracted_date:
+            date_instruction = f"請務必使用時間：{extracted_date}。"
+        else:
+            date_instruction = "內文中無標準格式時間，請勿在 overview 中加入任何時間資訊。"
+        
         prompt = f"""
+        {date_instruction}
+        
         根據以下所有相關事件的摘要（summary）和內文，生成一個總整理的災害資訊摘要（overview），不得自行增加不相干的內容。
-        請務必從摘要和內文中提取災害發生的時間，並將該時間放在摘要的最前面：
-        - 若 `內文` 明確寫出時間（如 2025年1月12日），則直接使用該時間，並放在 `overview` 最前面。
-        - 若 `內文` 沒有提及任何時間資訊，則使用 `時間` 欄位內的時間放在 `overview` 最前面。
-        檢核標準：
-        1. 時間準確：應該是災害發生的時間，而非新聞發布時間。
-        2. 內容完整：摘要需包含 時間、地點、災害類型、影響範圍及後續發展。
-        3. 結構清晰：若涉及多個事件，應按 時間順序或重要性整理。
-        4. 字數限制：摘要須控制在 100-150 字。        
-        {"(不包含時間)" if use_summary_only else f"事件發生時間：{overview_date}"}
+
+        【時間處理規則】：
+        - 若 `內文` 含有標準格式時間（如 2025年1月12日），則**直接使用該時間**，並放在 `overview` 最前面。例如：
+        2025年1月5日，印尼雅加達近郊城市勿加西發生大規模洪災...
+        - 若 `內文` **沒有標準格式時間**（如：今天、昨日、清晨6時55分等），則**不得寫出任何時間**。例如：
+        印尼蘇拉威西島附近海域發生規模6.1的地震...
         
-        相關事件摘要：
-        {combined_content}
-        
+        【檢核標準】：
+        1. 時間準確：只能使用 `內文` 中明確出現的標準時間，不得新增或修改時間。
+        2. 內容完整：摘要需包含時間（若有）、地點、災害類型、影響範圍及後續發展。
+        3. 結構清晰：若涉及多個事件，應按時間順序或重要性整理。
+        4. 字數限制：摘要須控制在 100-150 字。
+
         請直接輸出：
         overview: "<災害資訊摘要>"
+
+        【相關事件摘要】：
+        {combined_content}
         """
 
         response = chat_with_xai(prompt, xai_api_key, model_name, "")
-        print("API 回應:", response)
-
+        
         if response:
             overview_line = response.strip().split(":")
             clean_overview = overview_line[1].strip().strip('"').replace("*", "") if len(overview_line) > 1 else "無法生成摘要"
@@ -829,7 +828,7 @@ def news_ai(request):
     df['event'] = df['event'].astype(str)
 
     # 只保留需要的欄位
-    content_columns = ['summary', '內文', '時間']
+    content_columns = ['summary', '內文']
 
     # 針對每個 event 群組生成 overview，確保對應正確
     overview_dict = df.groupby('event')[content_columns].apply(lambda group: generate_overview(group, xai_api_key, model_name)).to_dict()
@@ -839,7 +838,7 @@ def news_ai(request):
 
     # 重新檢查，對 NaN 或 "無法生成摘要" 的 overview 進行修正（僅使用 summary）
     df['overview'] = df.apply(
-        lambda row: generate_overview(df[df['event'] == row['event']], xai_api_key, model_name, use_summary_only=True)
+        lambda row: generate_overview(df[df['event'] == row['event']], xai_api_key, model_name)
         if pd.isna(row['overview']) or row['overview'].strip() == "無法生成摘要" else row['overview'],
         axis=1
     )
