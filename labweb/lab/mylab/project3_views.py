@@ -768,48 +768,118 @@ def news_ai(request):
 
     #7.水利署_overview
     # 解析模糊時間（如「今日」、「昨日」）
-    def extract_standard_date(text):
-        """檢查內文是否包含標準格式的日期，例如 YYYY年M月D日，並回傳找到的時間"""
-        date_pattern = r"\b(\d{4}年\d{1,2}月\d{1,2}日)\b"
-        match = re.search(date_pattern, text)
-        return match.group(1) if match else None
+    def process_relative_dates(text, reference_date):
+        if not isinstance(reference_date, str) or not reference_date.strip():
+            return text  # 若無可用的參考日期，則不修改
 
-    def generate_overview(group, xai_api_key, model_name):
-        """根據新聞事件生成摘要，並確保時間處理正確"""
+        try:
+            reference_date = datetime.strptime(reference_date, "%Y-%m-%d")  # 轉換為 datetime 物件
+        except ValueError:
+            return text  # 若日期解析失敗則不修改文本
+
+        replacements = {
+            r"\b今日\b": reference_date.strftime("%Y-%m-%d"),
+            r"\b今天\b": reference_date.strftime("%Y-%m-%d"),
+            r"\b昨日\b": (reference_date - timedelta(days=1)).strftime("%Y-%m-%d"),
+            r"\b昨天\b": (reference_date - timedelta(days=1)).strftime("%Y-%m-%d"),
+            r"\b前天\b": (reference_date - timedelta(days=2)).strftime("%Y-%m-%d"),
+        }
+
+        for pattern, value in replacements.items():
+            text = re.sub(pattern, value, text)
+
+        return text
+
+    def extract_explicit_date(text):
+        """從內文中提取明確的 YYYY年MM月DD日 格式時間"""
+        date_match = re.search(r'(\d{4})年(\d{1,2})月(\d{1,2})日', text)
+        if date_match:
+            year, month, day = date_match.groups()
+            return f"{year}-{int(month):02d}-{int(day):02d}"
+        return None
+
+    def extract_relative_disaster_date(text, reference_date):
+        """從內文中提取相對時間並轉換為標準日期，僅針對災害發生時間"""
+        try:
+            ref_date = datetime.strptime(reference_date, "%Y-%m-%d")
+        except ValueError:
+            return None
+
+        relative_patterns = {
+            r"\b(今日|今天)(凌晨|上午|下午|晚上)?\s*(\d{1,2}時\d{1,2}分)?\s*(發生|有)": ref_date,
+            r"\b(昨日|昨天)(凌晨|上午|下午|晚上)?\s*(\d{1,2}時\d{1,2}分)?\s*(發生|有)": ref_date - timedelta(days=1),
+            r"\b前天(凌晨|上午|下午|晚上)?\s*(\d{1,2}時\d{1,2}分)?\s*(發生|有)": ref_date - timedelta(days=2),
+        }
+
+        for pattern, date in relative_patterns.items():
+            if re.search(pattern, text):
+                return date.strftime("%Y-%m-%d")
+        return None
+
+    def has_disaster_time(text):
+        """判斷內文是否包含災害發生的時間（標準格式或相對日期）"""
+        # 檢查標準日期格式
+        if re.search(r'\d{4}年\d{1,2}月\d{1,2}日', text):
+            return True
+        # 檢查相對日期關鍵詞並與災害相關
+        relative_patterns = [
+            r"\b(今日|今天|昨日|昨天|前天)(凌晨|上午|下午|晚上)?\s*(\d{1,2}時\d{1,2}分)?\s*(發生|有)"
+        ]
+        for pattern in relative_patterns:
+            if re.search(pattern, text):
+                return True
+        return False
+
+    def generate_overview(group):
+        """針對 event 群組生成 summary 的總結"""
+        reference_date = group['時間'].dropna().astype(str).min()  # 取得最早的時間
+
+        group['summary'] = group['summary'].apply(lambda x: process_relative_dates(x, reference_date) if isinstance(x, str) else x)
+        group['內文'] = group['內文'].apply(lambda x: process_relative_dates(x, reference_date) if isinstance(x, str) else x)
+
+        explicit_dates = group['內文'].dropna().apply(extract_explicit_date).dropna()
+        relative_dates = group['內文'].dropna().apply(lambda x: extract_relative_disaster_date(x, reference_date)).dropna()
+        
+        # 優先使用明確日期，若無則使用相對日期，最後用參考日期
+        overview_date = explicit_dates.min() if not explicit_dates.empty else \
+                        relative_dates.min() if not relative_dates.empty else reference_date
+
         combined_content = " ".join(group['summary'].dropna()) + " " + " ".join(group['內文'].dropna())
 
         if not combined_content.strip():
             return "無法生成摘要，資料不足"
-        
-        extracted_date = extract_standard_date(combined_content)
-        
-        if extracted_date:
-            date_instruction = f"請務必使用時間：{extracted_date}。"
-        else:
-            date_instruction = "內文中無標準格式時間，請勿在 overview 中加入任何時間資訊。"
-        
-        prompt = f"""
-        {date_instruction}
-        
-        根據以下所有相關事件的摘要（summary）和內文，生成一個總整理的災害資訊摘要（overview），不得自行增加不相干的內容。
 
-        【時間處理規則】：
-        - 若 `內文` 含有標準格式時間（如 2025年1月12日），則**直接使用該時間**，並放在 `overview` 最前面。例如：
-        2025年1月5日，印尼雅加達近郊城市勿加西發生大規模洪災...
-        - 若 `內文` **沒有標準格式時間**（如：今天、昨日、清晨6時55分等），則**不得寫出任何時間**。例如：
-        印尼蘇拉威西島附近海域發生規模6.1的地震...
+        # 檢查內文是否包含災害時間
+        has_time = any(group['內文'].dropna().apply(has_disaster_time))
+
+        prompt = f"""
+        根據以下所有相關事件的摘要（summary）和內文，生成一個有國家地點災害總整理的災害資訊摘要（overview）。
         
-        【檢核標準】：
-        1. 時間準確：只能使用 `內文` 中明確出現的標準時間，不得新增或修改時間。
-        2. 內容完整：摘要需包含時間（若有）、地點、災害類型、影響範圍及後續發展。
+        請遵循以下規則：
+        - 若內文明確提到災害發生的時間（如 2025年1月12日），則將該時間放在摘要最前面。
+        - 若內文提到相對時間（如「今天凌晨5時30分發生」、「昨日發生」）且與災害相關，則參考 `時間` 欄位（{reference_date}）轉換為標準日期，並放在摘要最前面。
+        - 若內文沒有提到災害發生的時間，則不要在摘要前面加入時間。
+        - 確保使用的時間是災害發生的時間，而非其他無關時間（如新聞發布時間）。
+        
+        檢核標準：
+        1. 時間準確：若有時間，必須是災害發生的時間。
+        2. 內容完整：摘要需包含地點、災害類型、影響範圍及後續發展。
         3. 結構清晰：若涉及多個事件，應按時間順序或重要性整理。
         4. 字數限制：摘要須控制在 100-150 字。
-
+        
+        事件參考時間：{reference_date}
+        內文是否包含災害時間：{has_time}
+        災害發生時間（若有）：{overview_date}
+        
+        相關事件摘要（summary 和 內文）：
+        {combined_content}
+        
+        範例事件摘要（summary）：
+        1. 2024年12月23日，第26號颱風帕布生成，預計朝中南半島方向移動，對台灣無直接影響，但外圍水氣將導致全台轉雨。
+        2. 今天凌晨5時30分，南太平洋島國萬那杜發生規模7.4地震，震源深度10公里，隨後發布海嘯警報。
+        
         請直接輸出：
         overview: "<災害資訊摘要>"
-
-        【相關事件摘要】：
-        {combined_content}
         """
 
         response = chat_with_xai(prompt, xai_api_key, model_name, "")
@@ -818,34 +888,24 @@ def news_ai(request):
             overview_line = response.strip().split(":")
             clean_overview = overview_line[1].strip().strip('"').replace("*", "") if len(overview_line) > 1 else "無法生成摘要"
             return clean_overview
-        else:
-            return "無法生成摘要"
+        return "無法生成摘要"
 
     # 讀取 CSV
     df = pd.read_csv('region.csv')
 
-    # 確保 'event' 欄位為字符串，避免 groupby 產生問題
+    # 確保 `event` 欄位為分類群組
     df['event'] = df['event'].astype(str)
 
-    # 只保留需要的欄位
-    content_columns = ['summary', '內文']
+    # 先生成 overview，再合併回原始 df
+    overview_df = df.groupby('event', group_keys=False).apply(generate_overview).reset_index()
+    overview_df.columns = ['event', 'overview']
 
-    # 針對每個 event 群組生成 overview，確保對應正確
-    overview_dict = df.groupby('event')[content_columns].apply(lambda group: generate_overview(group, xai_api_key, model_name)).to_dict()
-
-    # 將生成的 overview 正確映射回原始 DataFrame
-    df['overview'] = df['event'].map(overview_dict)
-
-    # 重新檢查，對 NaN 或 "無法生成摘要" 的 overview 進行修正（僅使用 summary）
-    df['overview'] = df.apply(
-        lambda row: generate_overview(df[df['event'] == row['event']], xai_api_key, model_name)
-        if pd.isna(row['overview']) or row['overview'].strip() == "無法生成摘要" else row['overview'],
-        axis=1
-    )
+    # 合併回 df，確保 overview 放在正確的 event 上
+    df = df.merge(overview_df, on='event', how='left')
 
     # 儲存結果
     df.to_csv('add_overview.csv', index=False, encoding='utf-8')
-    print("災害資訊生成完成，已儲存為 add_overview.csv")
+    print("修正後的 overview 已存入 add_overview.csv")
 
 
     #8.水利署_合併
