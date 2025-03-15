@@ -26,6 +26,9 @@ def project(request):
 def project_linebot(request):
     return render(request, 'stark_lab_project_linebot.html')
 
+def project_stock(request):
+    return render(request, 'stark_lab_project_stock.html')
+
 
 
 

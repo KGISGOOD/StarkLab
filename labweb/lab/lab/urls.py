@@ -15,6 +15,8 @@ urlpatterns = [
     path("professor/", views.professor, name="professor"),
     path("project/", views.project, name="project"),
     path("project_linebot/", views.project_linebot, name="project_linebot"),
+    path("project_stock/", views.project_stock, name="project_stock"),
+
 
 
 
