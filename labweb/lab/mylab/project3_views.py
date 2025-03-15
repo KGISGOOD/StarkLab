@@ -21,6 +21,9 @@ from django.views.decorators.http import require_GET
 from django.http import JsonResponse
 from .models import News
 from django.views.decorators.csrf import csrf_exempt
+import pandas as pd
+import re
+from datetime import datetime, timedelta
 
 # 修改 ALLOWED_SOURCES 為只包含四家報社
 ALLOWED_SOURCES = {
@@ -335,6 +338,17 @@ def crawler_first_stage(request):
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E7%81%AB%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際大火＝野火
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%87%8E%E7%81%AB%20when%3A'+day+'d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際野火
         # 加上bbc關鍵字
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E8%B1%AA%E9%9B%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E9%9B%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%9A%B4%E9%9B%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B7%B9%E6%B0%B4%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B4%AA%E6%B0%B4%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B0%B4%E7%81%BD%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B1%E9%A2%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%B6%E9%A2%A8%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%A2%A8%E7%81%BD%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
+        'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E6%B5%B7%E5%98%AF%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#國際海嘯
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%9C%B0%E9%9C%87%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#國際地震
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E5%A4%A7%E7%81%AB%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant',#新增國際大火＝野火
@@ -499,7 +513,7 @@ def news_ai(request):
         - 災害的發生過程
         - 災害造成的直接影響和損失
         - 災害現場的情況描述
-        
+
         2. 以下類型的新聞都回答false：
         - 災後援助或捐贈活動的報導
         - 國際救援行動的新聞
@@ -520,6 +534,9 @@ def news_ai(request):
         - 如果新聞主要在報導救援、捐助、外交等活動，即使提到災害也應該回答 false
         - 如果新聞只是用災害作為背景，主要報導其他事件，應該回答 false
         - 新聞的核心主題必須是災害事件本身才回答 true
+        - 日本山林火災延燒5天 燒毀面積約63座東京巨蛋 true
+        - 「借我躲一下！」 為避加州野火 238公斤黑熊「巴里」躲到民宅地板下 false
+
         """
 
         for attempt in range(max_retries):
@@ -750,62 +767,146 @@ def news_ai(request):
         print(f"處理過程中出現錯誤：{str(e)}")
 
     #7.水利署_overview
+    # 解析模糊時間（如「今日」、「昨日」）
+    def process_relative_dates(text, reference_date):
+        if not isinstance(reference_date, str) or not reference_date.strip():
+            return text  # 若無可用的參考日期，則不修改
+
+        try:
+            reference_date = datetime.strptime(reference_date, "%Y-%m-%d")  # 轉換為 datetime 物件
+        except ValueError:
+            return text  # 若日期解析失敗則不修改文本
+
+        replacements = {
+            r"\b今日\b": reference_date.strftime("%Y-%m-%d"),
+            r"\b今天\b": reference_date.strftime("%Y-%m-%d"),
+            r"\b昨日\b": (reference_date - timedelta(days=1)).strftime("%Y-%m-%d"),
+            r"\b昨天\b": (reference_date - timedelta(days=1)).strftime("%Y-%m-%d"),
+            r"\b前天\b": (reference_date - timedelta(days=2)).strftime("%Y-%m-%d"),
+        }
+
+        for pattern, value in replacements.items():
+            text = re.sub(pattern, value, text)
+
+        return text
+
+    def extract_explicit_date(text):
+        """從內文中提取明確的 YYYY年MM月DD日 格式時間"""
+        date_match = re.search(r'(\d{4})年(\d{1,2})月(\d{1,2})日', text)
+        if date_match:
+            year, month, day = date_match.groups()
+            return f"{year}-{int(month):02d}-{int(day):02d}"
+        return None
+
+    def extract_relative_disaster_date(text, reference_date):
+        """從內文中提取相對時間並轉換為標準日期，僅針對災害發生時間"""
+        try:
+            ref_date = datetime.strptime(reference_date, "%Y-%m-%d")
+        except ValueError:
+            return None
+
+        relative_patterns = {
+            r"\b(今日|今天)(凌晨|上午|下午|晚上)?\s*(\d{1,2}時\d{1,2}分)?\s*(發生|有)": ref_date,
+            r"\b(昨日|昨天)(凌晨|上午|下午|晚上)?\s*(\d{1,2}時\d{1,2}分)?\s*(發生|有)": ref_date - timedelta(days=1),
+            r"\b前天(凌晨|上午|下午|晚上)?\s*(\d{1,2}時\d{1,2}分)?\s*(發生|有)": ref_date - timedelta(days=2),
+        }
+
+        for pattern, date in relative_patterns.items():
+            if re.search(pattern, text):
+                return date.strftime("%Y-%m-%d")
+        return None
+
+    def has_disaster_time(text):
+        """判斷內文是否包含災害發生的時間（標準格式或相對日期）"""
+        # 檢查標準日期格式
+        if re.search(r'\d{4}年\d{1,2}月\d{1,2}日', text):
+            return True
+        # 檢查相對日期關鍵詞並與災害相關
+        relative_patterns = [
+            r"\b(今日|今天|昨日|昨天|前天)(凌晨|上午|下午|晚上)?\s*(\d{1,2}時\d{1,2}分)?\s*(發生|有)"
+        ]
+        for pattern in relative_patterns:
+            if re.search(pattern, text):
+                return True
+        return False
+
     def generate_overview(group):
-        """
-        使用 AI 根據相同 event 的 summary 欄位生成災害資訊的總整理（overview）。
-        """
-        combined_content = " ".join(group)  # group 是 summary 欄位的 Series
+        """針對 event 群組生成 summary 的總結"""
+        reference_date = group['時間'].dropna().astype(str).min()  # 取得最早的時間
+
+        group['summary'] = group['summary'].apply(lambda x: process_relative_dates(x, reference_date) if isinstance(x, str) else x)
+        group['內文'] = group['內文'].apply(lambda x: process_relative_dates(x, reference_date) if isinstance(x, str) else x)
+
+        explicit_dates = group['內文'].dropna().apply(extract_explicit_date).dropna()
+        relative_dates = group['內文'].dropna().apply(lambda x: extract_relative_disaster_date(x, reference_date)).dropna()
+        
+        # 優先使用明確日期，若無則使用相對日期，最後用參考日期
+        overview_date = explicit_dates.min() if not explicit_dates.empty else \
+                        relative_dates.min() if not relative_dates.empty else reference_date
+
+        combined_content = " ".join(group['summary'].dropna()) + " " + " ".join(group['內文'].dropna())
+
+        if not combined_content.strip():
+            return "無法生成摘要，資料不足"
+
+        # 檢查內文是否包含災害時間
+        has_time = any(group['內文'].dropna().apply(has_disaster_time))
+
         prompt = f"""
-        根據以下所有相關事件的摘要（summary），生成一個總整理的災害資訊摘要（overview）。
-
+        根據以下所有相關事件的摘要（summary）和內文，生成一個有國家地點災害總整理的災害資訊摘要（overview）。
+        
+        請遵循以下規則：
+        - 若內文明確提到災害發生的時間（如 2025年1月12日），則將該時間放在摘要最前面。
+        - 若內文提到相對時間（如「今天凌晨5時30分發生」、「昨日發生」）且與災害相關，則參考 `時間` 欄位（{reference_date}）轉換為標準日期，並放在摘要最前面。
+        - 若內文沒有提到災害發生的時間，則不要在摘要前面加入時間。
+        - 確保使用的時間是災害發生的時間，而非其他無關時間（如新聞發布時間）。
+        
         檢核標準：
-        - 災害資訊摘要必須涵蓋核心內容，表述準確。
-        - 摘要應包含災害的時間、地點、災害類型、影響範圍及後續發展。
-        - 若有多個事件，應按時間順序或重要性統整。
-        - 字數控制在 100-150 字。
-
-        示例：
-        - 2024年12月23日，第26號颱風帕布生成，預計朝中南半島方向移動，對台灣無直接影響，但外圍水氣將導致全台轉雨。
-        - 2024年12月17日，南太平洋島國萬那杜發生規模7.4的淺層地震，震源深度僅10公里，隨後發布海嘯警報。
-        - 2025年1月6日，薩爾瓦多發生規模6.1地震，震源深度87公里。1月10日，該國再次發生規模5.8地震，震源深度95公里，首都居民感受到強烈震動，紛紛逃到街上。目前尚無災損或傷亡消息。
-
-        相關事件摘要（summary）：
+        1. 時間準確：若有時間，必須是災害發生的時間。
+        2. 內容完整：摘要需包含地點、災害類型、影響範圍及後續發展。
+        3. 結構清晰：若涉及多個事件，應按時間順序或重要性整理。
+        4. 字數限制：摘要須控制在 100-150 字。
+        
+        事件參考時間：{reference_date}
+        內文是否包含災害時間：{has_time}
+        災害發生時間（若有）：{overview_date}
+        
+        相關事件摘要（summary 和 內文）：
         {combined_content}
-
+        
+        範例事件摘要（summary）：
+        1. 2024年12月23日，第26號颱風帕布生成，預計朝中南半島方向移動，對台灣無直接影響，但外圍水氣將導致全台轉雨。
+        2. 今天凌晨5時30分，南太平洋島國萬那杜發生規模7.4地震，震源深度10公里，隨後發布海嘯警報。
+        
         請直接輸出：
         overview: "<災害資訊摘要>"
         """
 
-        for attempt in range(max_retries):
-            try:
-                # 假設 chat_with_xai 是整合 AI 的函數
-                response = chat_with_xai(prompt, xai_api_key, model_name, "")
-                
-                # 提取 overview
-                overview_line = response.strip().split(":")
-                return overview_line[1].strip().strip('"')
-            except Exception as e:
-                if attempt < max_retries - 1:
-                    wait_time = retry_delay * (2 ** attempt)  # 指數退避
-                    print(f"API 錯誤: {str(e)}. 等待 {wait_time} 秒後重試...")
-                    time.sleep(wait_time)
-                else:
-                    print(f"API 錯誤: {str(e)}. 已達到最大重試次數。")
-                    return ""  # 返回空字符串表示失敗
+        response = chat_with_xai(prompt, xai_api_key, model_name, "")
+        
+        if response:
+            overview_line = response.strip().split(":")
+            clean_overview = overview_line[1].strip().strip('"').replace("*", "") if len(overview_line) > 1 else "無法生成摘要"
+            return clean_overview
+        return "無法生成摘要"
 
-    # 讀取資料
-    df = pd.read_csv('region.csv')  # 假設原始檔案包含「event」和「summary」欄位
+    # 讀取 CSV
+    df = pd.read_csv('region.csv')
 
-    # 直接指定 summary 欄位
-    content_column = 'summary'
+    # 確保 `event` 欄位為分類群組
+    df['event'] = df['event'].astype(str)
 
-    # 新增 overview 欄位：根據相同的 event 統整 summary 欄位生成
-    df['overview'] = df.groupby('event')[content_column].transform(generate_overview)
+    # 先生成 overview，再合併回原始 df
+    overview_df = df.groupby('event', group_keys=False).apply(generate_overview).reset_index()
+    overview_df.columns = ['event', 'overview']
 
-    # 將結果寫入新的 CSV 檔案
+    # 合併回 df，確保 overview 放在正確的 event 上
+    df = df.merge(overview_df, on='event', how='left')
+
+    # 儲存結果
     df.to_csv('add_overview.csv', index=False, encoding='utf-8')
+    print("修正後的 overview 已存入 add_overview.csv")
 
-    print("災害資訊生成完成，已儲存為 add_overview.csv")
 
     #8.水利署_合併
     #補齊欄位
