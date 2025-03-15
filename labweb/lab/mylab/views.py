@@ -24,7 +24,7 @@ def project(request):
     return render(request, 'stark_lab_project.html')
 
 def project_linebot(request):
-    return render(request, 'stark_lab_linebot.html')
+    return render(request, 'stark_lab_project_linebot.html')
 
 
 

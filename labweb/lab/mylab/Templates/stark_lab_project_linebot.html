@@ -21,7 +21,7 @@
   </head>
   <body style="margin: 0; background: #ffffff">
     <input
-      type="hidden" /
+      type="hidden"
       id="anPageName"
       name="page"
       value="stark_lab_project_linebot"
@@ -30,7 +30,7 @@
       <div class="stark_lab_project_linebot screen">
         <div class="overlap-group3">
           <div class="navigation-bar">
-            <img class="logo-1" src="img/------logo-1@2x.png" alt="logo 1" />
+            <img class="logo-1" src="{% static 'img/------logo-1@2x.png' %}" alt="logo 1" />
             <div class="navbar notosanstc-semi-bold-black-20px">
               <a href=""
                 ><div class="navbar-link-text notosanstc-semi-bold-black-20px">首頁</div>
@@ -46,12 +46,12 @@
             </a>
             </div>
           </div>
-          <img class="line-30" src="img/line-30.svg" alt="Line 30" />
+          <img class="line-30" src="{% static 'img/line-30.svg' %}" alt="Line 30" />
         </div>
         <div class="overlap-group4">
-          <div class="group-31"><img class="arrow-2" src="img/arrow-2.svg" alt="Arrow 2" /></div>
+          <div class="group-31"><img class="arrow-2" src="{% static 'img/arrow-2.svg' %}" alt="Arrow 2" /></div>
           <div class="text-40">回上一頁</div>
-          <a href="stark_lab_project.html"> <div class="rectangle-83"></div></a>
+          <a href="/project/"> <div class="rectangle-83"></div></a>
         </div>
         <div class="overlap-group5">
           <div class="overlap-group">
@@ -60,15 +60,15 @@
           </div>
           <h1 class="line-bot valign-text-middle">Line Bot<br />學習金融知識</h1>
           <div class="link-2 link-4">
-            <div class="icon-1"><img class="arrow-1" src="img/arrow-1.svg" alt="Arrow 1" /></div>
+            <div class="icon-1"><img class="arrow-1" src="{% static 'img/arrow-1.svg' %}" alt="Arrow 1" /></div>
             <div class="label notosanstc-bold-white-20px">專案介紹</div>
           </div>
-          <img class="x2-1" src="img/2-1.png" alt="2 1" />
+          <img class="x2-1" src="{% static 'img/2-1.png' %}" alt="2 1" />
         </div>
         <div class="frame-27">
           <div class="overlap-group-1"><div class="text spacegrotesk-medium-white-36px">專案介紹</div></div>
           <div class="group-15">
-            <img class="line-26" src="img/line-26.svg" alt="Line 26" />
+            <img class="line-26" src="{% static 'img/line-26.svg' %}" alt="Line 26" />
             <div class="text-29">
               專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹專案介紹
             </div>
@@ -77,61 +77,75 @@
         <div class="group-25">
           <div class="overlap-group1"><div class="text spacegrotesk-medium-white-36px">相關連結</div></div>
         </div>
+
+
         <div class="overlap-group2">
+          <div class="line-container">
+            <img class="line" src="{% static 'img/line-27.svg' %}" alt="Line 27" />
+            <img class="line" src="{% static 'img/line-27.svg' %}" alt="Line 31" />
+            <img class="line-28" src="{% static 'img/line-28.svg' %}" alt="Line 28" />
+            <img class="line-29" src="{% static 'img/line-28.svg' %}" alt="Line 29" />
+          </div>          
+          <a href="{% url 'fund' %}">
           <div class="link-3 link-4">
-            <div class="icon"><img class="arrow-1" src="img/arrow-1-1.svg" alt="Arrow 1" /></div>
+            <div class="icon"><img class="arrow-1" src="{% static 'img/arrow-1-1.svg' %}" alt="Arrow 1" /></div>
             <div class="label notosanstc-bold-navy-blue-20px">點我前往</div>
           </div>
           <div class="text-31 notosanstc-bold-navy-blue-36px">基金</div>
-          <div class="line-container">
-            <img class="line" src="img/line-27.svg" alt="Line 27" />
-            <img class="line" src="img/line-27.svg" alt="Line 31" />
-            <img class="line-28" src="img/line-28.svg" alt="Line 28" />
-            <img class="line-29" src="img/line-28.svg" alt="Line 29" />
-          </div>
           <div class="text-32 notosanstc-normal-black-24px">
             專案論述專案論述專案論述專案論述專案論述專案論述專案論述
           </div>
-          <div class="group-49">
-            <div class="etf notosanstc-bold-navy-blue-36px">ETF</div>
-            <div class="text-3 notosanstc-normal-black-24px">
-              專案論述專案論述專案論述專案論述專案論述專案論述專案論述
-            </div>
-            <div class="link">
-              <div class="icon"><img class="arrow-1" src="img/arrow-1-1.svg" alt="Arrow 1" /></div>
-              <div class="label notosanstc-bold-navy-blue-20px">點我前往</div>
-            </div>
+          </a>
+        
+        <a href="{% url 'etf' %}">
+        <div class="group-49">
+          <div class="etf notosanstc-bold-navy-blue-36px">ETF</div>
+          <div class="text-3 notosanstc-normal-black-24px">
+            專案論述專案論述專案論述專案論述專案論述專案論述專案論述
           </div>
+          <div class="link">
+            <div class="icon"><img class="arrow-1" src="{% static 'img/arrow-1-1.svg' %}" alt="Arrow 1" /></div>
+            <div class="label notosanstc-bold-navy-blue-20px">點我前往</div>
+          </div>
+        </div>
+        </a>
+        
+        <a href="{% url 'report' %}">
           <div class="group-50">
             <div class="text-34 notosanstc-bold-navy-blue-36px">三大報表</div>
             <div class="text-3 notosanstc-normal-black-24px">
               專案論述專案論述專案論述專案論述專案論述專案論述專案論述
             </div>
             <div class="link">
-              <div class="icon"><img class="arrow-1" src="img/arrow-1-1.svg" alt="Arrow 1" /></div>
+              <div class="icon"><img class="arrow-1" src="{% static 'img/arrow-1-1.svg' %}" alt="Arrow 1" /></div>
               <div class="label notosanstc-bold-navy-blue-20px">點我前往</div>
             </div>
           </div>
+        </a>
+        <a href="{% url 'bonds' %}">
           <div class="group-47">
             <div class="text-36 notosanstc-bold-navy-blue-36px">債卷</div>
             <div class="text-3-1 notosanstc-normal-black-24px">
               專案論述專案論述專案論述專案論述專案論述專案論述專案論述
             </div>
             <div class="link-1 link-4">
-              <div class="icon"><img class="arrow-1" src="img/arrow-1-1.svg" alt="Arrow 1" /></div>
+              <div class="icon"><img class="arrow-1" src="{% static 'img/arrow-1-1.svg' %}" alt="Arrow 1" /></div>
               <div class="label notosanstc-bold-navy-blue-20px">點我前往</div>
             </div>
           </div>
+        </a>
+        <a href="{% url 'stock' %}">
           <div class="group-48">
             <div class="text-38 notosanstc-bold-navy-blue-36px">股票</div>
             <div class="text-3-1 notosanstc-normal-black-24px">
               專案論述專案論述專案論述專案論述專案論述專案論述專案論述
             </div>
             <div class="link-1 link-4">
-              <div class="icon"><img class="arrow-1" src="img/arrow-1-1.svg" alt="Arrow 1" /></div>
+              <div class="icon"><img class="arrow-1" src="{% static 'img/arrow-1-1.svg' %}" alt="Arrow 1" /></div>
               <div class="label notosanstc-bold-navy-blue-20px">點我前往</div>
             </div>
           </div>
+        </a>
         </div>
         <div class="group-36">
           <div class="footer">
@@ -152,8 +166,8 @@
                 </div>
               </div>
             </div>
-          </div>
-          <img class="group-30" src="img/group-30-2@2x.png" alt="Group 30" />
+          </div>{
+          <img class="group-30" src="% static 'img/group-30-2@2x.png' %}" alt="Group 30" />
         </div>
       </div>
     </div>
