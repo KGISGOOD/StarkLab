@@ -16,6 +16,7 @@ urlpatterns = [
     path("project/", views.project, name="project"),
     path("project_linebot/", views.project_linebot, name="project_linebot"),
     path("project_stock/", views.project_stock, name="project_stock"),
+    path("project_wra/", views.project_wra, name="project_wra"),
 
 
 
