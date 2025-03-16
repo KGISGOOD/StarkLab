@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>語音翻譯工具</h1>
+
+    <form method="POST" action="{% url 'listen' %}">
+        {% csrf_token %}
+        <button type="submit">開始錄音</button>
+        
+    </form>
+
+    <textarea rows="4" cols="50" placeholder="請輸入或錄製語音..." disabled>
+        {% if speech_result %}
+            {{ speech_result }}
+        {% endif %}
+    </textarea>
+
+    <button>翻譯</button>
+
+    <textarea rows="4" cols="50" placeholder="翻譯結果..." readonly></textarea>
+
+    <button>播放語音</button>
+
+</body>
+</html>
