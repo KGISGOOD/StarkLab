@@ -46,7 +46,7 @@
 
 .stark_lab_member .overlap-group21 {
   border-radius: 65px;
-  height: 624px;
+  height: 600px;
   margin-right: 1.0px;
   margin-top: 70px;
   position: relative;
@@ -155,11 +155,11 @@
 }
 
 .stark_lab_member .rectangle-80 {
-  height: 375px;
+  height: 468px;
   left: 131px;
-  object-fit: cover;
+  object-fit: contain;
   position: absolute;
-  top: 125px;
+  top: 75px;
   width: 468px;
 }
 
@@ -168,7 +168,7 @@
   align-self: flex-start;
   display: flex;
   margin-left: 98px;
-  margin-top: 62px;
+  margin-top: 250px;
   min-width: 176px;
 }
 
@@ -194,7 +194,7 @@
   display: flex;
   gap: 50px;
   margin-right: 1.0px;
-  margin-top: 67px;
+  margin-top: 70px;
   min-width: 1339px;
 }
 
@@ -206,14 +206,14 @@
   border-radius: 65px;
   box-shadow: 0px 5px 0px #000000;
   display: flex;
-  height: 339px;
+  height: 500px;
   justify-content: flex-end;
   min-width: 413px;
   padding: 34.8px 47.8px;
 }
 
 .stark_lab_member .overlap-group-1 {
-  height: 269px;
+  height: 400px;
   position: relative;
   width: 317px;
 }
@@ -238,7 +238,7 @@
 }
 
 .stark_lab_member .overlap-group-2 {
-  height: 103px;
+  height: 500px;
   position: relative;
   width: 103px;
 }
@@ -333,7 +333,7 @@
   display: flex;
   gap: 50px;
   margin-right: 1.0px;
-  margin-top: 75px;
+  margin-top: 20px;
   min-width: 1339px;
 }
 
@@ -342,7 +342,7 @@
   align-self: flex-start;
   display: flex;
   margin-left: 98px;
-  margin-top: 111px;
+  margin-top: 100px;
   min-width: 176px;
 }
 
