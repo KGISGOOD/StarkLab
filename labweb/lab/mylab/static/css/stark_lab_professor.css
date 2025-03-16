@@ -143,82 +143,7 @@
   min-width: 309px;
 }
 
-.stark_lab_professor .line-32 {
-  height: 4px;
-  margin-right: 21.0px;
-  margin-top: 44px;
-  width: 1261px;
-  position: relative;
-}
-
 .stark_lab_professor .group-25 {
-  align-items: flex-start;
-  align-self: flex-start;
-  display: flex;
-  margin-left: 100px;
-  margin-top: 57px;
-  min-width: 275px;
-}
-
-.stark_lab_professor .overlap-group1 {
-  align-items: flex-start;
-  background-color: var(--navy-blue);
-  border-radius: 9px;
-  display: flex;
-  height: 62px;
-  min-width: 273px;
-  padding: 8px 15px;
-}
-
-.stark_lab_professor .journal-papers {
-  letter-spacing: 0;
-  line-height: normal;
-  min-height: 44px;
-}
-
-.stark_lab_professor .text {
-  letter-spacing: 0;
-  line-height: 50px;
-  margin-left: 22.0px;
-  margin-top: 46px;
-  min-height: 399px;
-  width: 1218px;
-}
-
-.stark_lab_professor .line-3 {
-  height: 4px;
-  margin-right: 21.0px;
-  margin-top: 59px;
-  width: 1261px;
-}
-
-.stark_lab_professor .group-26 {
-  align-items: flex-start;
-  align-self: flex-start;
-  display: flex;
-  margin-left: 100px;
-  margin-top: 57px;
-  min-width: 343px;
-}
-
-.stark_lab_professor .overlap-group2 {
-  align-items: flex-start;
-  background-color: var(--navy-blue);
-  border-radius: 9px;
-  display: flex;
-  height: 62px;
-  min-width: 341px;
-  padding: 8px 15px;
-}
-
-.stark_lab_professor .conference-papers {
-  letter-spacing: 0;
-  line-height: normal;
-  min-height: 35px;
-  white-space: nowrap;
-}
-
-.stark_lab_professor .group-27 {
   align-items: flex-start;
   align-self: flex-start;
   display: flex;
@@ -227,29 +152,104 @@
   min-width: 133px;
 }
 
+.stark_lab_professor .overlap-group1 {
+  align-items: baseline;
+  background-color: var(--navy-blue);
+  border-radius: 9px;
+  display: flex;
+  height: 62px;
+  justify-content: flex-start;
+  min-width: auto;
+  padding: 8px 15px;
+}
+
+.stark_lab_professor .journal-papers {
+  letter-spacing: 0;
+  line-height: normal;
+  min-height: 35px;
+  white-space: break-spaces;
+}
+
+.stark_lab_professor .text {
+  letter-spacing: 0;
+  line-height: 50px;
+  margin-left: 10px;
+  margin-top: 20px;
+  margin-bottom: 0;
+  min-height: 35px;
+  width: 1218px;
+}
+
+.stark_lab_professor .line-3 {
+  height: 4px;
+  margin-right: 21.0px;
+  margin-top: 30px;
+  max-width: 1248px;
+  width: 100%;
+  position: relative;
+}
+
+.stark_lab_professor .group-26 {
+  align-items: flex-start;
+  align-self: flex-start;
+  display: flex;
+  margin-left: 100px;
+  margin-top: 57px;
+  min-width: 133px;
+}
+
+.stark_lab_professor .overlap-group2 {
+  align-items: baseline;
+  background-color: var(--navy-blue);
+  border-radius: 9px;
+  display: flex;
+  height: 62px;
+  justify-content: flex-start;
+  min-width: auto;
+  padding: 8px 15px;
+}
+
+.stark_lab_professor .conference-papers {
+  letter-spacing: 0;
+  line-height: normal;
+  min-height: 35px;
+  white-space: break-spaces;
+}
+
+.stark_lab_professor .group-27 {
+  align-items: flex-start;
+  align-self: flex-start;
+  display: flex;
+  margin-left: 100px;
+  margin-top: 30px;
+  min-width: 133px;
+}
+
 .stark_lab_professor .overlap-group3 {
-  align-items: center;
+  align-items: baseline;
   background-color: var(--navy-blue);
   border-radius: 9px;
   display: flex;
   height: 62px;
   justify-content: center;
-  min-width: 131px;
-  padding: 8px 7px;
+  min-width: 117px;
+  padding: 8px 15px;
 }
 
 .stark_lab_professor .books {
   letter-spacing: 0;
   line-height: normal;
   min-height: 35px;
-  white-space: nowrap;
+  white-space: break-spaces;
 }
 
 .stark_lab_professor .overlap-group4 {
-  height: 277px;
-  margin-top: 147px;
+  height: 100px;
+  min-height: 250px;   
+  margin-top: 120px;
   position: relative;
   width: 1378px;
+  padding-bottom: 30px;  
 }
 
 .stark_lab_professor .navigation-and-contacts {
