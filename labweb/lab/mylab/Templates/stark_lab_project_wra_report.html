@@ -59,10 +59,10 @@
             <div class="content"></div>
           </div>
           <h1 class="line-bot valign-text-middle">應變報告生成</h1>
-          <div class="link-2 link-4">
+          <!-- <div class="link-2 link-4">
             <div class="icon-1"><img class="arrow-1" src="{% static 'img/arrow-1.svg' %}" alt="Arrow 1" /></div>
             <div class="label notosanstc-bold-white-20px">專案介紹</div>
-          </div>
+          </div> -->
           <img class="x2-1" src="{% static 'img/2-1.png' %}" alt="2 1" />
         </div>
         <div class="frame-27">
@@ -70,21 +70,34 @@
           <div class="group-15">
             <img class="line-26" src="{% static 'img/line-26.svg' %}" alt="Line 26" />
             <div class="text-29">
-                本專案使用 XAI 的 grok-beta 模型，先讓使用者選擇要生成的新聞稿類別（災前、中、後），模型將根據所選類別學習對應的風格與口吻，並根據使用者提供的關鍵字自動生成新聞稿。
-            <br>
-            <img src="{% static 'img/news_report.png' %}" alt="report" style="width: 1000px; height: auto;" />
-            
+                本專案使用 XAI 的 grok-beta 模型，
+                讓使用者選擇要生成的新聞稿類別（災前、災中、災後）。<br>
+                根據所選類別，模型將學習相應的新聞風格與口吻，
+                確保生成的內容符合該類別的敘事方式。<br>
+                完成風格學習後，
+                使用者可上傳與災害相關的 PDF 檔案或輸入關鍵字，
+                模型將自動解析檔案內容或關鍵字，提取關鍵資訊，
+                並依據所學風格生成新聞稿。
+                <br><br>
+
+                <div style="text-align: center;">
+                    <a href="{% url 'ai_report' %}" style="color: white; background-color: rgb(71, 99, 156); padding: 15px 30px; border-radius: 30px; display: inline-block;">點擊查看成果</a>
+                </div>
+                
             </div>
 
           </div>
         </div>
         <div class="group-25">
-          <div class="overlap-group1"><div class="text spacegrotesk-medium-white-36px">相關連結</div></div>
+          <div class="overlap-group1"><div class="text spacegrotesk-medium-white-36px">架構展示</div></div>
         </div>
 
 
         <div class="overlap-group2">
-          <div class="line-container">
+            <img src="{% static 'img/news_report.png' %}" alt="report" style="width: 1100px; height: auto; margin-left: 100px; margin-top: 80px;" />
+
+
+          <!-- <div class="line-container">
             <img class="line" src="{% static 'img/line-27.svg' %}" alt="Line 27" />
             <img class="line" src="{% static 'img/line-27.svg' %}" alt="Line 31" />
             <img class="line-28" src="{% static 'img/line-28.svg' %}" alt="Line 28" />
@@ -95,7 +108,7 @@
             <div class="icon"><img class="arrow-1" src="{% static 'img/arrow-1-1.svg' %}" alt="Arrow 1" /></div>
             <div class="label notosanstc-bold-navy-blue-20px">點我前往</div>
           </div>
-          <div class="text-31 notosanstc-bold-navy-blue-36px">國際新聞</div>
+          <div class="text-31 notosanstc-bold-navy-blue-36px">應變報告生成</div>
           <div class="text-32 notosanstc-normal-black-24px">
             專案論述專案論述專案論述專案論述專案論述專案論述專案論述
           </div>
@@ -149,10 +162,10 @@
               <div class="label notosanstc-bold-navy-blue-20px">點我前往</div>
             </div>
           </div>
-        </a>
+        </a> -->
         </div>
 
-        
+
         <div class="group-36">
           <div class="footer">
             <div class="navigation-and-contacts">
