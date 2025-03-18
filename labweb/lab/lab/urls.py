@@ -27,7 +27,7 @@ urlpatterns = [
     path("products/", views.products),
     path("project1/", views.project1),
     path("project2/", views.project2),
-    path("project3/", views.project3),
+    path('project3/', views.project3, name='project3'),  # 確保路徑設置正確
     path("project4/", views.project4),
     path("project5/", views.project5),
     path("project6/", views.project6),
