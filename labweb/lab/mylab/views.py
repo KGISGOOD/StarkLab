@@ -32,6 +32,10 @@ def project_stock(request):
 def project_wra(request):
     return render(request, 'stark_lab_project_wra.html')
 
+def project_wra_repoet(request):
+    return render(request, 'stark_lab_project_wra_report.html')
+
+
 
 
 def about(request):
