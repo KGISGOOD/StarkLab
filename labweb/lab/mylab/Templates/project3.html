@@ -1,146 +1,104 @@
 {% load static %}
-
 <!DOCTYPE html>
-<html lang="en-US">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>史塔克實驗室</title>
-
-  <!-- 引入 CSS 檔案 -->
-  <link rel="stylesheet" href="{% static 'css/components.css' %}">
-  <link rel="stylesheet" href="{% static 'css/icons.css' %}">
-  <link rel="stylesheet" href="{% static 'css/responsee.css' %}">
-  <link rel="stylesheet" href="{% static 'owl-carousel/owl.carousel.css' %}">
-  <link rel="stylesheet" href="{% static 'owl-carousel/owl.theme.css' %}">
-  <link rel="stylesheet" href="{% static 'css/template-style.css' %}">
-
-  <!-- 引入 Google Fonts -->
-  <link href='https://fonts.googleapis.com/css?family=Playfair+Display&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
-  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,700,800&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
-
-  <!-- 引入 JS 檔案 -->
-  <script type="text/javascript" src="{% static 'js/jquery-1.8.3.min.js' %}"></script>
-  <script type="text/javascript" src="{% static 'js/jquery-ui.min.js' %}"></script>
-</head>
-
-
-<body class="size-1140">
-  
-  <!-- HEADER -->
-  <header role="banner" class="position-absolute">
-    <!-- Top Navigation -->
-    <nav class="background-transparent background-transparent-hightlight full-width sticky">
-      <div class="s-12 l-2">
-        <a href="/" class="logo1">
-          <!-- Logo White Version -->
-          <img class="logo-white" src="{% static 'img/logo1.png' %}" alt="">
-          <!-- Logo Dark Version -->
-          <img class="logo-dark" src="{% static 'img/logo3.png' %}" alt="">
-        </a>        
-      </div>
-      <div class="top-nav s-12 l-10">
-        <p class="nav-text"></p>
-        <ul class="right chevron">
-          <li><a href="/">Home</a></li>
-          <li><a href="/products/">研究</a></li>
-          <li><a href="/about/">關於我們</a></li>
-          <li><a href="/gallery/">成員</a></li>
-          <li><a href="/contact/">聯絡我們</a></li>
-        </ul>
-      </div>
-    </nav>
-  </header>
-  <!-- MAIN -->
-  <main role="main">
-    <!-- Content -->
-    <article>
-      <header class="section background-dark">
-        <div class="line">
-          <h1 class="text-white margin-top-bottom-40 text-size-60 text-line-height-1">水利署專案</h1>
-          <p class="margin-bottom-0 text-size-16">作者：鄭凱峻、黃昱睿<br>
-            </p>
-        </div>
-      </header>
-      
-      <div class="line margin-top-30">
-        <h2 class="text-size-40 margin-bottom-30">成果連結</h2>
-        <hr class="break-small background-primary margin-bottom-30">
-        <p>
-          您可以點擊以下連結查看專案成果：
-        </p>
-        <a href="{% url 'news_list' %}" class="text-primary text-size-20">點擊此處查看成果</a>
-        <br><br><br>
-        <a href="{% url 'news_api_sql' %}" class="text-primary text-size-20">後端API</a>
-        <br><br><br>
-
-      </div>
-    </article>
-  </main>
-
-  <!-- FOOTER -->
-  <!--
-  <footer>
-    <div class="background-primary padding text-center">
-      <p class="h1">Contact Us: D04921004@ntu.edu.tw</p>
-    </div>
-
-    <section class="background-dark full-width">
-      <div class="s-12 m-12 l-6 margin-m-bottom-2x">
-        <div class="s-12 grayscale center">
-          <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3614.859181430362!2d121.5073108748323!3d25.038852538097196!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3442a9a09f4fc9eb%3A0x9c2e6c02ad4bc7eb!2z5p2x5ZCz5aSn5a245Z-O5Lit5qCh5Y2A!5e0!3m2!1szh-TW!2stw!4v1722588184263!5m2!1szh-TW!2stw"
-            width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade"></iframe>
-        </div>
-      </div>
-
-      <div class="s-12 m-12 l-6 margin-m-bottom-2x">
-        <div class="padding-2x">
-          <div class="line">
-            <div class="float-left">
-              <i class="icon-sli-location-pin text-primary icon3x"></i>
-            </div>
-            <div class="margin-left-70 margin-bottom-30">
-              <h3 class="margin-bottom-0">Company Address</h3>
-              <p>100台北市中正區貴陽街一段56號<br>
-                No. 56, Sec. 1, Guiyang St., Zhongzheng Dist., Taipei City
-              </p>
-            </div>
-            <div class="float-left">
-              <i class="icon-sli-envelope text-primary icon3x"></i>
-            </div>
-            <div class="margin-left-70 margin-bottom-30">
-              <h3 class="margin-bottom-0">E-mail</h3>
-              <p>D04921004@ntu.edu.tw<br>
-
-              </p>
-            </div>
-            <div class="float-left">
-              <i class="icon-sli-phone text-primary icon3x"></i>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=yes">
+    <link rel="shortcut icon" type="image/png" href="https://animaproject.s3.amazonaws.com/home/favicon.png" />
+    <meta name="og:type" content="website" />
+    <meta name="twitter:card" content="photo" />
+    <title>Line Bot 專案</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/stark_lab_project3.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/styleguide.css' %}">
+    <link rel="stylesheet" href="{% static 'css/globals.css' %}">
+    <link rel="stylesheet" href="{% static 'css/project3.css' %}"> <!-- 引入單獨的CSS檔案 -->
+  </head>
+  <body style="margin: 0; background: #ffffff">
+    <input
+      type="hidden" 
+      id="anPageName"
+      name="page"
+      value="stark_lab_project_linebot"
+    />
+    <div class="container-center-horizontal">
+      <div class="stark_lab_project_linebot screen">
+        <!-- 導航欄 -->
+        <div class="overlap-group3">
+          <div class="navigation-bar">
+            <img class="logo-1" src="{% static 'img/------logo-1@2x.png' %}" alt="logo 1" />
+            <div class="navbar notosanstc-semi-bold-black-20px">
+              <a href="stark_lab_home.html">
+                <div class="navbar-link-text notosanstc-semi-bold-black-20px">首頁</div>
+              </a>
+              <a href="stark_lab_project.html">
+                <div class="navbar-link-text notosanstc-semi-bold-black-20px">研究專案</div>
+              </a>
+              <a href="stark_lab_member.html">
+                <div class="navbar-link-text notosanstc-semi-bold-black-20px">成員介紹</div>
+              </a>
+              <a href="stark_lab_professor.html">
+                <div class="navbar-link-text notosanstc-semi-bold-black-20px">論文研究</div>
+              </a>
             </div>
           </div>
+          <img class="line-30" src="{% static 'img/line-30.svg' %}" alt="Line 30" />
+        </div>
+
+        <!-- 中間內容撰寫區域 -->
+        <div class="main-content">
+          <div class="photo-container">
+              <!-- 照片區域 1 -->
+              <div class="photo-section">
+                  <img src="{% static 'img/picture_1.jpg' %}" alt="照片1描述" class="photo">
+                  <p class="caption">Linebot上的成果_1</p>
+              </div>
+
+              <!-- 照片區域 2 -->
+              <div class="photo-section">
+                  <img src="{% static 'img/picture_2.jpg' %}" alt="照片2描述" class="photo">
+                  <p class="caption">Linebot上的成果_2</p>
+              </div>
+
+              <!-- 照片區域 3 -->
+              <div class="photo-section">
+                  <img src="{% static 'img/picture_3.jpg' %}" alt="照片3描述" class="photo">
+                  <p class="caption">Linebot上的成果_3</p>
+              </div>
+          </div>
+
+          <!-- 成品連結 -->
+          <br><br>
+          <a href="http://localhost:8000/api/news/sql/" style="color: rgb(82, 126, 214); font-size: 25px; text-align: left; display: block;">JSON檔成品展示</a>
+          <br>          <br>
+          <a href="https://github.com/KGISGOOD/StarkLab/blob/main/labweb/lab/mylab/project3_README.md" style="color: rgb(82, 126, 214); font-size: 25px; text-align: left; display: block;">程式碼介紹</a>
+          <br>
+        </div>
+
+        <!-- 頁腳 -->
+        <div class="group-36">
+          <div class="footer">
+            <div class="navigation-and-contacts">
+              <div class="frame-26">
+                <div class="contact-us">
+                  <div class="heading">
+                    <div class="label-1">
+                      <div class="label-2 notosans-bold-navy-blue-20px">Contact us:</div>
+                    </div>
+                  </div>
+                  <div class="info">
+                    <div class="email-d04921004ntuedutw notosans-normal-white-18px">Email: D04921004@ntu.edu.tw</div>
+                    <p class="address-100 notosanstc-normal-white-18px">
+                      Address: 100台北市中正區貴陽街一段56號 No. 56, Sec. 1, Guiyang St., Zhongzheng Dist., Taipei City<br /><br />
+                      ©2025 Soochow University Starklab . All Rights Reserved.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <img class="group-30" src="{% static 'img/group-30-2@2x.png' %}" alt="Group 30" />
         </div>
       </div>
-    </section>
-    <hr class="break margin-top-bottom-0" style="border-color: rgba(0, 38, 51, 0.80);">
-
-    <section class="padding background-dark full-width">
-      <div class="s-12 l-6">
-        <p class="text-size-12">Copyright 2019, Vision Design - graphic zoo</p>
-        <p class="text-size-12">All images have been purchased from Bigstock. Do not use the images in your website.</p>
-      </div>
-      <div class="s-12 l-6">
-        <a class="right text-size-12" href="http://www.myresponsee.com"
-          title="Responsee - lightweight responsive framework">Design and coding<br> by Responsee Team</a>
-      </div>
-    </section>
-  </footer>
-  -->
-  <script type="text/javascript" src="{% static 'js/responsee.js' %}"></script>
-  <script type="text/javascript" src="{% static 'owl-carousel/owl.carousel.js' %}"></script>
-  <script type="text/javascript" src="{% static 'js/template-scripts.js' %}"></script>
-</body>
-
+    </div>
+  </body>
 </html>

@@ -1,0 +1,529 @@
+/* screen - project_linebot page */
+
+.stark_lab_project_linebot {
+    align-items: center;
+    background-color: var(--white);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* 修改：使用 min-height 替代固定 height，讓頁面高度自適應 */
+    width: 1440px;
+    position: relative; /* 新增：作為 footer 的定位參考 */
+}
+
+
+.stark_lab_project_linebot .overlap-group3 {
+    height: 76px;
+    margin-top: 60px;
+    position: relative;
+    width: 1440px;
+}
+
+.stark_lab_project_linebot .navigation-bar {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    left: 0;
+    padding: 0px 100px;
+    position: absolute;
+    top: 0;
+    width: 1440px;
+}
+
+.stark_lab_project_linebot .navbar {
+    align-items: center;
+    display: inline-flex;
+    flex: 0 0 auto;
+    gap: 40px;
+    justify-content: center;
+    position: relative;
+}
+
+.stark_lab_project_linebot .line-30 {
+    height: 2px;
+    left: 1018px;
+    position: absolute;
+    top: 56px;
+    width: 85px;
+}
+
+.stark_lab_project_linebot .overlap-group4 {
+    align-self: flex-start;
+    border-radius: 8.3px;
+    height: 46px;
+    margin-left: 111px;
+    margin-top: 63px;
+    position: relative;
+    width: 130px;
+}
+
+.stark_lab_project_linebot .group-31 {
+    align-items: flex-end;
+    background-color: var(--navy-blue);
+    border-radius: 12.41px;
+    display: flex;
+    height: 25px;
+    left: 14px;
+    min-width: 25px;
+    padding: 7.0px 5.1px;
+    position: absolute;
+    top: 11px;
+}
+
+.stark_lab_project_linebot .arrow-2 {
+    height: 11px;
+    width: 14px;
+}
+
+.stark_lab_project_linebot .text-40 {
+    color: var(--navy-blue);
+    font-family: var(--font-family-noto_sans_tc);
+    font-size: 16px;
+    font-weight: 400;
+    left: 48px;
+    letter-spacing: 0;
+    line-height: 28px;
+    position: absolute;
+    top: 8px;
+    white-space: nowrap;
+}
+
+.stark_lab_project_linebot .rectangle-83 {
+    border: 1.84px solid;
+    border-color: var(--navy-blue);
+    border-radius: 8.3px;
+    cursor: pointer;
+    height: 46px;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 130px;
+}
+
+.stark_lab_project_linebot .overlap-group5 {
+    height: 591px;
+    margin-left: 1.0px;
+    margin-top: 61px;
+    position: relative;
+    width: 1341px;
+}
+
+.stark_lab_project_linebot .overlap-group {
+    align-items: flex-start;
+    background-color: var(--navy-blue);
+    border: 2px solid;
+    border-color: var(--black);
+    border-radius: 65px;
+    box-shadow: 0px 5px 0px #000000;
+    display: flex;
+    flex-direction: column; /* 修改：改為垂直排列，避免 flex-end 影響 */
+    gap: 20px; /* 調整：子元素間距 */
+    height: 591px;
+    justify-content: flex-start; /* 修改：從頂部開始排列 */
+    left: 0;
+    min-width: 1339px;
+    padding: 99.4px 66px;
+    position: absolute;
+    top: 0;
+}
+
+.stark_lab_project_linebot .xxx-xxx-xxx-xxx {
+    align-self: flex-start;
+    color: var(--white);
+    font-family: var(--font-family-space_grotesk);
+    font-size: var(--font-size-xl);
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: normal;
+    margin-top: 40px;
+    min-height: 29px;
+    width: 484px;
+    position: relative; /* 新增 */
+    left: 50px; /* 新增：向右移動 50px，可調整數值 */
+}
+
+.stark_lab_project_linebot .content {
+    background-color: var(--grey);
+    height: 1px;
+    width: 488px;
+    position: relative; /* 新增 */
+    left: 50px; /* 新增：向右移動 50px，與 .xxx-xxx-xxx-xxx 一致 */
+}
+
+.stark_lab_project_linebot .line-bot {
+    color: var(--white);
+    font-family: var(--font-family-noto_sans_tc);
+    font-size: 96px;
+    font-weight: 500;
+    height: 222px;
+    left: 113px;
+    letter-spacing: 0;
+    line-height: 120px;
+    position: absolute;
+    top: 132px;
+    width: 576px;
+}
+
+.stark_lab_project_linebot .link-2 {
+    left: 113px;
+    position: absolute;
+    top: 451px;
+}
+
+.stark_lab_project_linebot .icon-1 {
+    background-color: var(--white);
+    border-radius: 20.5px;
+    height: 41px;
+    position: relative;
+    width: 41px;
+}
+
+.stark_lab_project_linebot .arrow-1 {
+    height: 20px;
+    left: 10px;
+    position: absolute;
+    top: 11px;
+    width: 20px;
+}
+
+.stark_lab_project_linebot .label {
+    letter-spacing: 0;
+    line-height: 28px;
+    position: relative;
+    white-space: nowrap;
+    width: fit-content;
+}
+
+.stark_lab_project_linebot .x2-1 {
+    height: 468px;
+    left: 709px;
+    object-fit: cover;
+    position: absolute;
+    top: 66px;
+    width: 542px;
+}
+
+/* 確保內容區不被 footer 覆蓋 */
+.stark_lab_project_linebot .frame-27 {
+    margin-bottom: 300px; /* 新增：留出 footer 高度的空間 */
+}
+
+.stark_lab_project_linebot .overlap-group-1 {
+    align-items: center;
+    background-color: var(--navy-blue);
+    border-radius: 9px;
+    display: flex;
+    height: 62px;
+    min-width: 174px;
+    padding: 0 15px;
+}
+
+.stark_lab_project_linebot .text {
+    letter-spacing: 0;
+    line-height: normal;
+    min-height: 46px;
+    min-width: 144px;
+}
+
+.stark_lab_project_linebot .group-15 {
+    align-items: center;
+    align-self: flex-end;
+    display: flex;
+    flex-direction: column;
+    gap: 45px;
+    min-height: 410px;
+    width: 1271px;
+}
+
+.stark_lab_project_linebot .line-26 {
+    height: 2px;
+    margin-right: 2.0px;
+    margin-top: -2px;
+    width: 1269px;
+}
+
+.stark_lab_project_linebot .text-29 {
+    color: #363636;
+    font-family: var(--font-family-noto_sans_tc);
+    font-size: var(--font-size-xl);
+    font-weight: 500;
+    letter-spacing: 0;
+    line-height: 50px;
+    margin-right: 17.0px;
+    min-height: 365px;
+    width: 1226px;
+}
+
+.stark_lab_project_linebot .group-25 {
+    align-items: flex-start;
+    align-self: flex-start;
+    display: flex;
+    margin-left: 105px;
+    margin-top: 40px;
+    min-width: 176px;
+}
+
+.stark_lab_project_linebot .overlap-group1 {
+    align-items: center;
+    background-color: var(--navy-blue);
+    border-radius: 9px;
+    display: flex;
+    height: 62px;
+    min-width: 174px;
+    padding: 0 15px;
+}
+
+.stark_lab_project_linebot .overlap-group2 {
+    background-color: var(--white);
+    border: 2px solid;
+    border-color: var(--black);
+    border-radius: 41px;
+    box-shadow: 0px 5px 0px #000000;
+    height: 812px;
+    margin-top: 40px;
+    position: relative;
+    width: 1242px;
+}
+
+.stark_lab_project_linebot .link-3 {
+    left: 98px;
+    position: absolute;
+    top: 311px;
+}
+
+.stark_lab_project_linebot .icon {
+    background-color: var(--navy-blue);
+    border-radius: 20.5px;
+    height: 41px;
+    position: relative;
+    width: 41px;
+}
+
+.stark_lab_project_linebot .text-31 {
+    left: 98px;
+    letter-spacing: 0;
+    line-height: normal;
+    position: absolute;
+    top: 77px;
+}
+
+.stark_lab_project_linebot .line-container {
+    height: 743px;
+    left: 100px;
+    position: absolute;
+    top: 45px;
+    width: 1042px;
+}
+
+.stark_lab_project_linebot .line {
+    height: 1px;
+    left: 0;
+    object-fit: cover;
+    position: absolute;
+    top: 371px;
+    width: 1042px;
+}
+
+.stark_lab_project_linebot .line-28 {
+    height: 743px;
+    left: 319px;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    width: 1px;
+}
+
+.stark_lab_project_linebot .line-29 {
+    height: 743px;
+    left: 723px;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    width: 1px;
+}
+
+.stark_lab_project_linebot .text-32 {
+    left: 98px;
+    letter-spacing: 0;
+    line-height: normal;
+    position: absolute;
+    top: 151px;
+    width: 269px;
+}
+
+.stark_lab_project_linebot .group-49 {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    left: 98px;
+    min-height: 251px;
+    position: absolute;
+    top: 460px;
+    width: 273px;
+}
+
+.stark_lab_project_linebot .etf {
+    letter-spacing: 0;
+    line-height: normal;
+    min-height: 52px;
+}
+
+.stark_lab_project_linebot .text-3 {
+    letter-spacing: 0;
+    line-height: normal;
+    min-height: 114px;
+    width: 269px;
+}
+
+.stark_lab_project_linebot .link {
+    align-items: center;
+    display: inline-flex;
+    gap: 15px;
+    position: relative;
+}
+
+.stark_lab_project_linebot .group-50 {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    left: 460px;
+    min-height: 251px;
+    position: absolute;
+    top: 460px;
+    width: 273px;
+}
+
+.stark_lab_project_linebot .text-34 {
+    letter-spacing: 0;
+    line-height: normal;
+    min-height: 52px;
+}
+
+.stark_lab_project_linebot .group-47 {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    left: 460px;
+    min-height: 274px;
+    position: absolute;
+    top: 78px;
+    width: 273px;
+}
+
+.stark_lab_project_linebot .text-36 {
+    letter-spacing: 0;
+    line-height: normal;
+    min-height: 52px;
+}
+
+.stark_lab_project_linebot .text-3-1 {
+    letter-spacing: 0;
+    line-height: normal;
+    margin-top: 22px;
+    min-height: 114px;
+    width: 269px;
+}
+
+.stark_lab_project_linebot .link-1 {
+    margin-top: 45px;
+    position: relative;
+}
+
+.stark_lab_project_linebot .group-48 {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    left: 864px;
+    min-height: 274px;
+    position: absolute;
+    top: 78px;
+    width: 273px;
+}
+
+.stark_lab_project_linebot .text-38 {
+    letter-spacing: 0;
+    line-height: normal;
+    min-height: 52px;
+}
+
+.stark_lab_project_linebot .group-36 {
+    height: 277px;
+    width: 1378px;
+    position: absolute; /* 修改：固定在底部 */
+    bottom: 0; /* 新增：貼齊底部 */
+    left: 50%; /* 新增：水平置中 */
+    transform: translateX(-50%); /* 新增：修正置中偏移 */
+}
+
+.stark_lab_project_linebot .navigation-and-contacts {
+    align-items: flex-start;
+    display: inline-flex;
+    flex-direction: column;
+    gap: 66px;
+    height: 157px;
+    position: relative;
+}
+
+.stark_lab_project_linebot .frame-26 {
+    align-items: flex-start;
+    display: inline-flex;
+    flex: 0 0 auto;
+    gap: 120px;
+    margin-bottom: -52.00px;
+    position: relative;
+}
+
+.stark_lab_project_linebot .label-1 {
+    align-items: flex-start;
+    background-color: var(--white);
+    border-radius: 7px;
+    display: inline-flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0px 7px;
+    position: relative;
+}
+
+.stark_lab_project_linebot .info {
+    align-items: flex-start;
+    display: inline-flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    gap: 20px;
+    position: relative;
+}
+
+.stark_lab_project_linebot .address-100 {
+    letter-spacing: 0;
+    line-height: normal;
+    position: relative;
+    width: 490px;
+}
+
+.stark_lab_project_linebot .group-30 {
+    height: 30px;
+    left: 1152px;
+    position: absolute;
+    top: 208px;
+    width: 114px;
+}
+
+.stark_lab_project_linebot .link-4 {
+    align-items: center;
+    display: inline-flex;
+    gap: 15px;
+}
+
+.stark_lab_project_linebot .navbar-link-text {
+    cursor: pointer;
+    letter-spacing: 0;
+    line-height: 28px;
+    margin-top: -1.00px;
+    position: relative;
+    white-space: nowrap;
+    width: fit-content;
+}
+
+
