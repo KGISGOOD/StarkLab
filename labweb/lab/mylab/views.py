@@ -6,11 +6,11 @@ from .project3_views import crawler_first_stage  # 導入原本的爬蟲主函�
 logger = logging.getLogger(__name__)
 
 # 現有的視圖
-def home(request):
-    return render(request, 'index.html')
-
 # def home(request):
-#     return render(request, 'stark_lab_home.html')
+#     return render(request, 'index.html')
+
+def home(request):
+    return render(request, 'stark_lab_home.html')
 
 
 
