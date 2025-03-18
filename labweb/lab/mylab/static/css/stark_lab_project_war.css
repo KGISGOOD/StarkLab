@@ -204,7 +204,7 @@
 
 /* 確保內容區不被 footer 覆蓋 */
 .stark_lab_project_linebot .frame-27 {
-    margin-bottom: 300px; /* 新增：留出 footer 高度的空間 */
+    margin-bottom: 200px; /* 新增：留出 footer 高度的空間 */
 }
 
 .stark_lab_project_linebot .overlap-group-1 {
@@ -508,6 +508,8 @@
     position: absolute;
     top: 208px;
     width: 114px;
+    margin-top: 10px; /* 調整圖片與文本之間的距離 */
+
 }
 
 .stark_lab_project_linebot .link-4 {
@@ -526,3 +528,33 @@
     width: fit-content;
 }
 
+  /* 照片容器樣式，使用 Flexbox 並排顯示 */
+.photo-container {
+    display: flex;           /* 啟用 Flexbox 佈局 */
+    flex-direction: row;     /* 設定為水平排列 */
+    gap: 20px;               /* 設定每張照片之間的間距 */
+    justify-content: center; /* 使照片居中對齊 */
+}
+
+/* 照片區域樣式 */
+.photo-section {
+    text-align: center; /* 使每個照片區域內的文字置中 */
+}
+
+/* 照片的樣式 */
+.photo {
+    width: 400px;        /* 設定圖片的寬度，根據比例放大 */
+    height: auto;        /* 高度自動，保持比例 */
+    border-radius: 8px;  /* 圓角效果 */
+    transition: all 0.3s ease; /* 添加平滑過渡效果 */
+}
+
+/* 照片說明文字樣式 */
+.caption {
+    margin-top: 12px;     /* 說明文字和圖片之間的間距 */
+    font-size: 16px;      /* 設定文字大小，根據比例放大 */
+    color: #555;          /* 設定文字顏色 */
+}
+.photo:hover {
+    transform: scale(1.1); /* 當圖片懸停時放大 */
+}

@@ -8,6 +8,7 @@
     <meta name="twitter:card" content="photo" />
     <title>國際新聞機器人</title>
     <link rel="stylesheet" href="{% static 'css/stark_lab_project_war.css' %}">
+    <!-- <link rel="stylesheet" type="text/css" href="{% static 'css/stark_lab_project3.css' %}" /> -->
     <link rel="stylesheet" href="{% static 'css/styleguide.css' %}">
     <link rel="stylesheet" href="{% static 'css/globals.css' %}">
   </head>
@@ -55,18 +56,57 @@
           <div class="link-2 link-4"></div>
           <img class="x2-1" src="{% static 'img/2-1.png' %}" alt="2 1" />
         </div>
-        <div class="frame-27">
-          <br><br><br><br><br><br>
-          <div class="overlap-group-1"><div class="text spacegrotesk-medium-white-36px">專案介紹</div></div>
-          <div class="group-15">
-            <img class="line-26" src="{% static 'img/line-26.svg' %}" alt="Line 26" />
-            <div class="text-29">
-              本專案旨在開發一款智能機器人系統，專注於自動化搜集過去七天內全球範圍內發生的重大災害事件。該系統透過先進的數據抓取技術，實時監測國際新聞來源，並整合多樣化的資訊渠道，以確保災害數據的全面性與即時性。在此基礎上，專案運用人工智慧（AI）技術，對搜集到的海量資訊進行高效篩選與分析，提取關鍵內容，例如災害類型、發生地點、影響範圍、傷亡情況以及緊急應對措施等重要細節。篩選後的資訊將經過結構化處理，並以簡潔易懂的形式，即時且迅速地透過推播系統傳遞給民眾，旨在提升公眾對國際災害的認知與應變能力，為個人與社會提供及時的防災支援與決策參考。
+<!-- 成果展現區域 -->
+<br><br><br>
+<div class="frame-27">
+  <div class="overlap-group-1">
+    <div class="text spacegrotesk-medium-white-36px">專案介紹</div>
+  </div>
+  <div class="group-15">
+    <img class="line-26" src="{% static 'img/line-26.svg' %}" alt="Line 26" />
+    <div class="text-29">
+      本專案旨在開發一款智能機器人系統，專注於自動化搜集過去七天內全球範圍內發生的重大災害事件。該系統透過先進的數據抓取技術，實時監測國際新聞來源，並整合多樣化的資訊渠道，以確保災害數據的全面性與即時性。在此基礎上，專案運用人工智慧（AI）技術，對搜集到的海量資訊進行高效篩選與分析，提取關鍵內容，例如災害類型、發生地點、影響範圍、傷亡情況以及緊急應對措施等重要細節。篩選後的資訊將經過結構化處理，並以簡潔易懂的形式，即時且迅速地透過推播系統傳遞給民眾，旨在提升公眾對國際災害的認知與應變能力，為個人與社會提供及時的防災支援與決策參考。
+    </div>
+  </div>
+
+  <!-- 成果展現 -->
+  <div class="frame-27">
+    <div class="overlap-group-1">
+      <div class="text spacegrotesk-medium-white-36px">成果展現</div>
+    </div>
+    <br><br><br>
+    <div class="group-15">
+      <div class="main-content">
+        <div class="photo-container">
+            <!-- 照片區域 1 -->
+            <div class="photo-section">
+                <img src="{% static 'img/picture_1.jpg' %}" alt="照片1描述" class="photo">
+                <p class="caption">Linebot上的成果_1</p>
             </div>
-            <a href="{% url 'project3' %}" style="color: rgb(82, 126, 214); font-size: 50px; text-align: left; display: block;">點擊查看成果</a>
-            <br>            
-          </div>
+
+            <!-- 照片區域 2 -->
+            <div class="photo-section">
+                <img src="{% static 'img/picture_2.jpg' %}" alt="照片2描述" class="photo">
+                <p class="caption">Linebot上的成果_2</p>
+            </div>
+
+            <!-- 照片區域 3 -->
+            <div class="photo-section">
+                <img src="{% static 'img/picture_3.jpg' %}" alt="照片3描述" class="photo">
+                <p class="caption">Linebot上的成果_3</p>
+            </div>
         </div>
+
+        <!-- 成品連結 -->
+        <br><br><br>
+        <a href="http://starklab.tw:3000/api/news/sql/" style="color: rgb(82, 126, 214); font-size: 25px; text-align: left; display: block;">JSON檔成品展示</a>
+        <br><br>
+        <a href="https://github.com/KGISGOOD/StarkLab/blob/main/labweb/lab/mylab/project3_README.md" style="color: rgb(82, 126, 214); font-size: 25px; text-align: left; display: block;">程式碼介紹</a>
+      </div>
+    </div>
+  </div>
+</div>
+
         <!-- footer -->
         <div class="group-36">
           <div class="footer">
