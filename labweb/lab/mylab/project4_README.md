@@ -2,7 +2,7 @@
 
 本專案使用 **XAI 的 grok-beta 模型**，先讓使用者選擇要生成的新聞稿類別（災前、中、後），模型將根據所選類別學習對應的風格與口吻，並根據使用者提供的關鍵字自動生成新聞稿。
 
-![圖片描述](./img/架構圖.png)
+![圖片描述](/labweb/lab/mylab/static/img/architecture.png)
 
 
 
