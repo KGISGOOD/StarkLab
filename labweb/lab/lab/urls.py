@@ -18,6 +18,10 @@ urlpatterns = [
     path("project_stock/", views.project_stock, name="project_stock"),
     path("project_wra/", views.project_wra, name="project_wra"),
     path("project_wra_repoet/", views.project_wra_repoet, name="project_wra_repoet"),
+    #新增基金優化機器人
+    path('project_financial/', views.project_financial, name='project_financial'),
+    path('financial_1/', views.financial_1, name='financial_1'),
+    path('financial_2/', views.financial_2, name='financial_2'),
 
 
 

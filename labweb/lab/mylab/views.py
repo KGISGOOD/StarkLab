@@ -35,6 +35,15 @@ def project_wra(request):
 def project_wra_repoet(request):
     return render(request, 'stark_lab_project_wra_report.html')
 
+def project_financial(request):
+    return render(request, 'stark_lab_project_financial.html')
+
+def financial_1(request):
+    return render(request, 'financial_1.html')
+
+def financial_2(request):
+    return render(request, 'financial_2.html')
+
 
 
 

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>基金推薦小幫手</title>
+    <style>
+        body {
+            font-family: "Microsoft JhengHei", sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        .card-container {
+            max-width: 900px;
+            margin: 20px auto;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .selector-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .selector-container select {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+
+            min-width: 200px;
+        }
+
+        .card-container p.intro {
+            font-size: 16px;
+            color: #34495e;
+            margin-top: 10px;
+            font-weight: normal;
+        }
+
+        .card-container form {
+            margin-top: 20px;
+        }
+
+        p {
+            font-weight: bold;
+            margin-top: 20px;
+            color: #34495e;
+        }
+
+        label {
+            display: block;
+            margin: 5px 0 10px 20px;
+            color: #555;
+        }
+
+        button {
+            margin-top: 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        #result {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 25px;
+            max-width: 900px;
+            margin: 20px auto;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        #result h2,
+        #result h3 {
+            color: #2c3e50;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background-color: #fff;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+            font-size: 15px;
+        }
+
+        th {
+            background-color: #ecf0f1;
+        }
+
+        .risk-conservative {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .risk-balanced {
+            color: #e67e22;
+            font-weight: bold;
+        }
+
+        .risk-aggressive {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .filter-box {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+            padding: 20px 25px;
+
+
+            border-radius: 12px;
+
+        }
+
+        .filter-box label {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-box select {
+            padding: 10px 14px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            min-width: 200px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+        }
+
+
+
+
+
+
+        @media screen and (max-width: 768px) {
+
+            .card-container,
+            #result {
+                padding: 15px;
+            }
+
+            table,
+            thead,
+            tbody,
+            th,
+            td,
+            tr {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>基金推薦小幫手</h1>
+
+    <div class="card-container">
+        <div class="selector-container">
+
+        </div>
+
+        <p class="intro">
+            您好，為使本次所推薦的基金符合您的的風險承受度以及投資偏好，在投資前請幫忙回答以下問題，謝謝!
+        </p>
+
+        <form id="questionnaireForm">
+            <p>1. 當市場出現波動時，您會如何反應？</p>
+            <label><input type="radio" name="q1" value="1"> (A) 擔心並尋求減少風險 </label><br>
+            <label><input type="radio" name="q1" value="2"> (B) 感到不安，但會堅持不變 </label><br>
+            <label><input type="radio" name="q1" value="3"> (C) 尋找更多投資機會 </label><br>
+
+            <p>2. 若您的投資損失了20%，您會怎麼做？</p>
+            <label><input type="radio" name="q2" value="1"> (A) 立即賣出，以減少損失 </label><br>
+            <label><input type="radio" name="q2" value="2"> (B) 保持不變，等待市場回升 </label><br>
+            <label><input type="radio" name="q2" value="3"> (C) 購買更多，視為進場的好機會 </label><br>
+
+            <p>3. 請問您對長期投資（例如5年以上）的態度如何？</p>
+            <label><input type="radio" name="q3" value="1"> (A) 不願意承擔過多風險 </label><br>
+            <label><input type="radio" name="q3" value="2"> (B) 接受適度的波動並追求穩定回報 </label><br>
+            <label><input type="radio" name="q3" value="3"> (C) 不太偏好長期投資 </label><br>
+
+            <p>4. 請問您投資的主要目的是什麼？</p>
+            <label><input type="radio" name="q4" value="1"> (A) 穩定資金 </label><br>
+            <label><input type="radio" name="q4" value="2"> (B) 提早退休、教育基金 </label><br>
+            <label><input type="radio" name="q4" value="3"> (C) 高風險快速財富自由 </label><br>
+
+            <p>5. 若有充裕資金，您會選擇哪些投資標的？</p>
+            <label><input type="radio" name="q5" value="1"> (A) 低風險、穩定回報 </label><br>
+            <label><input type="radio" name="q5" value="2"> (B) 穩健型資產 </label><br>
+            <label><input type="radio" name="q5" value="3"> (C) 高風險、高回報資產 </label><br>
+
+            <p>6. 可接受的投資回報率區間？</p>
+            <label><input type="radio" name="q6" value="1"> (A) -5%至5% </label><br>
+            <label><input type="radio" name="q6" value="2"> (B) -15%至15% </label><br>
+            <label><input type="radio" name="q6" value="3"> (C) -30%至30% </label><br>
+
+            <p>7. 是否曾經歷過重大的投資損失？</p>
+            <label><input type="radio" name="q7" value="1"> (A) 是，並且對風險有顧慮 </label><br>
+            <label><input type="radio" name="q7" value="2"> (B) 是，但仍願意投資 </label><br>
+            <label><input type="radio" name="q7" value="3"> (C) 尚未有投資經驗 </label><br>
+
+            <p>8. 您偏好投資什麼樣的資產？</p>
+            <label><input type="radio" name="q8" value="1"> (A) 國債、國庫券 </label><br>
+            <label><input type="radio" name="q8" value="2"> (B) 股票與債券混合基金 </label><br>
+            <label><input type="radio" name="q8" value="3"> (C) 科技股、AI概念股 </label><br>
+
+            <p>9. 預期的投資期限？</p>
+            <label><input type="radio" name="q9" value="1"> (A) 少於1年 </label><br>
+            <label><input type="radio" name="q9" value="2"> (B) 1-3年 </label><br>
+            <label><input type="radio" name="q9" value="3"> (C) 超過5年 </label><br>
+
+            <p>10. 您的投資經驗？</p>
+            <label><input type="radio" name="q10" value="1"> (A) 沒有經驗 </label><br>
+            <label><input type="radio" name="q10" value="2"> (B) 有一些經驗 </label><br>
+            <label><input type="radio" name="q10" value="3"> (C) 有豐富經驗 </label><br>
+
+            <button type="button" onclick="submitTotalScore()">送出</button>
+        </form>
+    </div>
+</body>
+
+
+<div id="result" style="display: none;">
+    <h2>推薦結果</h2>
+    <p><strong>風險等級:</strong> <span id="riskLevel"></span></p>
+    <p><strong>總分:</strong> <span id="totalScore"></span></p>
+    <div id="filterArea" class="filter-box">
+        <label for="industrySelect">📂 類型：</label>
+        <select id="industrySelect">
+            <option>請選擇類型</option>
+        </select>
+
+        <label for="countrySelect">🌍 投資區域：</label>
+        <select id="countrySelect">
+            <option>請選擇投資區域</option>
+        </select>
+    </div>
+
+
+    <h3>推薦的基金：</h3>
+    <table id="fundTable">
+        <thead>
+            <tr>
+                <th>基金名稱</th>
+                <th>類型</th>
+                <th>投資區域</th>
+                <th>標準差</th>
+                <th>夏普值</th>
+                <th>Beta 值</th>
+                <th>三個月報酬</th>
+                <th>今年來報酬率</th>
+            </tr>
+        </thead>
+        <tbody id="fundTableBody"></tbody>
+    </table>
+</div>
+
+<script>
+    let csvData = [];
+
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch("基金資料彙整1140222.csv")
+            .then(response => response.text())
+            .then(text => {
+                parseCSV(text);
+                populateDropdowns();
+            })
+            .catch(error => console.error("無法讀取 CSV:", error));
+    });
+
+
+    function parseCSV(text) {
+        const lines = text.trim().split("\n");
+        const headers = lines[0].split(",");
+
+        const nameIndex = headers.indexOf("標的名稱");
+        const industryIndex = headers.indexOf("類型");
+        const countryIndex = headers.indexOf("投資區域");
+        const stdDevIndex = headers.indexOf("標準差％");
+        const sharpeIndex = headers.indexOf("夏普值");
+        const betaIndex = headers.indexOf("β係數");
+        const r3mIndex = headers.indexOf("三個月％");
+        const ytdIndex = headers.indexOf("今年來％");
+        const riskIndex = headers.indexOf("風險等級");
+
+        csvData = lines.slice(1).map(line => {
+            const columns = line.split(",");
+            return {
+                name: columns[nameIndex]?.trim(),
+                stdDev: parseFloat(columns[stdDevIndex]) || 0,
+                sharpe: parseFloat(columns[sharpeIndex]) || 0,
+                beta: parseFloat(columns[betaIndex]) || 0,
+                r3m: parseFloat(columns[r3mIndex]) || 0,
+                rYTD: parseFloat(columns[ytdIndex]) || 0,
+                risk: columns[riskIndex]?.trim(),
+                industry: columns[industryIndex]?.trim(),
+                country: columns[countryIndex]?.trim()
+            };
+        });
+
+        console.log("CSV 讀取成功，共 " + csvData.length + " 筆資料。");
+    }
+
+    function populateDropdowns() {
+        const industries = [...new Set(csvData.map(d => d.industry).filter(Boolean))].sort();
+        const countries = [...new Set(csvData.map(d => d.country).filter(Boolean))].sort();
+
+
+        const industrySelect = document.getElementById("industrySelect");
+        const countrySelect = document.getElementById("countrySelect");
+
+        industrySelect.innerHTML = "<option>請選擇類型</option>" + industries.map(i => `<option>${i}</option>`).join("");
+        countrySelect.innerHTML = "<option>請選擇投資區域</option>" + countries.map(c => `<option>${c}</option>`).join("");
+    }
+
+
+    function submitTotalScore() {
+        let totalScore = 0;
+        let allAnswered = true;
+
+        for (let i = 1; i <= 10; i++) {
+            const selected = document.querySelector(`input[name="q${i}"]:checked`);
+            if (!selected) {
+                allAnswered = false;
+                break;
+            }
+            totalScore += parseInt(selected.value);
+        }
+
+        if (!allAnswered) {
+            alert("請完成所有問題！");
+            return;
+        }
+
+        const riskLevel = determineRiskLevel(totalScore);
+       
+
+        
+
+        if (csvData.length === 0) {
+            alert("基金數據未載入，請稍候再試！");
+            return;
+        }
+
+        let recommendations = csvData
+            .filter(fund =>
+                fund.risk === riskLevel &&
+                !isNaN(fund.rYTD)
+            )
+            .sort((a, b) => b.rYTD - a.rYTD);
+
+
+        const riskSpan = document.getElementById("riskLevel");
+        riskSpan.textContent = riskLevel;
+        riskSpan.className = "";
+
+        if (riskLevel === "保守型") riskSpan.classList.add("risk-conservative");
+        else if (riskLevel === "穩健型") riskSpan.classList.add("risk-balanced");
+        else if (riskLevel === "積極型") riskSpan.classList.add("risk-aggressive");
+
+        document.getElementById("totalScore").textContent = totalScore;
+        currentRecommendations = recommendations;
+        filterByDropdowns();
+        document.getElementById("result").style.display = "block";
+
+        const tableBody = document.getElementById("fundTableBody");
+        tableBody.innerHTML = recommendations.length > 0
+            ? recommendations.map(fund => `
+      <tr>
+          <td>${fund.name}</td>
+          <td>${fund.industry}</td>
+          <td>${fund.country}</td>
+          <td>${fund.stdDev.toFixed(2)}%</td>
+          <td>${fund.sharpe.toFixed(2)}</td>
+          <td>${fund.beta.toFixed(2)}</td>
+          <td>${fund.r3m.toFixed(2)}%</td>
+          <td>${fund.rYTD.toFixed(2)}%</td>
+      </tr>
+  `).join("")
+            : `<tr><td colspan="8">沒有符合條件的基金</td></tr>`;
+
+
+
+        document.getElementById("result").style.display = "block";
+    }
+
+    function determineRiskLevel(score) {
+        if (score >= 10 && score <= 16) return "保守型";
+        if (score >= 17 && score <= 23) return "穩健型";
+        if (score >= 24 && score <= 30) return "積極型";
+        return "未知";
+    }
+
+    document.getElementById("industrySelect").addEventListener("change", filterByDropdowns);
+    document.getElementById("countrySelect").addEventListener("change", filterByDropdowns);
+
+    let currentRecommendations = [];  // 儲存所有符合風險屬性的基金
+
+    function filterByDropdowns() {
+        const selectedIndustry = document.getElementById("industrySelect").value;
+        const selectedCountry = document.getElementById("countrySelect").value;
+
+        const filtered = currentRecommendations.filter(fund => {
+            return (selectedIndustry === "請選擇類型" || fund.industry === selectedIndustry) &&
+                (selectedCountry === "請選擇投資區域" || fund.country === selectedCountry);
+        });
+
+        const tableBody = document.getElementById("fundTableBody");
+        tableBody.innerHTML = filtered.length > 0
+            ? filtered.slice(0, 10).map(fund => `
+            <tr>
+                <td>${fund.name}</td>
+                <td>${fund.industry}</td>
+                <td>${fund.country}</td>
+                <td>${fund.stdDev.toFixed(2)}%</td>
+                <td>${fund.sharpe.toFixed(2)}</td>
+                <td>${fund.beta.toFixed(2)}</td>
+                <td>${fund.r3m.toFixed(2)}%</td>
+                <td>${fund.rYTD.toFixed(2)}%</td>
+            </tr>
+        `).join("")
+            : `<tr><td colspan="8">沒有符合條件的基金</td></tr>`;
+    }
+
+
+</script>
