@@ -240,13 +240,14 @@
   </div>
 </body>
 
-
+{% load static %}
 <script>
   let csvData = [];
   let currentRecommendations = [];
 
   document.addEventListener("DOMContentLoaded", function () {
-    fetch("基金資料彙整1140222.csv")
+    // fetch("./基金資料彙整1140222.csv")
+    fetch("{% static './基金資料彙整1140222.csv' %}")
       .then(response => response.text())
       .then(text => {
         parseCSV(text);
