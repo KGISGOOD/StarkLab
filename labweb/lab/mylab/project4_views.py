@@ -11,9 +11,9 @@ def ai_report(request):
     }
     return render(request, 'report.html', context)
 
-from langchain.memory import ConversationBufferMemory
-from langchain.prompts import PromptTemplate
-from langchain.chains import ConversationChain
+# from langchain.memory import ConversationBufferMemory
+# from langchain.prompts import PromptTemplate
+# from langchain.chains import ConversationChain
 
 from django.http import JsonResponse
 import requests
@@ -88,7 +88,13 @@ def setup_chatbot(xai_api_key, model_name, training_prompt, disaster_phase):
 
     如果資訊來源是會議記錄，請直接轉換為與民眾相關的事實陳述，不要提及任何會議相關內容或機關內部作業細節。
 
-    請直接輸出新聞稿內容，不需加入任何標記符號或段落標題。
+    **格式規則（請嚴格遵守）**：
+    1. **嚴禁**使用 Markdown 語法，請**不要**使用 `#`（標題符號）、`*`（星號）、`-`（條列符號）、`>`（引用符號）或其他特殊符號。
+    2. **嚴禁**使用條列式寫法（例如「- 颱風來襲」這種格式），請全部用完整敘述句，例如：「根據氣象局資料，颱風已經進入台灣東部海域，並且帶來強風豪雨。」 
+    3. 請確保新聞稿內容流暢、易讀，**每一部分的內容應該至少有三句以上**，避免過於簡短。
+    4. **請直接輸出新聞稿內容，不要加入任何標記符號或段落標題**，確保格式乾淨。
+
+
     """
     # 首先加入系統提示
     initial_messages.append({
@@ -187,7 +193,11 @@ def chat_function(message, model_settings):
         url = 'https://api.x.ai/v1/chat/completions'
         messages = model_settings['initial_messages'].copy()
         messages.append({"role": "user", "content": message})
-        messages.append({"role": "system", "content": model_settings['output_prompt']})
+        # messages.append({"role": "system", "content": model_settings['output_prompt']})
+        messages.append({
+            "role": "system",
+            "content": f"請**嚴格**依照以下格式產生新聞稿：\n\n{model_settings['output_prompt']}"
+        })
 
         
         data = {
