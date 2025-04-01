@@ -319,7 +319,7 @@ def extract_image_url(driver, sources_urls):
 def crawler_first_stage(request):
     try:
         start_time = time.time()
-        day = "30"
+        day = "7"
         
         # Google News 搜尋 URL
         urls = [
