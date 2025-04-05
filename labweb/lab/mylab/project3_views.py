@@ -491,6 +491,18 @@ def news_ai(request):
                     time.sleep(wait_time)
                     continue
                 return "發生錯誤"  # 改為有意義的預設值
+    
+    #防呆機制，刪除內文是錯誤的新聞
+    # 讀取 CSV
+    df = pd.read_csv('w2.csv')
+    
+    # 篩選出 '內文' 欄位不是 "錯誤" 的資料
+    cleaned_df = df[df['內文'] != '錯誤'].copy()
+
+    # 存回 CSV（不包含索引）
+    cleaned_df.to_csv('w2.csv', index=False)
+    print(f"已成功清除含有錯誤內文的新聞，共刪除 {len(df) - len(cleaned_df)} 筆資料。")
+
             
     #1.水利署_確認是否災害
     # 加入重試機制參數
