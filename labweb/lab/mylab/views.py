@@ -79,14 +79,10 @@ def project6(request):
     return render(request, 'project6.html')
 
 
-from django.http import JsonResponse
-from django.shortcuts import render
 
 # 第一階段爬蟲
 def crawler_first_stage(request):
-    # 實作爬蟲邏輯
-    # 比如：從網站抓取新聞資料
-    # 假設爬蟲執行成功後返回一個結果
+    # 用來「顯示目前執行狀況」或「回傳執行結果」
     data = {
         "status": "success",
         "message": "爬蟲執行完畢，已抓取資料"
@@ -95,8 +91,6 @@ def crawler_first_stage(request):
 
 # 第二階段 AI 處理
 def news_ai(request):
-    # 假設這裡是 AI 模型處理邏輯
-    # 比如：處理新聞資料並分析
     data = {
         "status": "success",
         "message": "AI 處理完成，結果返回"

@@ -315,6 +315,8 @@ def extract_image_url(driver, sources_urls):
 # #測試爬蟲：開始爬蟲url http://localhost:8000/api/news/
 # #測試爬蟲：ai處理 api http://localhost:8000/api/news/ai/
 # #測試爬蟲：開啟後端api http://localhost:8000/api/news/sql/  
+
+# #爬蟲＋ai處理 http://127.0.0.1:8000/api/run_crawler_and_ai/
 @require_GET
 def crawler_first_stage(request):
     try:
@@ -1146,9 +1148,9 @@ def view_raw_news(request):
 
 
 
-# 新增這個函數 👉 run_crawler_and_ai
+# 新增函數 run_crawler_and_ai
 def run_crawler_and_ai(request):
-    print("🔁 run_crawler_and_ai 被呼叫")
+    print("run_crawler_and_ai 被呼叫")
 
     # 呼叫第一階段爬蟲
     crawler_response = crawler_first_stage(request)
