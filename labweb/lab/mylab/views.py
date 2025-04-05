@@ -3,6 +3,7 @@ from django.http import JsonResponse, HttpResponse
 import logging
 from .project3_views import crawler_first_stage  # 導入原本的爬蟲主函數
 
+
 logger = logging.getLogger(__name__)
 
 # 現有的視圖
@@ -78,82 +79,42 @@ def project6(request):
     return render(request, 'project6.html')
 
 
-# 新增爬蟲執行的視圖
-def run_crawler(request):
-    """
-    執行爬蟲的 API 端點
-    訪問 /run_crawler/ 時會觸發爬蟲程序
-    """
-    # try:
-    #     logger.info("開始執行爬蟲...")
-    #     main()  # 執行爬蟲主程序
-    #     logger.info("爬蟲執行完成")
-    #     return JsonResponse({
-    #         "message": "爬蟲執行成功！"
-    #     })
-    # except Exception as e:
-    #     logger.error(f"爬蟲執行失敗：{str(e)}")
-    #     return JsonResponse({
-    #         "message": f"爬蟲執行失敗：{str(e)}"
-    #     }, status=500)
+from django.http import JsonResponse
+from django.shortcuts import render
 
-    html_content = """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>爬蟲狀態</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                margin: 20px;
-                text-align: center;
-            }
-            #status {
-                font-size: 18px;
-                margin: 20px;
-                padding: 10px;
-            }
-            .running {
-                color: blue;
-            }
-            .success {
-                color: green;
-            }
-            .error {
-                color: red;
-            }
-        </style>
-    </head>
-    <body>
-        <div id="status" class="running">正在執行爬蟲...</div>
-        
-        <script>
-            async function runCrawler() {
-                const statusDiv = document.getElementById('status');
-                try {
-                    statusDiv.className = 'running';
-                    statusDiv.textContent = '正在執行爬蟲...';
-                    
-                    /* 發送 HTTP GET 請求到 /update/ API，這裡用來觸發爬蟲執行 */
-                    const response = await fetch('/update/');
-                    const data = await response.json();
-                    
-                    if (data.message.includes('成功')) {
-                        statusDiv.className = 'success';
-                        statusDiv.textContent = data.message;
-                    } else {
-                        throw new Error(data.message);
-                    }
-                } catch (error) {
-                    statusDiv.className = 'error';
-                    statusDiv.textContent = '爬蟲執行失敗：' + error.message;
-                }
-            }
+# 第一階段爬蟲
+def crawler_first_stage(request):
+    # 實作爬蟲邏輯
+    # 比如：從網站抓取新聞資料
+    # 假設爬蟲執行成功後返回一個結果
+    data = {
+        "status": "success",
+        "message": "爬蟲執行完畢，已抓取資料"
+    }
+    return JsonResponse(data)
 
-            // 頁面載入後立即執行爬蟲
-            window.onload = runCrawler;
-        </script>
-    </body>
-    </html>
-    """
-    return HttpResponse(html_content)
+# 第二階段 AI 處理
+def news_ai(request):
+    # 假設這裡是 AI 模型處理邏輯
+    # 比如：處理新聞資料並分析
+    data = {
+        "status": "success",
+        "message": "AI 處理完成，結果返回"
+    }
+    return JsonResponse(data)
+
+# 啟動爬蟲和 AI 處理的 API
+def run_crawler_and_ai(request):
+    # 執行爬蟲階段
+    crawler_response = crawler_first_stage(request)
+    # 檢查爬蟲是否執行成功
+    if crawler_response.status_code == 200:
+        # 若爬蟲成功，再執行 AI 處理
+        ai_response = news_ai(request)
+        return ai_response  # 返回 AI 處理結果
+    else:
+        # 若爬蟲失敗，返回錯誤訊息
+        return JsonResponse({
+            "status": "error",
+            "message": "爬蟲執行失敗，無法啟動 AI 處理"
+        }, status=500)

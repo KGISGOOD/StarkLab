@@ -1141,3 +1141,27 @@ def view_raw_news(request):
 
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+
+
+
+
+# 新增這個函數 👉 run_crawler_and_ai
+def run_crawler_and_ai(request):
+    print("🔁 run_crawler_and_ai 被呼叫")
+
+    # 呼叫第一階段爬蟲
+    crawler_response = crawler_first_stage(request)
+    if crawler_response.status_code != 200:
+        return JsonResponse({'error': 'Crawler failed'}, status=500)
+
+    # 呼叫 AI 處理
+    ai_response = news_ai(request)
+    if ai_response.status_code != 200:
+        return JsonResponse({'error': 'AI failed'}, status=500)
+
+    return JsonResponse({
+        'status': 'all done',
+        'crawler': crawler_response.content.decode(),
+        'ai': ai_response.content.decode(),
+    })
