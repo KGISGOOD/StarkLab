@@ -152,3 +152,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # CSRF 設定
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = False  # 允許 JavaScript 訪問 CSRF token
+
+
+
+# 在 settings.py 中添加這一行，CSRF_TRUSTED_ORIGINS
+CSRF_TRUSTED_ORIGINS = [
+    'http://127.0.0.1',
+    'http://localhost',
+]

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f4f7fa;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .input-group, .output-group {
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            color: #34495e;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            resize: vertical;
+            font-size: 16px;
+        }
+        select {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+            width: 200px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            margin-right: 10px;
+        }
+        #speech-btn {
+            background-color: #27ae60;
+            color: white;
+        }
+        #speech-btn.recording {
+            background-color: #c0392b;
+        }
+        #translate-btn {
+            background-color: #3498db;
+            color: white;
+        }
+        #history-btn {
+            background-color: #8e44ad;
+            color: white;
+        }
+        #clear-history-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+        #play-btn {
+            background-color: #f1c40f;
+            color: white;
+        }
+        #optimize-btn {
+            background-color: #16a085;
+            color: white;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        #result, #history, #optimized-result {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #ecf0f1;
+            white-space: pre-wrap;
+            min-height: 50px;
+        }
+        #optimized-result {
+            margin-top: 10px;
+        }
+        h3 {
+            color: #2c3e50;
+            margin-top: 20px;
+            display: inline-block;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>水利署翻譯🐔</h1>
+        <!-- CSRF token -->
+        {% csrf_token %}
+        
+        <div class="input-group">
+            <label for="text-input">輸入要翻譯的內容:</label>
+            <textarea id="text-input" rows="4" placeholder="可以用打字或是用下面語音翻譯按鈕來翻譯，SpeechRecognition API 是基於瀏覽器的 Web Speech API，所以錄音時間限制1~2分鐘"></textarea>
+            <button id="speech-btn" onclick="toggleSpeechRecognition()">開始錄音</button>
+        </div>
+        
+        <div class="input-group">
+            <label for="source-lang-select">選擇原始語言:</label>
+            <select id="source-lang-select">
+                <option value="zh-TW">中文</option>
+                <option value="en-US">英文</option>
+                <option value="es-ES">西班牙文</option>
+                <option value="fr-FR">法文</option>
+                <option value="ja-JP">日文</option>
+            </select>
+        </div>
+        
+        <div class="input-group">
+            <label for="target-lang-select">選擇要翻譯的語言:</label>
+            <select id="target-lang-select">
+                <option value="en">英文</option>
+                <option value="zh-TW">中文</option>
+                <option value="es">西班牙文</option>
+                <option value="fr">法文</option>
+                <option value="ja">日文</option>
+            </select>
+        </div>
+        
+        <button id="translate-btn" onclick="translateText()">開始翻譯</button>
+
+        <div class="output-group">
+            <h3>翻譯文字:</h3>
+            <button id="play-btn" onclick="playTranslatedText()">播放聲音</button>
+            <div id="result"></div>
+        </div>
+        
+        <div class="output-group">
+            <h3>翻譯紀錄:</h3>
+            <button id="history-btn" onclick="getHistory()">歷史紀錄</button>
+            <button id="clear-history-btn" onclick="clearHistory()">清除翻譯歷史</button>
+            <div id="history"></div>
+        </div>
+        
+        <div class="output-group">
+            <h3>優化翻譯:</h3>
+            <button id="optimize-btn" onclick="optimizeTranslation()">優化語句</button>
+            <div id="optimized-result"></div>
+        </div>
+    </div>
+
+    <script>
+        // 獲取 CSRF token
+        function getCsrfToken() {
+            const tokenElement = document.querySelector('input[name="csrfmiddlewaretoken"]');
+            return tokenElement ? tokenElement.value : '';
+        }
+
+        // 語音轉文字功能
+        let recognition;
+        let isRecording = false;
+        const speechBtn = document.getElementById('speech-btn');
+        let fullTranscript = ''; // 用於儲存完整的語音轉文字結果
+
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = true; // 啟用持續錄音
+            recognition.interimResults = true; // 提供即時轉錄結果
+
+            recognition.onresult = function(event) {
+                let interimTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    if (event.results[i].isFinal) {
+                        fullTranscript += event.results[i][0].transcript + ' ';
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+                // 即時更新 textarea，顯示完整和臨時結果
+                document.getElementById('text-input').value = fullTranscript + interimTranscript;
+            };
+
+            recognition.onend = function() {
+                if (!isRecording) { // 只有手動停止時才更新按鈕狀態
+                    speechBtn.innerText = '開始錄音';
+                    speechBtn.classList.remove('recording');
+                    document.getElementById('text-input').value = fullTranscript.trim(); // 最終結果去除多餘空格
+                }
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error:', event.error);
+                alert('語音識別失敗: ' + event.error);
+                isRecording = false;
+                speechBtn.innerText = '開始錄音';
+                speechBtn.classList.remove('recording');
+                fullTranscript = ''; // 重置錄音內容
+            };
+        } else {
+            speechBtn.disabled = true;
+            speechBtn.innerText = '語音不支援';
+            alert('你的瀏覽器不支援語音識別。');
+        }
+
+        function toggleSpeechRecognition() {
+            if (!recognition) return;
+            const sourceLang = document.getElementById('source-lang-select').value;
+            recognition.lang = sourceLang;
+
+            if (isRecording) {
+                recognition.stop();
+                isRecording = false;
+            } else {
+                fullTranscript = ''; // 重置之前的錄音內容
+                recognition.start();
+                isRecording = true;
+                speechBtn.innerText = '停止錄音';
+                speechBtn.classList.add('recording');
+            }
+        }
+
+        // 發送翻譯請求
+        function translateText() {
+            const text = document.getElementById('text-input').value;
+            const targetLang = document.getElementById('target-lang-select').value;
+
+            if (!text) {
+                alert('請輸入要翻譯的文字！');
+                return;
+            }
+            fetch('http://127.0.0.1:8000/translate/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: `text=${encodeURIComponent(text)}&target_lang=${targetLang}`
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'ok') {
+                    document.getElementById('result').innerText = data.translated_text;
+                } else {
+                    document.getElementById('result').innerText = '錯誤: ' + data.error;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('result').innerText = '翻譯失敗，請再試一次。';
+            });
+        }
+
+        // 播放翻譯文本的語音
+        function playTranslatedText() {
+            const text = document.getElementById('result').innerText;
+            const targetLang = document.getElementById('target-lang-select').value;
+
+            if (!text || text.startsWith('錯誤') || text === '翻譯失敗，請再試一次。') {
+                alert('無有效文字可播放！');
+                return;
+            }
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            switch (targetLang) {
+                case 'en': utterance.lang = 'en-US'; break;
+                case 'zh-TW': utterance.lang = 'zh-TW'; break;
+                case 'es': utterance.lang = 'es-ES'; break;
+                case 'fr': utterance.lang = 'fr-FR'; break;
+                case 'ja': utterance.lang = 'ja-JP'; break;
+                default: utterance.lang = 'en-US';
+            }
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // 獲取翻譯歷史
+        function getHistory() {
+            fetch('http://127.0.0.1:8000/history/', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'ok') {
+                    const historyDiv = document.getElementById('history');
+                    if (data.conversation.length === 0) {
+                        historyDiv.innerText = '尚無翻譯歷史。';
+                    } else {
+                        historyDiv.innerHTML = '';
+                        data.conversation.forEach(item => {
+                            historyDiv.innerHTML += `<p><strong>原文:</strong> ${item.source_text} <br>
+                                                    <strong>翻譯 (${item.target_lang}):</strong> ${item.translated_text}</p>`;
+                        });
+                    }
+                } else {
+                    document.getElementById('history').innerText = '載入歷史失敗。';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('history').innerText = '無法載入歷史，請再試一次。';
+            });
+        }
+
+        // 清除翻譯歷史
+        function clearHistory() {
+            if (confirm('確定要清除翻譯歷史嗎？')) {
+                fetch('http://127.0.0.1:8000/history/', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken()
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status === 'ok') {
+                        document.getElementById('history').innerText = '翻譯歷史已成功清除。';
+                        getHistory();
+                    } else {
+                        document.getElementById('history').innerText = '錯誤: ' + data.error;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('history').innerText = '無法清除歷史，請再試一次。';
+                });
+            }
+        }
+
+        // 優化翻譯後的文字功能（grok_ai）
+        function optimizeTranslation() {
+            const translatedText = document.getElementById('result').innerText;
+            const targetLang = document.getElementById('target-lang-select').value;
+
+            if (!translatedText || translatedText.startsWith('錯誤') || translatedText === '翻譯失敗，請再試一次。') {
+                alert('請先進行翻譯以獲取要優化的文字！');
+                return;
+            }
+
+            const prompt = `Optimize the following translated text: "${translatedText}" in its target language (${targetLang}). The optimized version should improve clarity, fluency, or readability while maintaining the original meaning. Return only the optimized text without additional explanation.`;
+
+            const apiKey = 'xai-sEKM3YfLj81l66aMWyXpmasF8Xab7hvpcwtEY4WU0jIeJfEoWDPSjm5VjbH9bq9JDNN5SmAAIrGyjfPN'; // 請替換為你的 xAI API key
+            const apiUrl = 'https://api.x.ai/v1/chat/completions'; // xAI API 端點
+
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: 'grok-beta',
+                    messages: [
+                        { role: 'system', content: '你是一個文字優化助手，幫我優化翻譯後的內容.' },
+                        { role: 'user', content: prompt }
+                    ],
+                    max_tokens: 150,
+                    temperature: 0.7
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const optimizedText = data.choices[0].message.content;
+                document.getElementById('optimized-result').innerText = optimizedText;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('optimized-result').innerText = '無法優化翻譯文字，請再試一次。';
+            });
+        }
+    </script>
+</body>
+</html>

@@ -5,6 +5,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic.base import RedirectView
 
+
 urlpatterns = [
     # 實驗室
 
@@ -76,6 +77,10 @@ urlpatterns = [
 
     path("translate/", project51_views.translate, name='translate'),
     path('listen/', project51_views.listen, name='listen'),
+
+    path('trans/', views.trans, name='trans'),
+    path('translate/', views.translate_text_view, name='translate_text'),  # 注意函數名已更改
+    path('history/', views.get_history, name='get_history'),
 
 
 ]
