@@ -65,7 +65,11 @@
   <div class="group-15">
     <img class="line-26" src="{% static 'img/line-26.svg' %}" alt="Line 26" />
     <div class="text-29">
-      本專案旨在開發一款智能機器人系統，專注於自動化搜集過去七天內全球範圍內發生的重大災害事件。該系統透過先進的數據抓取技術，實時監測國際新聞來源，並整合多樣化的資訊渠道，以確保災害數據的全面性與即時性。在此基礎上，專案運用人工智慧（AI）技術，對搜集到的海量資訊進行高效篩選與分析，提取關鍵內容，例如災害類型、發生地點、影響範圍、傷亡情況以及緊急應對措施等重要細節。篩選後的資訊將經過結構化處理，並以簡潔易懂的形式，即時且迅速地透過推播系統傳遞給民眾，旨在提升公眾對國際災害的認知與應變能力，為個人與社會提供及時的防災支援與決策參考。
+      本專案運用網路爬蟲技術與大數據分析，即時蒐集並整理全球重大水文災害資訊，協助水利署長官們迅速掌握最新情勢，以便在行政院會議、立法院質詢及各類政策討論中提供具體案例與數據支持，並作為未來施政規劃的重要參考依據。
+<p>技術架構與作業方式:</p>
+本專案目前採用關鍵字訂閱與自動爬蟲技術，每日從各大新聞平台、政府機構報告及國際防災組織網站擷取相關資訊，篩選並彙整成簡訊或報告格式，提供給水利署決策者。未來將逐步導入自然語言處理（NLP）技術與機器學習演算法，進一步提高資訊過濾與分類的準確度，確保獲取的數據更具時效性與價值。
+透過本專案，水利署將能夠更精準地掌握全球水文災害發展趨勢，強化政策應變能力，確保防災決策的前瞻性與科學依據。
+
     </div>
   </div>
 
@@ -181,7 +185,7 @@
             </div>
           </div>
         </a>
-        <a href="http://starklab.tw:3000/api/run_crawler_and_ai/" target="_blank" rel="noopener noreferrer">
+        <!-- <a href="http://starklab.tw:3000/api/run_crawler_and_ai/" target="_blank" rel="noopener noreferrer">
           <div class="group-50">
             <div class="text-34 notosanstc-bold-navy-blue-36px">一鍵執行</div>
             <div class="text-3 notosanstc-normal-black-24px">
@@ -192,7 +196,7 @@
               <div class="label notosanstc-bold-navy-blue-20px">點我前往</div>
             </div>
           </div>
-        </a>
+        </a> -->
 
         </div>
 
