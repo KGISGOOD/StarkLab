@@ -82,5 +82,5 @@ urlpatterns = [
     path('translate/', views.translate_text_view, name='translate_text'),  # 注意函數名已更改
     path('history/', views.get_history, name='get_history'),
 
-
+    path('alert/', views.emergency_alert),
 ]

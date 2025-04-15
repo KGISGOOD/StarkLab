@@ -163,3 +163,7 @@ def get_history(request):
         'status': 'fail',  
         'error': 'Only GET or DELETE method is allowed.' 
     }, status=400) 
+
+#測試用文字api
+def emergency_alert(request):
+    return JsonResponse({"message": "緊急警報"})
