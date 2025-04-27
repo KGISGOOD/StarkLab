@@ -25,6 +25,7 @@ import pandas as pd
 import re
 from datetime import datetime, timedelta
 from collections import defaultdict
+import random
 
 # 修改 ALLOWED_SOURCES 為只包含四家報社
 ALLOWED_SOURCES = {
@@ -358,6 +359,10 @@ def crawler_first_stage(request):
         'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%87%8E%E7%81%AB%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'#新增國際野火      
             ]
         
+        delay_seconds = random.uniform(2, 3) # 生成 2.0 到 3.0 之間的隨機浮點數
+        print(f"⏳ 等待 {delay_seconds:.2f} 秒後開始爬蟲...") # 打印等待信息
+        time.sleep(delay_seconds) # 執行等待
+
         # 主程式邏輯
         all_news_items = []  # 初始化一個空列表，用於存儲所有抓取到的新聞項目
         start_crawl_time = time.time()  # 記錄爬取開始的時間
