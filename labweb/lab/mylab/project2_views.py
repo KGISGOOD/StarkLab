@@ -178,11 +178,17 @@ def callback(request):
 
 
 def fetch_reports(stock_code):
+    # urls = [
+    #     'https://mops.twse.com.tw/mops/web/ajax_t164sb03',
+    #     'https://mops.twse.com.tw/mops/web/ajax_t164sb04',
+    #     'https://mops.twse.com.tw/mops/web/ajax_t164sb05'
+    # ]
     urls = [
-        'https://mops.twse.com.tw/mops/web/ajax_t164sb03',
-        'https://mops.twse.com.tw/mops/web/ajax_t164sb04',
-        'https://mops.twse.com.tw/mops/web/ajax_t164sb05'
+        'https://mopsov.twse.com.tw/mops/web/ajax_t164sb03',
+        'https://mopsov.twse.com.tw/mops/web/ajax_t164sb04',
+        'https://mopsov.twse.com.tw/mops/web/ajax_t164sb05'
     ]
+
     results = []
 
     for url in urls:
@@ -833,7 +839,7 @@ def query_report(request):
 
                     
                     # 目標網站的 URL
-                    url = 'https://mops.twse.com.tw/mops/web/ajax_t05st22'
+                    url = 'https://mopsov.twse.com.tw/mops/web/ajax_t05st22'
 
                     # 固定公司代號
                     co_id = stock_code  # 假設 stock_code 是事先定義好的變量
@@ -1458,7 +1464,8 @@ def update_reports(request):
                     }
 
                     # 發送 POST 請求
-                    response = requests.post('https://mops.twse.com.tw/mops/web/ajax_t05st22', data=data)
+                    # response = requests.post('https://mops.twse.com.tw/mops/web/ajax_t05st22', data=data)
+                    response = requests.post('https://mopsov.twse.com.tw/mops/web/ajax_t05st22', data=data)
 
                     # 確認請求是否成功
                     if response.status_code == 200:
