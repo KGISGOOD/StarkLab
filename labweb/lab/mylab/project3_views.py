@@ -456,8 +456,9 @@ def crawler_first_stage(request):
         }, status=500)
 
 #ai 處理
-xai_api_key = "xai-sEKM3YfLj81l66aMWyXpmasF8Xab7hvpcwtEY4WU0jIeJfEoWDPSjm5VjbH9bq9JDNN5SmAAIrGyjfPN"
-model_name = "grok-beta"
+#導入api key
+from config import xai_api_key, model_name
+
 
 def news_ai(request):
 

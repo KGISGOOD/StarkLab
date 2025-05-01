@@ -23,8 +23,8 @@ import pandas as pd
 import os
 import csv
 
-xai_api_key = "xai-sEKM3YfLj81l66aMWyXpmasF8Xab7hvpcwtEY4WU0jIeJfEoWDPSjm5VjbH9bq9JDNN5SmAAIrGyjfPN"
-model_name = "grok-beta"
+#導入api key
+from config import xai_api_key, model_name
 
 # 測試 xai API
 @csrf_exempt 
