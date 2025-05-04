@@ -24,7 +24,7 @@ import os
 import csv
 
 #導入api key
-from config import xai_api_key, model_name
+from mylab.config import xai_api_key, model_name
 
 # 測試 xai API
 @csrf_exempt 

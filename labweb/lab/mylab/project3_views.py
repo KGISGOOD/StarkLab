@@ -457,7 +457,7 @@ def crawler_first_stage(request):
 
 #ai 處理
 #導入api key
-from config import xai_api_key, model_name
+from mylab.config import xai_api_key, model_name
 
 
 def news_ai(request):
