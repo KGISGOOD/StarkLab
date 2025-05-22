@@ -46,7 +46,8 @@ def financial_1(request):
 
 def financial_2(request):
     return render(request, 'financial_2.html')
-
+def financial_3(request):
+    return render(request, 'financial_3.html')
 
 
 

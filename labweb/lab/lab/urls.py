@@ -23,6 +23,8 @@ urlpatterns = [
     path('project_financial/', views.project_financial, name='project_financial'),
     path('financial_1/', views.financial_1, name='financial_1'),
     path('financial_2/', views.financial_2, name='financial_2'),
+    path('financial_3/', views.financial_3, name='financial_3'),
+
 
 
 
