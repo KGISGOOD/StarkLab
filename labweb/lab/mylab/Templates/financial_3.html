@@ -259,8 +259,10 @@
   let csvData = [];
   let currentRecommendations = [];
 
+
+ 
     document.addEventListener("DOMContentLoaded", function () {
-       fetch("{% static '/基金資料彙整1140222.csv' %}")
+       fetch("{% static '/基金資料1140405.csv' %}")
        // fetch("基金資料彙整1140222.csv")
             .then(response => response.text())
             .then(text => {
@@ -269,6 +271,7 @@
             })
             .catch(error => console.error("無法讀取 CSV:", error));
     });
+
 
 
 
@@ -418,10 +421,10 @@
 用語溫和專業，建立客戶信任感。
 客戶風險分析
 清楚列出客戶的：
-「總得分」
+「總分」
 「風險屬性」（保守型 / 穩健型 / 積極型）
 解釋這個風險屬性代表的投資性格，例如承受波動能力、報酬期待、投資心態特性。
-推薦基金列表（5檔） 每一檔基金需依照下列方式撰寫一小段文字：
+推薦基金列表（1檔） 每一檔基金需依照下列方式撰寫一小段文字：
 基金名稱。
 投資標的或策略概述（例如：主要投資於美國科技股、分散於全球政府公債等）。
 適度轉譯關鍵數據指標（如標準差、夏普值、β值）成易懂的說明，連結到客戶的風險屬性。
@@ -432,20 +435,26 @@
 概述這組基金配置的邏輯（例如：穩定收益搭配成長潛力／積極型搭配分散風險策略）。
 用溫和的口吻提醒客戶：「投資需定期檢視，隨著市場變動或人生目標調整資產配置」。
 鼓勵客戶可與財富管理顧問持續合作，掌握最佳布局。
-請用繁體中文回答所有問題。
+全部回答皆使用繁體中文
 `;
 
+
   async function getAIResponse(message) {
-    const fundSnippets = csvData.slice(0, 100).map(f =>
+    const fundSnippets = currentRecommendations.map(f =>
 
       `基金名稱：${f.name}，類型：${f.industry}，地區：${f.country}，標準差：${f.stdDev}%，夏普值：${f.sharpe}，Beta：${f.beta}，今年來報酬率：${f.rYTD}%`
     ).join("\n");
 
+    const scoreRaw = document.getElementById("totalScore").textContent || "";
+    const scoreText = scoreRaw.match(/\d+/)?.[0] || "未提供";
+
     const riskText = document.getElementById("riskLevel").textContent || "未提供";
+
     const fullPrompt = `${contextPrompt}
 
-使用者風險屬性為：「${riskText}」
-
+使用者風險分析如下：
+總得分為：${scoreText}
+風險屬性為：「${riskText}」
 
 目前推薦基金如下：
 ${fundSnippets || "（目前尚未有推薦資料）"}
@@ -457,7 +466,7 @@ ${message}
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": "Bearer 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",
+        "Authorization": "Bearer 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",
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
