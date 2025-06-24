@@ -26,6 +26,8 @@ import re
 from datetime import datetime, timedelta
 from collections import defaultdict
 import random
+import psutil
+
 
 # 修改 ALLOWED_SOURCES 為只包含四家報社
 ALLOWED_SOURCES = {
@@ -322,12 +324,26 @@ def extract_image_url(driver, sources_urls):
             
     return results
 
+# 初始化追蹤最高記憶體使用量
+max_mem_mb = 0
+
+# 顯示並回傳記憶體使用量（MB）
+def log_memory_usage(note=''):
+    global max_mem_mb
+    process = psutil.Process(os.getpid())
+    mem_mb = process.memory_info().rss / 1024 / 1024
+    print(f"[Memory] {note} 使用記憶體：{mem_mb:.2f} MB")
+    max_mem_mb = max(max_mem_mb, mem_mb)
+    return mem_mb
+
 # 爬蟲主函數
 @require_GET
 def crawler_first_stage(request):
     try:
+        global max_mem_mb
         start_time = time.time()
         day = "7"
+        log_memory_usage("開始爬蟲")
         
         # Google News 搜尋 URL
         urls = [
@@ -364,43 +380,44 @@ def crawler_first_stage(request):
             'https://news.google.com/search?q=%E5%9C%8B%E9%9A%9B%E9%87%8E%E7%81%AB%20when%3A'+day+'d%20bbc&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'#國際野火      
         ]
         
-        # 初始化 Chrome 驅動
+        log_memory_usage("初始化 Chrome 驅動前")
         driver = setup_chrome_driver()
+        log_memory_usage("初始化 Chrome 驅動後")
 
-        # 主程式邏輯
         all_news_items = []
         start_crawl_time = time.time()
 
-        # 對第一個 URL 使用 fetch_news_with_refresh
         if urls:
             first_url = urls[0]
             news_items = fetch_news_with_refresh(first_url, driver)
             all_news_items.extend(news_items)
+            log_memory_usage("第一個 URL 爬完後")
 
-        # 對其餘 URL 使用原始的 fetch_news
         for url in urls[1:]:
             news_items = fetch_news(url)
             all_news_items.extend(news_items)
+            log_memory_usage(f"爬完 URL: {url}")
 
         if all_news_items:
+            log_memory_usage("準備建立 DataFrame")
             news_df = pd.DataFrame(all_news_items)
             news_df = news_df.drop_duplicates(subset='標題', keep='first')
+            log_memory_usage("建立並去重 DataFrame 後")
 
             end_crawl_time = time.time()
             crawl_time = int(end_crawl_time - start_crawl_time)
             hours, remainder = divmod(crawl_time, 3600)
             minutes, seconds = divmod(remainder, 60)
-            
+
             time_str = ''
             if hours > 0:
                 time_str += f'{hours}小時'
             if minutes > 0 or hours > 0:
                 time_str += f'{minutes}分'
             time_str += f'{seconds}秒'
-            
+
             print(f'Google News 爬取完成，耗時：{time_str}')
 
-            # 刪除舊的 CSV 檔案（如果存在）
             first_stage_file = 'w2.csv'
             if os.path.exists(first_stage_file):
                 os.remove(first_stage_file)
@@ -427,18 +444,23 @@ def crawler_first_stage(request):
                 }
 
                 output_df = pd.DataFrame([result])
-                output_df.to_csv(first_stage_file, mode='a', header=not os.path.exists(first_stage_file), 
-                                index=False, encoding='utf-8')
+                log_memory_usage(f"儲存新聞：{item['標題']} 前")
+                output_df.to_csv(first_stage_file, mode='a', header=not os.path.exists(first_stage_file),
+                                 index=False, encoding='utf-8')
+                log_memory_usage(f"儲存新聞：{item['標題']} 後")
 
                 print(f"已儲存新聞: {result['標題']}")
 
             driver.quit()
+            final_mem_mb = log_memory_usage("爬蟲結束前")
 
             return JsonResponse({
                 'status': 'success',
                 'message': f'第一階段爬蟲完成！耗時：{time_str}',
                 'csv_file': first_stage_file,
-                'total_news': len(news_df)
+                'total_news': len(news_df),
+                'final_memory_mb': f'{final_mem_mb:.2f} MB',
+                'peak_memory_mb': f'{max_mem_mb:.2f} MB'
             })
 
         driver.quit()
