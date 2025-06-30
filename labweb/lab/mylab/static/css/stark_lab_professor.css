@@ -314,3 +314,30 @@
   width: 114px;
 }
 
+.paper-entry {
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+  line-height: 1.6;
+  position: relative;
+}
+
+.paper-title {
+  font-weight: bold;
+  font-size: 18px;
+  color: #333;
+}
+
+.paper-year {
+  position: absolute;
+  top: 0;
+  right: -35px;  /* 往內縮 10px */
+  color: #888;
+  font-size: 14px;
+}
+
+
+.paper-authors,
+.paper-journal {
+  margin-top: 5px;
+}
