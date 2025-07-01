@@ -327,7 +327,7 @@ def extract_image_url(driver, sources_urls):
 # 初始化追蹤最高記憶體使用量
 max_mem_mb = 0
 
-# 顯示並回傳記憶體使用量（MB）
+#  RAM 大小測量
 def log_memory_usage(note=''):
     global max_mem_mb
     process = psutil.Process(os.getpid())
@@ -335,6 +335,18 @@ def log_memory_usage(note=''):
     print(f"[Memory] {note} 使用記憶體：{mem_mb:.2f} MB")
     max_mem_mb = max(max_mem_mb, mem_mb)
     return mem_mb
+
+# CSV 檔案大小測量
+def get_file_size(filepath):
+    try:
+        size_bytes = os.path.getsize(filepath)
+        size_kb = size_bytes / 1024
+        size_mb = size_kb / 1024
+        print(f"[📦 檔案大小] {filepath}：{size_kb:.2f} KB / {size_mb:.2f} MB")
+        return size_mb
+    except Exception as e:
+        print(f"❌ 無法取得檔案大小：{e}")
+        return 0
 
 # 爬蟲主函數
 @require_GET
@@ -444,7 +456,7 @@ def crawler_first_stage(request):
                 }
 
                 output_df = pd.DataFrame([result])
-                log_memory_usage(f"儲存新聞：{item['標題']} 前")
+                # log_memory_usage(f"儲存新聞：{item['標題']} 前")
                 output_df.to_csv(first_stage_file, mode='a', header=not os.path.exists(first_stage_file),
                                  index=False, encoding='utf-8')
                 log_memory_usage(f"儲存新聞：{item['標題']} 後")
@@ -452,16 +464,21 @@ def crawler_first_stage(request):
                 print(f"已儲存新聞: {result['標題']}")
 
             driver.quit()
+            # 取得 RAM 使用量
             final_mem_mb = log_memory_usage("爬蟲結束前")
 
+            # 取得 CSV 檔案大小
+            csv_size_mb = get_file_size(first_stage_file)
+
             return JsonResponse({
-                'status': 'success',
-                'message': f'第一階段爬蟲完成！耗時：{time_str}',
-                'csv_file': first_stage_file,
-                'total_news': len(news_df),
-                'final_memory_mb': f'{final_mem_mb:.2f} MB',
-                'peak_memory_mb': f'{max_mem_mb:.2f} MB'
-            })
+            'status': 'success',
+            'message': f'第一階段爬蟲完成！耗時：{time_str}',
+            'csv_file': first_stage_file,
+            'total_news': len(news_df),
+            'final_memory_mb': f'{final_mem_mb:.2f} MB',
+            'peak_memory_mb': f'{max_mem_mb:.2f} MB',
+            'csv_file_size_mb': f'{csv_size_mb:.2f} MB'  # 🆕 回傳 CSV 大小
+        })
 
         driver.quit()
         return JsonResponse({
