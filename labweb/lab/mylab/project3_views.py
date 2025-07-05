@@ -1206,6 +1206,7 @@ def view_raw_news(request):
 # 新增函數 run_crawler_and_ai
 def run_crawler_and_ai(request):
     print("run_crawler_and_ai 被呼叫")
+    start_time = time.time()  # 記錄開始時間
 
     # 呼叫第一階段爬蟲
     crawler_response = crawler_first_stage(request)
@@ -1217,8 +1218,13 @@ def run_crawler_and_ai(request):
     if ai_response.status_code != 200:
         return JsonResponse({'error': 'AI failed'}, status=500)
 
+    end_time = time.time()  # 記錄結束時間
+    elapsed_time = end_time - start_time  # 計算執行時間
+    print(f"總執行時間：{elapsed_time:.2f} 秒")
+
     return JsonResponse({
         'status': 'all done',
+        'execution_time': f"{elapsed_time:.2f} 秒",
         'crawler': crawler_response.content.decode(),
         'ai': ai_response.content.decode(),
     })
