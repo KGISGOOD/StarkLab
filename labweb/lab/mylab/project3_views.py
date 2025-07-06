@@ -524,6 +524,8 @@ from mylab.config import xai_api_key, model_name
 
 
 def news_ai(request):
+    start_time = time.time()  # 記錄起始時間
+
 
     def chat_with_xai(prompt, api_key, model_name, context=""):
         
@@ -1169,7 +1171,17 @@ def news_ai(request):
         json.dump(result, json_file, ensure_ascii=False, indent=2)
 
     print("JSON 文件已生成並命名為 'final.json'。")
-    return JsonResponse({"message": "新聞AI運行完成"})
+    end_time = time.time()  # 記錄結束時間
+    total_time = end_time - start_time
+
+    print(f"[news_ai] 總執行時間：{total_time:.2f} 秒")
+
+    # === 原本的回傳 ===
+    return JsonResponse({
+        "status": "ok",
+        "exec_time": f"{total_time:.2f}秒",
+        "message": "新聞AI運行完成"
+    })
 
 # 檔案處理
 CSV_FILE_PATH = 'w2.csv'
