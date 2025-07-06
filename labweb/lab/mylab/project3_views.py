@@ -354,7 +354,7 @@ def crawler_first_stage(request):
     try:
         global max_mem_mb
         total_start_time = time.time()  # ✅ 記錄總開始時間
-        day = "7"
+        day = "14"
         log_memory_usage("開始爬蟲")
         
         # Google News 搜尋 URL
