@@ -353,7 +353,7 @@ def get_file_size(filepath):
 def crawler_first_stage(request):
     try:
         global max_mem_mb
-        start_time = time.time()
+        total_start_time = time.time()  # ✅ 記錄總開始時間
         day = "7"
         log_memory_usage("開始爬蟲")
         
@@ -428,7 +428,7 @@ def crawler_first_stage(request):
                 time_str += f'{minutes}分'
             time_str += f'{seconds}秒'
 
-            print(f'Google News 爬取完成，耗時：{time_str}')
+            # print(f'Google News 爬取完成，耗時：{time_str}')
 
             first_stage_file = 'w2.csv'
             if os.path.exists(first_stage_file):
@@ -464,34 +464,58 @@ def crawler_first_stage(request):
                 print(f"已儲存新聞: {result['標題']}")
 
             driver.quit()
-            # 取得 RAM 使用量
             final_mem_mb = log_memory_usage("爬蟲結束前")
-
-            # 取得 CSV 檔案大小
             csv_size_mb = get_file_size(first_stage_file)
 
-            return JsonResponse({
-            'status': 'success',
-            'message': f'第一階段爬蟲完成！耗時：{time_str}',
-            'csv_file': first_stage_file,
-            'total_news': len(news_df),
-            'final_memory_mb': f'{final_mem_mb:.2f} MB',
-            'peak_memory_mb': f'{max_mem_mb:.2f} MB',
-            'csv_file_size_mb': f'{csv_size_mb:.2f} MB'  # 🆕 回傳 CSV 大小
-        })
+            total_end_time = time.time()
+            total_elapsed = total_end_time - total_start_time
+            total_minutes = int(total_elapsed // 60)
+            total_seconds = total_elapsed % 60
+            total_time_str = f'{total_minutes} 分 {total_seconds:.2f} 秒'
+            print(f'🕒 第一階段爬蟲總耗時：{total_time_str}')
 
-        driver.quit()
-        return JsonResponse({
-            'status': 'error',
-            'message': '沒有找到新聞'
-        })
+            return JsonResponse({
+                'status': 'success',
+                'message': f'第一階段爬蟲完成！耗時：{time_str}',
+                'total_elapsed_time': total_time_str,
+                'csv_file': first_stage_file,
+                'total_news': len(news_df),
+                'final_memory_mb': f'{final_mem_mb:.2f} MB',
+                'peak_memory_mb': f'{max_mem_mb:.2f} MB',
+                'csv_file_size_mb': f'{csv_size_mb:.2f} MB'
+            })
+
+        else:
+            driver.quit()
+            total_end_time = time.time()
+            total_elapsed = total_end_time - total_start_time
+            total_minutes = int(total_elapsed // 60)
+            total_seconds = total_elapsed % 60
+            total_time_str = f'{total_minutes} 分 {total_seconds:.2f} 秒'
+            print(f'⚠️ 沒有找到新聞，總耗時：{total_time_str}')
+
+            return JsonResponse({
+                'status': 'error',
+                'message': '沒有找到新聞',
+                'total_elapsed_time': total_time_str
+            })
 
     except Exception as e:
         if 'driver' in locals():
             driver.quit()
+
+        total_end_time = time.time()
+        total_elapsed = total_end_time - total_start_time
+        total_minutes = int(total_elapsed // 60)
+        total_seconds = total_elapsed % 60
+        total_time_str = f'{total_minutes} 分 {total_seconds:.2f} 秒'
+
+        print(f'❌ 爬蟲錯誤時總耗時：{total_time_str}')
+
         return JsonResponse({
             'status': 'error',
-            'message': f'爬蟲執行失敗：{str(e)}'
+            'message': f'爬蟲執行失敗：{str(e)}',
+            'total_elapsed_time': total_time_str
         }, status=500)
 
 #ai 處理
