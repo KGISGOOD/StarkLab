@@ -1190,20 +1190,19 @@ JSON_FILE_PATH = 'final.json'
 @require_GET
 def view_raw_news(request):
     try:
-        # 取得請求格式 (json 或 csv)，預設為 json
+        log_memory_usage('進入 view_raw_news')  # ✅ 起始紀錄記憶體
+
         data_format = request.GET.get('format', 'json').lower()
 
         if data_format == 'csv':
-            # 檢查 CSV 檔案是否存在
             if not os.path.exists(CSV_FILE_PATH):
                 return JsonResponse({'error': 'CSV 檔案不存在'}, status=404)
 
-            # 讀取 CSV 檔案
             news_df = pd.read_csv(CSV_FILE_PATH)
+            log_memory_usage('讀取 CSV 完成')  # ✅ 讀取後紀錄記憶體
 
-            # 準備 JSON 格式的新聞列表
             news_list = []
-            for _, row in news_df.iterrows():
+            for i, (_, row) in enumerate(news_df.iterrows(), 1):
                 content = row.get('內文', '') or ''
                 if len(content) > 100:
                     content = content[:100] + '...'
@@ -1219,21 +1218,26 @@ def view_raw_news(request):
                 }
                 news_list.append(news_item)
 
+            log_memory_usage('處理 CSV 完成')  # ✅ 處理後紀錄記憶體
             return JsonResponse(news_list, safe=False, json_dumps_params={'ensure_ascii': False, 'indent': 4})
 
         else:
-            # 檢查 JSON 檔案是否存在
             if not os.path.exists(JSON_FILE_PATH):
                 return JsonResponse({'error': 'JSON 檔案不存在'}, status=404)
 
-            # 讀取 JSON 檔案內容
             with open(JSON_FILE_PATH, 'r', encoding='utf-8') as file:
                 data = json.load(file)
 
+            log_memory_usage('讀取 JSON 完成')  # ✅ 讀取 JSON 後紀錄
             return JsonResponse(data, safe=False, json_dumps_params={'ensure_ascii': False, 'indent': 4})
 
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+    finally:
+        log_memory_usage('view_raw_news 結束')  # ✅ 結尾紀錄記憶體
+        print(f"[Memory] 最大記憶體使用量：{max_mem_mb:.2f} MB")
+
     
 
 
