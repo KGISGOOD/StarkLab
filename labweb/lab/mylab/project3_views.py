@@ -524,8 +524,11 @@ from mylab.config import xai_api_key, model_name
 
 
 def news_ai(request):
-    start_time = time.time()  # 記錄起始時間
 
+    global max_mem_mb
+    max_mem_mb = 0  # 重設最大記憶體紀錄
+    start_time = time.time()
+    mem_before = log_memory_usage("函數開始前")
 
     def chat_with_xai(prompt, api_key, model_name, context=""):
         
@@ -638,6 +641,7 @@ def news_ai(request):
         for attempt in range(max_retries):
             try:
                 response = chat_with_xai(prompt, xai_api_key, model_name, "")
+                log_memory_usage()
                 return 'true' in response.lower()
             except Exception as e:
                 if attempt < max_retries - 1:
@@ -649,18 +653,24 @@ def news_ai(request):
                     return False  # 或者可以返回其他合適的值來表示失敗
 
     # 1. 讀取 CSV 檔案
+    log_memory_usage()
     df = pd.read_csv('w2.csv')
 
     # 2. 逐行判斷是否為災害新聞，並新增欄位
+    log_memory_usage()
     df['is_disaster'] = df.apply(lambda row: is_disaster_news(row['標題'], str(row['內文'])), axis=1)
 
     # 3. 過濾只保留 is_disaster 為 True 的行
+    log_memory_usage()
     df_true = df[df['is_disaster'] == True]
 
     # 4. 將結果存儲到新的 CSV 檔案
     print(df_true)
     df_true.to_csv('true_new.csv', index=False, encoding='utf-8-sig')
 
+    log_memory_usage()
+    end_time = time.time()
+    print(f"RAM 峰值使用量：{max_mem_mb:.2f} MB")
 
 
     #2.水利署＿從新聞內文中提取三個資訊欄位：國家、地點 和 災害
@@ -700,7 +710,8 @@ def news_ai(request):
             try:
                 # 假設 chat_with_xai 是整合 AI 的函數
                 response = chat_with_xai(prompt, xai_api_key, model_name, "")
-                
+                log_memory_usage()
+
                 # 打印 AI 回傳的內容以進行檢查
                 print("AI 回傳內容:", response)
 
@@ -728,16 +739,21 @@ def news_ai(request):
                     return {"國家": "", "地點": "", "災害": ""}  # 返回空結果表示失敗
 
     # 讀取資料
+    log_memory_usage()
     df = pd.read_csv('true_new.csv')  # 這是原始檔案，包含「內文」欄位
 
     # 根據內文欄位生成國家、地點和災害，並將其存放到新的欄位
+    log_memory_usage()
     df[['國家', '地點', '災害']] = df['內文'].apply(lambda text: pd.Series(extract_information(text)))
 
     # 將結果寫入新的 CSV 檔案
+    log_memory_usage()
     df.to_csv('add_locations.csv', index=False, encoding='utf-8')
 
     print("資訊生成完成，已儲存為 add_locations.csv")
-
+    log_memory_usage()
+    end_time = time.time()
+    print(f"RAM 峰值使用量：{max_mem_mb:.2f} MB")
 
     #3.水利署_event
     def extract_information(news_title, news_content):
@@ -775,6 +791,7 @@ def news_ai(request):
         """
 
         response = chat_with_xai(prompt, xai_api_key, model_name, "")
+        log_memory_usage()
         print("AI 回傳內容:", response)
 
         response_lines = response.strip().split("\n")
@@ -804,12 +821,14 @@ def news_ai(request):
         return result
 
     # 第一階段：生成初步的 event（只包含國家和災害類型）
+    log_memory_usage()
     df = pd.read_csv('add_locations.csv')
 
     # 假設 add_locations.csv 已包含 '地點' 欄位，若無此欄位需額外處理
+    log_memory_usage()
     if '地點' not in df.columns:
         raise ValueError("輸入檔案 'add_locations.csv' 缺少 '地點' 欄位")
-
+    log_memory_usage()
     df['分析結果'] = df.apply(lambda row: extract_information(row['標題'], row['內文']), axis=1)
     df['event'] = df['分析結果'].apply(lambda x: x['event'])
     df['content'] = df['分析結果'].apply(lambda x: x['content'])
@@ -817,9 +836,11 @@ def news_ai(request):
     df = df.drop(columns=['分析結果'])
 
     # 第二階段：分組並更新 event，選擇單一地點並移除 "+"
+    log_memory_usage()
     event_groups = defaultdict(list)
 
     # 將資料按 event 分組
+    log_memory_usage()
     for index, row in df.iterrows():
         event = row['event']
         if event and "+" in event and len(event.split("+")) == 2:  # 檢查格式為 "國家+災害類型"
@@ -833,6 +854,7 @@ def news_ai(request):
             print(f"警告: 第一階段 event 格式不正確 - {event}")
 
     # 統計每組中地點的出現次數並更新 event
+    log_memory_usage()
     for (country, disaster), group in event_groups.items():
         # 統計地點頻率
         loc_count = defaultdict(int)
@@ -854,8 +876,12 @@ def news_ai(request):
             df.at[index, 'event'] = new_event
 
     # 儲存結果
+    log_memory_usage()
     df.to_csv('add_events.csv', index=False, encoding='utf-8')
 
+    log_memory_usage()
+    end_time = time.time()
+    print(f"RAM 峰值使用量：{max_mem_mb:.2f} MB")
     print("資訊生成完成，已儲存為 add_events.csv")
 
     #4.水利署＿region
@@ -1011,6 +1037,7 @@ def news_ai(request):
         """
 
         response = chat_with_xai(prompt, xai_api_key, model_name, "")
+        log_memory_usage()
         
         if response:
             overview_line = response.strip().split(":")
@@ -1019,26 +1046,35 @@ def news_ai(request):
         return "無法生成摘要"
 
     # 讀取 CSV
+    log_memory_usage()
     df = pd.read_csv('region.csv')
 
     # 確保 `event` 欄位為分類群組
+    log_memory_usage()
     df['event'] = df['event'].astype(str)
 
     # 先生成 overview，再合併回原始 df
+    log_memory_usage()
     overview_df = df.groupby('event', group_keys=False).apply(generate_overview).reset_index()
     overview_df.columns = ['event', 'overview']
 
     # 合併回 df，確保 overview 放在正確的 event 上
+    log_memory_usage()
     df = df.merge(overview_df, on='event', how='left')
 
     # 儲存結果
+    log_memory_usage()
     df.to_csv('add_overview.csv', index=False, encoding='utf-8')
+    log_memory_usage()
+    end_time = time.time()
+    print(f"RAM 峰值使用量：{max_mem_mb:.2f} MB")
     print("修正後的 overview 已存入 add_overview.csv")
 
 
     #8.水利署_合併
     #補齊欄位
     # 讀取 CSV 檔案
+    log_memory_usage()
     df = pd.read_csv('add_overview.csv')  
 
     # 定義欄位名稱對應關係
@@ -1051,14 +1087,17 @@ def news_ai(request):
     }
 
     # 執行欄位名稱更改
+    log_memory_usage()
     df = df.rename(columns=column_mapping)
 
     # 2. 刪除不要的欄位
+    log_memory_usage()
     columns_to_drop = ['內文', 'is_disaster', '災害']
     df = df.drop(columns=columns_to_drop, errors='ignore')  # errors='ignore' 確保即使欄位不存在也不會報錯
 
     # 3. 補上缺失欄位
     # recent_update：選擇 date 欄位中最新的時間
+    log_memory_usage()
     if 'date' in df.columns:
         df['date'] = pd.to_datetime(df['date'], errors='coerce')  # 確保 date 欄位是日期格式
         df['recent_update'] = df['date'].max()  # 選取最新的時間
@@ -1066,6 +1105,7 @@ def news_ai(request):
         df['recent_update'] = pd.NaT  # 如果 date 欄位不存在，填入 NaT（缺失值）
 
     # location：將「國家」和「地點」合併成一個欄位
+    log_memory_usage()
     if '國家' in df.columns and '地點' in df.columns:
         df['location'] = df['國家'].fillna('') + ' ' + df['地點'].fillna('')  # 合併「國家」和「地點」，並處理缺失值
         df['location'] = df['location'].str.strip()  # 去除多餘的空格
@@ -1074,39 +1114,48 @@ def news_ai(request):
 
     # 4. 新增 author 和 publish_date 欄位
     # author：與 publisher 欄位相同
+    log_memory_usage()
     if 'publisher' in df.columns:
         df['author'] = df['publisher']
     else:
         df['author'] = ''  # 如果 publisher 欄位不存在，則填入空字串
 
     # publish_date：與 date 欄位相同
+    log_memory_usage()
     if 'date' in df.columns:
         df['publish_date'] = df['date']
     else:
         df['publish_date'] = pd.NaT  # 如果 date 欄位不存在，則填入 NaT（缺失值）
 
     # 5. 刪除「國家」和「地點」欄位
+    log_memory_usage()
     columns_to_drop_after_merge = ['國家', '地點']
     df = df.drop(columns=columns_to_drop_after_merge, errors='ignore')  # errors='ignore' 確保即使欄位不存在也不會報錯
 
     # 6.新增步驟：移除相同 title 的重複項目，只保留第一個出現的
+    log_memory_usage()
     if 'title' in df.columns:
         df = df.drop_duplicates(subset='title', keep='first')
 
     # 7. 輸出到新的 CSV 檔案
+    log_memory_usage()
     output_file = '補齊欄位.csv'
     df.to_csv(output_file, index=False, encoding='utf-8')
-
+    log_memory_usage()
+    end_time = time.time()
+    print(f"RAM 峰值使用量：{max_mem_mb:.2f} MB")
     print(f"處理完成，已輸出到 {output_file}")
 
     #合併欄位
     # 讀取 CSV 檔案
+    log_memory_usage()
     df = pd.read_csv('補齊欄位.csv')
 
     # 初始化一個空的列表，用來存放最終的結構
     result = []
 
     # 按照 event 進行分組，所有具有相同 'event' 值的行會被分到同一組
+    log_memory_usage()
     for event, group in df.groupby('event'):
         # 選擇第一個新聞的數據作為基本信息
         first_row = group.iloc[0]
@@ -1173,7 +1222,9 @@ def news_ai(request):
     print("JSON 文件已生成並命名為 'final.json'。")
     end_time = time.time()  # 記錄結束時間
     total_time = end_time - start_time
-
+    log_memory_usage()
+    end_time = time.time()
+    print(f"RAM 峰值使用量：{max_mem_mb:.2f} MB")
     print(f"[news_ai] 總執行時間：{total_time:.2f} 秒")
 
     # === 原本的回傳 ===
