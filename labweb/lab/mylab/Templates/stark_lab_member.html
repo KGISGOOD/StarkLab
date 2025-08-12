@@ -1,18 +1,13 @@
 {% load static %}
 <!DOCTYPE html>
 <html>
-  <head>｀
+  <head>
     <meta charset="utf-8" />
-    <!--<meta name=description content="This site was generated with Anima. www.animaapp.com"/>-->
-    <!-- <link rel="shortcut icon" type=image/png href="https://animaproject.s3.amazonaws.com/home/favicon.png" /> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=yes"> 
     <link rel="shortcut icon" type="image/png" href="https://animaproject.s3.amazonaws.com/home/favicon.png" />
     <meta name="og:type" content="website" />
     <meta name="twitter:card" content="photo" />
     <title>成員介紹</title>
-    <!-- <link rel="stylesheet" type="text/css" href="static/css/stark_lab_member.css" />
-    <link rel="stylesheet" type="text/css" href="static/css/styleguide.css" />
-    <link rel="stylesheet" type="text/css" href="static/css/globals.css" /> -->
     <link rel="stylesheet" href="{% static 'css/stark_lab_member.css' %}">
     <link rel="stylesheet" href="{% static 'css/styleguide.css' %}">
     <link rel="stylesheet" href="{% static 'css/globals.css' %}">
@@ -21,27 +16,22 @@
     <input type="hidden" id="anPageName" name="page" value="" />
     <div class="container-center-horizontal">
       <div class="stark_lab_member screen">
+
+        <!-- 導覽列 -->
         <div class="overlap-group18">
           <div class="navigation-bar">
             <img class="logo-1" src="{% static 'img/------logo-1@2x.png' %}" alt="logo 1" />
             <div class="navbar notosanstc-semi-bold-black-20px">
-              <a href="/"
-                ><div class="navbar-link-text notosanstc-semi-bold-black-20px">首頁</div>
-              </a>
-              <a href="/project/" 
-                ><div class="navbar-link-text notosanstc-semi-bold-black-20px">研究專案</div>
-              </a>
-              <!-- <a href="stark_lab_member.html" -->
-              <a href="/member/"
-                ><div class="navbar-link-text notosanstc-semi-bold-black-20px">成員介紹</div>
-              </a>
-              <a href="/professor/"
-                ><div class="navbar-link-text notosanstc-semi-bold-black-20px">論文研究</div>
-              </a>
+              <a href="/"><div class="navbar-link-text">首頁</div></a>
+              <a href="/project/"><div class="navbar-link-text">研究專案</div></a>
+              <a href="/member/"><div class="navbar-link-text">成員介紹</div></a>
+              <a href="/professor/"><div class="navbar-link-text">論文研究</div></a>
             </div>
           </div>
           <img class="line-31" src="{% static 'img/line-31-1.svg' %}" alt="Line 31" />
         </div>
+
+        <!-- 教授卡片 -->
         <div class="overlap-group21">
           <div class="group-14">
             <div class="content-2 content-3">
@@ -55,187 +45,121 @@
               </div>
               <img class="line-3" src="{% static 'img/line-3-1.svg' %}" alt="Line 3" />
               <div class="p4">
-                <span class="span0">東吳大學資料科學系助理教授<br /></span
-                ><span class="span1">聯絡信箱 : </span
-                ><a href="mailto:D04921004@ntu.edu.tw" target="_blank"
-                  ><span class="span2">D04921004@ntu.edu.tw</span></a
-                >
+                <span class="span0">東吳大學資料科學系助理教授<br /></span>
+                <span class="span1">聯絡信箱 :</span>
+                <a href="mailto:D04921004@ntu.edu.tw" target="_blank">
+                  <span class="span2">D04921004@ntu.edu.tw</span>
+                </a>
               </div>
             </div>
           </div>
           <img class="rectangle-80" src="{% static 'img/professor.jpg' %}" alt="Professor" />
-        <!-- </div>
-        <div class="group-17">
-          <div class="overlap-group"><div class="text spacegrotesk-medium-white-36px">研究所</div></div>
         </div>
-        <div class="group-container"> -->
-          <!-- <div class="group">
-            <div class="overlap-group-1">
-              <div class="content content-3">
-                <div class="person person-2">
-                  <div class="picture-and-name">
-                    <div class="picture">
-                      <div class="overlap-group-2">
-                        <img class="vector" src="{% static 'img/vector-1.svg' %}" alt="Vector" />
-                        <img class="mask-group" src="{% static 'img/mask-group-1@2x.png' %}" alt="Mask group" />
-                      </div>
-                    </div>
-                    <div class="name">
-                      <div class="name-1 spacegrotesk-medium-black-20px">Jane Doe</div>
-                      <div class="director-of-operations spacegrotesk-normal-black-18px">Director of Operations</div>
-                    </div>
-                  </div>
-                  <div class="social-icon"></div>
-                </div>
-                <img class="line-3" src="{% static 'img/line-3.svg' %}" alt="Line 3" />
-                <div class="text-1 notosanstc-normal-black-18px">
-                  同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹
-                </div>
-              </div>
-              <img class="link link-2" src="{% static 'img/link.svg' %}" alt="Link" />
-            </div>
-          </div> -->
 
-          <!-- <div class="group">
-            <div class="overlap-group-1">
-              <div class="content content-3">
-                <div class="person person-2">
-                  <div class="picture-and-name">
-                    <div class="picture">
-                      <div class="overlap-group-2">
-                        <img class="vector" src="{% static 'img/vector-1.svg' %}" alt="Vector" />
-                        <img class="mask-group" src="{% static 'img/mask-group-1@2x.png' %}" alt="Mask group" />
-                      </div>
-                    </div>
-                    <div class="name">
-                      <div class="name-1 spacegrotesk-medium-black-20px">Jane Doe</div>
-                      <div class="director-of-operations spacegrotesk-normal-black-18px">Director of Operations</div>
-                    </div>
-                  </div>
-                  <div class="social-icon"></div>
-                </div>
-                <img class="line-3" src="{% static 'img/line-3-7.svg' %}" alt="Line 3" />
-                <div class="text-1 notosanstc-normal-black-18px">
-                  同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹
-                </div>
-              </div>
-              <img class="link link-2" src="{% static 'img/link-12.svg' %}" alt="Link" />
-            </div>
-          </div> -->
 
-          <!-- <div class="group">
-            <div class="overlap-group-1">
-              <div class="content content-3">
-                <div class="person person-2">
-                  <div class="picture-and-name">
-                    <div class="picture">
-                      <div class="overlap-group-2">
-                        <img class="vector" src="{% static 'img/vector-1.svg' %}" alt="Vector" />
-                        <img class="mask-group" src="{% static 'img/mask-group-1@2x.png' %}" alt="Mask group" />
-                      </div>
-                    </div>
-                    <div class="name">
-                      <div class="name-1 spacegrotesk-medium-black-20px">Jane Doe</div>
-                      <div class="director-of-operations spacegrotesk-normal-black-18px">Director of Operations</div>
-                    </div>
-                  </div>
-                  <div class="social-icon"></div>
-                </div>
-                <img class="line-3" src="{% static 'img/line-3.svg' %}" alt="Line 3" />
-                <div class="text-1 notosanstc-normal-black-18px">
-                  同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹
-                </div>
+<!-- 研究生標題 -->
+<div class="group-25">
+  <div class="overlap-group"><div class="text spacegrotesk-medium-white-36px">研究生</div></div>
+</div>
+
+<!-- 研究生成員列 -->
+<div class="group-container">
+  <!-- 梁皓鈞 -->
+  <div class="group">
+    <div class="overlap-group-1">
+      <div class="content content-3">
+        <div class="person person-2">
+          <div class="picture-and-name">
+            <div class="picture">
+              <div class="overlap-group-2">
+                <img class="mask-group" src="{% static 'img/S__167469060.jpg' %}" alt="梁皓鈞" />
               </div>
-              <img class="link link-2" src="{% static 'img/link-1.svg' %}" alt="Link" />
             </div>
-          </div> -->
+            <div class="name">
+              <div class="name-1 spacegrotesk-medium-black-20px">梁皓鈞</div>
+              <div class="director-of-operations spacegrotesk-normal-black-18px">Graduate Student</div>
+            </div>
+          </div>
         </div>
-        <div class="group-container-1">
-          <!-- <div class="group">
-            <div class="overlap-group-1">
-              <div class="content content-3">
-                <div class="person person-2">
-                  <div class="picture-and-name">
-                    <div class="picture">
-                      <div class="overlap-group-2">
-                        <img class="vector" src="{% static 'img/vector-1.svg' %}" alt="Vector" />
-                        <img class="mask-group" src="{% static 'img/mask-group-1@2x.png' %}" alt="Mask group" />
-                      </div>
-                    </div>
-                    <div class="name">
-                      <div class="name-1 spacegrotesk-medium-black-20px">Jane Doe</div>
-                      <div class="director-of-operations spacegrotesk-normal-black-18px">Director of Operations</div>
-                    </div>
-                  </div>
-                  <div class="social-icon"></div>
-                </div>
-                <img class="line-3" src="{% static 'img/line-3.svg' %}" alt="Line 3" />
-                <div class="text-1 notosanstc-normal-black-18px">
-                  同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹
-                </div>
-              </div>
-              <img class="link link-2" src="{% static 'img/link-2.svg' %}" alt="Link" />
-            </div>
-          </div> -->
-          <!-- <div class="group"> -->
-            <!-- <div class="overlap-group-1">
-              <div class="content content-3">
-                <div class="person person-2">
-                  <div class="picture-and-name">
-                    <div class="picture">
-                      <div class="overlap-group-2">
-                        <img class="vector" src="{% static 'img/vector-1.svg' %}" alt="Vector" />
-                        <img class="mask-group" src="{% static 'img/mask-group-1@2x.png' %}" alt="Mask group" />
-                      </div>
-                    </div>
-                    <div class="name">
-                      <div class="name-1 spacegrotesk-medium-black-20px">Jane Doe</div>
-                      <div class="director-of-operations spacegrotesk-normal-black-18px">Director of Operations</div>
-                    </div>
-                  </div>
-                  <div class="social-icon"></div>
-                </div>
-                <img class="line-3" src="{% static 'img/line-3.svg' %}" alt="Line 3" />
-                <div class="text-1 notosanstc-normal-black-18px">
-                  同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹
-                </div>
-              </div>
-              <img class="link link-2" src="img/link-3.svg" alt="Link" />
-            </div> -->
-            
-          <!-- </div> -->
-          <!-- <div class="group">
-            <div class="overlap-group-1">
-              <div class="content content-3">
-                <div class="person person-2">
-                  <div class="picture-and-name">
-                    <div class="picture">
-                      <div class="overlap-group-2">
-                        <img class="vector" src="{% static 'img/vector-1.svg' %}" alt="Vector" />
-                        <img class="mask-group" src="{% static 'img/mask-group-1@2x.png' %}" alt="Mask group" />
-                      </div>
-                    </div>
-                    <div class="name">
-                      <div class="name-1 spacegrotesk-medium-black-20px">Jane Doe</div>
-                      <div class="director-of-operations spacegrotesk-normal-black-18px">Director of Operations</div>
-                    </div>
-                  </div>
-                  <div class="social-icon"></div>
-                </div>
-                <img class="line-3" src="{% static 'img/line-3.svg' %}" alt="Line 3" />
-                <div class="text-1 notosanstc-normal-black-18px">
-                  同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹
-                </div>
-              </div>
-              <img class="link link-2" src="{% static 'img/link-7.svg' %}" alt="Link" />
-            </div>
-          </div> -->
+        <img class="line-3" src="{% static 'img/line-3-7.svg' %}" alt="Line 3" />
+        <div class="text-1 notosanstc-normal-black-18px">
+          我是皓鈞，專注於比較傳統量化投資與機器學習投資策略的績效與風險差異，並運用機器學習建構可依投資人風險承受度動態調整投資組合的選股模型。具備數據分析與投資模型開發經驗，能結合程式語言、統計方法與 AI 技術處理龐大金融數據，將研究成果轉化為可執行的投資方案，推動金融創新。
         </div>
+      </div>
+                    <a href="" target="_blank" rel="noopener">
+                <img class="link link-2" src="{% static 'img/link-12.png' %}" alt="Link" />
+              </a>
+    </div>
+  </div>
+
+  <!-- 張婷婷 -->
+  <div class="group">
+    <div class="overlap-group-1">
+      <div class="content content-3">
+        <div class="person person-2">
+          <div class="picture-and-name">
+            <div class="picture">
+              <div class="overlap-group-2">
+                <img class="mask-group" src="{% static 'img/zhang_ting_ting.jpg' %}" alt="張婷婷" />
+              </div>
+            </div>
+            <div class="name">
+              <div class="name-1 spacegrotesk-medium-black-20px">張婷婷</div>
+              <div class="director-of-operations spacegrotesk-normal-black-18px">Graduate Student</div>
+            </div>
+          </div>
+        </div>
+        <img class="line-3" src="{% static 'img/line-3-7.svg' %}" alt="Line 3" />
+        <div class="text-1 notosanstc-normal-black-18px">
+          婷婷專注於智能理財系統的設計與優化，研究結合 AI、機器學習與大數據分析，針對基金推薦的個人化與透明度提出創新方案。透過問卷調查與系統開發，探索不同族群對理財機器人的需求差異，並建構兼具規則式與 AI 模型的推薦系統。具備金融科技應用、資料分析與系統開發的跨域能力，致力於提升使用者的滿意度與信任感。
+        </div>
+      </div>
+                    <a href="/" target="_blank" rel="noopener">
+                <img class="link link-2" src="{% static 'img/link-12.png' %}" alt="Link" />
+              </a>
+    </div>
+  </div>
+
+  <!-- 林昌諒 -->
+  <div class="group">
+    <div class="overlap-group-1">
+      <div class="content content-3">
+        <div class="person person-2">
+          <div class="picture-and-name">
+            <div class="picture">
+              <div class="overlap-group-2">
+                <img class="mask-group" src="{% static 'img/lin_chang_liang.jpg' %}" alt="林昌諒" />
+              </div>
+            </div>
+            <div class="name">
+              <div class="name-1 spacegrotesk-medium-black-20px">林昌諒</div>
+              <div class="director-of-operations spacegrotesk-normal-black-18px">Graduate Student</div>
+            </div>
+          </div>
+        </div>
+        <img class="line-3" src="{% static 'img/line-3-7.svg' %}" alt="Line 3" />
+        <div class="text-1 notosanstc-normal-black-18px">
+          昌諒專注於傳統量化技術與機器學習在價值投資中的應用，研究涵蓋財務指標分析、特徵選擇與投資策略回測。具備扎實的數據分析與程式開發能力，能整合統計方法與金融理論，將研究成果轉化為可執行的投資模型，展現跨領域整合與創新實力。
+        </div>
+      </div>
+                    <a href="" target="_blank" rel="noopener">
+                <img class="link link-2" src="{% static 'img/link-12.png' %}" alt="Link" />
+              </a>
+    </div>
+  </div>
+</div>
+
+
+
+
+        <!-- 大學部標題 -->
         <div class="group-25">
           <div class="overlap-group"><div class="text spacegrotesk-medium-white-36px">大學部</div></div>
-
         </div>
+
+        <!-- 第一列 -->
         <div class="group-container">
+          <!-- 吳嘉恩 -->
           <div class="group">
             <div class="overlap-group-1">
               <div class="content content-3">
@@ -243,32 +167,30 @@
                   <div class="picture-and-name">
                     <div class="picture">
                       <div class="overlap-group-2">
-                        <!-- <img class="vector" src="{% static 'img/vector-1.svg' %}" alt="Vector" /> -->
                         <img class="mask-group" src="{% static 'img/terry_wu.jpg' %}" alt="Mask group" />
                       </div>
                     </div>
                     <div class="name">
                       <div class="name-1 spacegrotesk-medium-black-20px">吳嘉恩</div>
                       <div class="director-of-operations spacegrotesk-normal-black-18px">AI & Data Science Explorer</div>
-
                     </div>
                   </div>
-                  <div class="social-icon">
-                  </div>
-                <!-- </a> -->
                 </div>
-                <img class="line-3" src="{% static 'img/line-3.svg' %}" alt="Line 3" />
+                <!-- <img class="line-3" src="{% static 'img/line-3.svg' %}" alt="Line 3" /> -->
                 <div class="text-1 notosanstc-normal-black-18px">
                   I am Chia-En Wu, a data engineer passionate about distributed systems, cloud computing, and hands-on problem-solving. 
-                  <br/>
                   I enjoy applying programming to optimize data processing, enhance system efficiency, and tackle real-world challenges through practical implementation.
                 </div>
               </div>
               <a href="https://terrywu0208.github.io/" target="_blank" rel="noopener">
-                <img class="link link-2" src="{% static 'img/link-12.svg' %}" alt="Link" />
+                <img class="link link-2" src="{% static 'img/link-12.png' %}" alt="Link" />
               </a>
             </div>
           </div>
+
+
+
+          <!-- 蕭喬禧（修正 a 關閉） -->
           <div class="group">
             <div class="overlap-group-1">
               <div class="content content-3">
@@ -276,25 +198,28 @@
                   <div class="picture-and-name">
                     <div class="picture">
                       <div class="overlap-group-2">
-                        <!-- <img class="vector" src="{% static 'img/vector-1.svg' %}" alt="Vector" /> -->
-                        <img class="mask-group" src="{% static 'img/44.jpg' %}" alt="Mask group" />
+                        <img class="mask-group" src="{% static 'img/chiao_hsi.jpg' %}" alt="Mask group" />
                       </div>
                     </div>
                     <div class="name">
-                      <div class="name-1 spacegrotesk-medium-black-20px">黃宥翔</div>
+                      <div class="name-1 spacegrotesk-medium-black-20px">蕭喬禧</div>
                       <div class="director-of-operations spacegrotesk-normal-black-18px">Data Science Student</div>
                     </div>
                   </div>
-                  <div class="social-icon"></div>
                 </div>
-                <img class="line-3" src="{% static 'img/44.svg' %}" alt="Line 3" />
+                <!-- <img class="line-3" src="{% static 'img/44.jpg' %}" alt="Line 3" /> -->
                 <div class="text-1 notosanstc-normal-black-18px">
-                  a student from department of data science 
+                  Hi there, I'm Chiao-Hsi Hsiao, a data science student who loves turning complex data into clear insights. 
+                  I go straight to the root of problems and love solving challenges in creative ways, from fixing cracks to crafting new beginnings.
                 </div>
               </div>
-              <img class="link link-2" src="{% static 'img/link-12.svg' %}" alt="Link" />
+              <a href="https://www.linkedin.com/in/chiao-hsi-hsiao-981b54230?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app" target="_blank" rel="noopener">
+                <img class="link link-2" src="{% static 'img/link-12.png' %}" alt="Link" />
+              </a>
             </div>
           </div>
+
+          <!-- 林紹軒 -->
           <div class="group">
             <div class="overlap-group-1">
               <div class="content content-3">
@@ -302,7 +227,6 @@
                   <div class="picture-and-name">
                     <div class="picture">
                       <div class="overlap-group-2">
-                        <!-- <img class="vector" src="{% static 'img/45.svg' %}" alt="Vector" /> -->
                         <img class="mask-group" src="{% static 'img/45.jpg' %}" alt="Mask group" />
                       </div>
                     </div>
@@ -311,18 +235,18 @@
                       <div class="director-of-operations spacegrotesk-normal-black-18px">Data Science Student</div>
                     </div>
                   </div>
-                  <div class="social-icon"></div>
                 </div>
                 <img class="line-3" src="{% static 'img/line-3-7.svg' %}" alt="Line 3" />
-                <div class="text-1 notosanstc-normal-black-18px">
-                  a student from department of data science
-                </div>
+                <div class="text-1 notosanstc-normal-black-18px">擅長硬體開發，喜歡 Discord 迷因與互動應用。</div>
               </div>
-              <img class="link link-2" src="{% static 'img/link-7.svg' %}" alt="Link" />
+                <img class="link link-2" src="{% static 'img/link-12.png' %}" alt="Link" />
             </div>
           </div>
         </div>
+
+        <!-- 第二列 -->
         <div class="group-container-1">
+          <!-- 鄭凱俊 -->
           <div class="group">
             <div class="overlap-group-1">
               <div class="content content-3">
@@ -330,7 +254,6 @@
                   <div class="picture-and-name">
                     <div class="picture">
                       <div class="overlap-group-2">
-                        <!-- <img class="vector" src="{% static 'img/46.jpg' %}" alt="Vector" /> -->
                         <img class="mask-group" src="{% static 'img/46.jpg' %}" alt="Mask group" />
                       </div>
                     </div>
@@ -339,16 +262,15 @@
                       <div class="director-of-operations spacegrotesk-normal-black-18px">Data Science Student</div>
                     </div>
                   </div>
-                  <div class="social-icon"></div>
                 </div>
                 <img class="line-3" src="{% static 'img/line-3-7.svg' %}" alt="Line 3" />
-                <div class="text-1 notosanstc-normal-black-18px">
-                  a student from department of data science
-                </div>
+                <div class="text-1 notosanstc-normal-black-18px">打造水利署國際新聞機器人，將全球新聞快速轉化為在地化資訊。</div>
               </div>
-              <img class="link link-2" src="{% static 'img/link-8.svg' %}" alt="Link" />
+                <img class="link link-2" src="{% static 'img/link-12.png' %}" alt="Link" />
             </div>
           </div>
+
+          <!-- 林依婷 -->
           <div class="group">
             <div class="overlap-group-1">
               <div class="content content-3">
@@ -356,8 +278,8 @@
                   <div class="picture-and-name">
                     <div class="picture">
                       <div class="overlap-group-2">
-                        <img class="vector" src="{% static 'img/vector-1.svg' %}" alt="Vector" />
-                        <img class="mask-group" src="{% static 'img/mask-group-1@2x.png' %}" alt="Mask group" />
+                        <!-- <img class="vector" src="{% static 'img/vector-1.svg' %}" alt="Vector" /> -->
+                        <img class="mask-group" src="{% static 'img/ting.jpg' %}" alt="Mask group" />
                       </div>
                     </div>
                     <div class="name">
@@ -365,16 +287,15 @@
                       <div class="director-of-operations spacegrotesk-normal-black-18px">Data Science Student</div>
                     </div>
                   </div>
-                  <div class="social-icon"></div>
                 </div>
                 <img class="line-3" src="{% static 'img/line-3-7.svg' %}" alt="Line 3" />
-                <div class="text-1 notosanstc-normal-black-18px">
-                  同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹
-                </div>
+                <div class="text-1 notosanstc-normal-black-18px">以 Podcast 為案例，開發基於 LLM 的智慧搜尋系統，提升內容檢索效率與精準度。</div>
               </div>
-              <img class="link link-2" src="{% static 'img/link-9.svg' %}" alt="Link" />
+                <img class="link link-2" src="{% static 'img/link-12.png' %}" alt="Link" />
             </div>
           </div>
+
+          <!-- 黃宥翔 -->
           <div class="group">
             <div class="overlap-group-1">
               <div class="content content-3">
@@ -382,26 +303,107 @@
                   <div class="picture-and-name">
                     <div class="picture">
                       <div class="overlap-group-2">
-                        <img class="vector" src="{% static 'img/vector-1.svg' %}" alt="Vector" />
+                        <img class="mask-group" src="{% static 'img/44.jpg' %}" alt="Mask group" />
+                      </div>
+                    </div>
+                    <div class="name">
+                      <div class="name-1 spacegrotesk-medium-black-20px">黃宥翔</div>
+                      <div class="director-of-operations spacegrotesk-normal-black-18px">Data Science Student</div>
+                    </div>
+                  </div>
+                </div>
+                <img class="line-3" src="{% static 'img/line-3-7.svg' %}" alt="Line 3" />
+                <div class="text-1 notosanstc-normal-black-18px">擅長系統規劃，能整合需求與架構設計，確保專案高效落地。</div>
+              </div>
+                <img class="link link-2" src="{% static 'img/link-12.png' %}" alt="Link" />
+            </div>
+          </div>
+
+          <!-- 林佳陽 -->
+          <div class="group">
+            <div class="overlap-group-1">
+              <div class="content content-3">
+                <div class="person person-2">
+                  <div class="picture-and-name">
+                    <div class="picture">
+                      <div class="overlap-group-2">
                         <img class="mask-group" src="{% static 'img/mask-group-1@2x.png' %}" alt="Mask group" />
                       </div>
                     </div>
                     <div class="name">
-                      <div class="name-1 spacegrotesk-medium-black-20px">蕭喬禧</div>
+                      <div class="name-1 spacegrotesk-medium-black-20px">林佳陽</div>
                       <div class="director-of-operations spacegrotesk-normal-black-18px">Data Science Student</div>
                     </div>
                   </div>
-                  <div class="social-icon"></div>
                 </div>
                 <img class="line-3" src="{% static 'img/line-3-7.svg' %}" alt="Line 3" />
                 <div class="text-1 notosanstc-normal-black-18px">
-                  同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹同學自我介紹
+                  進行遊學計畫規劃中，專注於跨文化體驗與國際學習機會的拓展。
                 </div>
               </div>
-              <img class="link link-2" src="{% static 'img/link-10.svg' %}" alt="Link" />
+                <img class="link link-2" src="{% static 'img/link-12.png' %}" alt="Link" />
+            </div>
+          </div>
+
+          <!-- 張睿宸 -->
+          <div class="group">
+            <div class="overlap-group-1">
+              <div class="content content-3">
+                <div class="person person-2">
+                  <div class="picture-and-name">
+                    <div class="picture">
+                      <div class="overlap-group-2">
+                        <img class="mask-group" src="{% static 'img/ray.jpg' %}" alt="Mask group" />
+                      </div>
+                    </div>
+                    <div class="name">
+                      <div class="name-1 spacegrotesk-medium-black-20px">張睿宸</div>
+                      <div class="director-of-operations spacegrotesk-normal-black-18px">Data Science Student</div>
+                    </div>
+                  </div>
+                </div>
+                <img class="line-3" src="{% static 'img/line-3-7.svg' %}" alt="Line 3" />
+                <div class="text-1 notosanstc-normal-black-18px">
+                  運用大型語言模型（LLM）結合基金資訊，打造智慧理財機器人，模擬專業理專提供投資建議。
+                </div>
+              </div>
+                <img class="link link-2" src="{% static 'img/link-12.png' %}" alt="Link" />
+            </div>
+          </div>
+
+          <!-- 洪靖倫 -->
+          <div class="group">
+            <div class="overlap-group-1">
+              <div class="content content-3">
+                <div class="person person-2">
+                  <div class="picture-and-name">
+                    <div class="picture">
+                      <div class="overlap-group-2">
+                        <img class="mask-group" src="{% static 'img/S__27836539.jpg' %}" alt="Mask group" />
+                      </div>
+                    </div>
+                    <div class="name">
+                      <div class="name-1 spacegrotesk-medium-black-20px">洪靖倫</div>
+                      <div class="director-of-operations spacegrotesk-normal-black-18px">Data Science Student</div>
+                    </div>
+                  </div>
+                </div>
+                <img class="line-3" src="{% static 'img/line-3-7.svg' %}" alt="Line 3" />
+                <div class="text-1 notosanstc-normal-black-18px">
+                  自主開發行動應用程式，並成功於 Google Play 上架，展現完整產品開發與發布能力。
+                </div>
+              </div>
+                <img class="link link-2" src="{% static 'img/link-12.png' %}" alt="Link" />
             </div>
           </div>
         </div>
+
+
+
+
+
+
+        <!-- 頁尾 -->
         <div class="overlap-group19">
           <div class="footer">
             <div class="navigation-and-contacts">
@@ -413,8 +415,7 @@
                   <div class="info">
                     <div class="email-d04921004ntuedutw notosans-normal-white-18px">Email: D04921004@ntu.edu.tw</div>
                     <p class="address-100 notosanstc-normal-white-18px">
-                      Address: 100台北市中正區貴陽街一段56號 No. 56, Sec. 1, Guiyang St., Zhongzheng Dist., Taipei
-                      City<br /><br />
+                      Address: 100台北市中正區貴陽街一段56號 No. 56, Sec. 1, Guiyang St., Zhongzheng Dist., Taipei City<br /><br />
                       ©2025 Soochow University Starklab . All Rights Reserved.
                     </p>
                   </div>
@@ -424,6 +425,7 @@
           </div>
           <img class="group-30" src="{% static 'img/group-30-4@2x.png' %}" alt="Group 30" />
         </div>
+
       </div>
     </div>
   </body>

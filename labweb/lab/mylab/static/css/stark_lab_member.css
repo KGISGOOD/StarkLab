@@ -5,8 +5,11 @@
   background-color: var(--white);
   display: flex;
   flex-direction: column;
-  height: 3604px;
+  /* 固定高度會把內容切掉，改成自動長高 */
+  /* height: 3604px; */
+  min-height: 100vh;
   width: 1440px;
+  box-sizing: border-box;
 }
 
 .stark_lab_member .overlap-group18 {
@@ -56,8 +59,7 @@
 .stark_lab_member .group-14 {
   align-items: flex-start;
   background-color: var(--white);
-  border: 2px solid;
-  border-color: var(--black);
+  border: 2px solid var(--black);
   border-radius: 65px;
   box-shadow: 0px 5px 0px #000000;
   display: flex;
@@ -77,17 +79,14 @@
   width: 488px;
 }
 
-.stark_lab_member .person-1 {
-  width: 458px;
-}
+.stark_lab_member .person-1 { width: 458px; }
 
 .stark_lab_member .picture-and-name {
   align-items: flex-end;
   display: flex;
   flex: 1;
-  flex-grow: 1;
   gap: 20px;
-  padding: 0px 76px 0px 0px;
+  padding: 0 76px 0 0;
   position: relative;
 }
 
@@ -140,19 +139,9 @@
   line-height: 40px;
   position: relative;
 }
-
-.stark_lab_member .span0 {
-  color: var(--navy-blue);
-}
-
-.stark_lab_member .span1 {
-  color: var(--black);
-}
-
-.stark_lab_member .span2 {
-  color: var(--black);
-  text-decoration: underline;
-}
+.stark_lab_member .span0 { color: var(--navy-blue); }
+.stark_lab_member .span1 { color: var(--black); }
+.stark_lab_member .span2 { color: var(--black); text-decoration: underline; }
 
 .stark_lab_member .rectangle-80 {
   height: 468px;
@@ -182,97 +171,56 @@
   padding: 0 33px;
 }
 
-.stark_lab_member .text {
-  letter-spacing: 0;
-  line-height: normal;
-  min-height: 46px;
-  min-width: 108px;
-}
+.stark_lab_member .text { letter-spacing: 0; line-height: normal; min-height: 46px; min-width: 108px; }
 
-.stark_lab_member .group-container {
-  align-items: flex-start;
+/* ====== 列容器（可換行、置中、同寬） ====== */
+.stark_lab_member .group-container,
+.stark_lab_member .group-container-1 {
   display: flex;
-  gap: 50px;
-  margin-right: 1.0px;
-  margin-top: 70px;
-  min-width: 1339px;
+  flex-wrap: wrap;
+  column-gap: 50px;
+  row-gap: 50px;
+  max-width: 1339px;
+  width: 100%;
+  margin: 70px auto 0;
+  align-items: flex-start;
 }
+.stark_lab_member .group-container-1 { margin: 20px auto 0; }
 
+/* ====== 卡片（保留黑框 + 三等分欄寬） ====== */
 .stark_lab_member .group {
   align-items: flex-start;
   background-color: var(--white);
-  border: 2px solid;
-  border-color: var(--black);
+  border: 2px solid #000;          /* ← 保證黑色框 */
   border-radius: 65px;
-  box-shadow: 0px 5px 0px #000000;
+  box-shadow: 0 5px 0 #000;
   display: flex;
   height: 500px;
   justify-content: flex-end;
-  min-width: 413px;
   padding: 34.8px 47.8px;
+
+  box-sizing: border-box;
+  flex: 0 0 calc((100% - 100px) / 3);  /* 三等分（扣兩個 gap=50*2） */
+  width: calc((100% - 100px) / 3);
 }
 
-.stark_lab_member .overlap-group-1 {
-  height: 400px;
-  position: relative;
-  width: 317px;
-}
+.stark_lab_member .overlap-group-1 { height: 400px; position: relative; width: 317px; }
 
-.stark_lab_member .content {
-  display: inline-flex;
-  gap: 23px;
-  left: 0;
-  position: absolute;
-  top: 0;
-}
+.stark_lab_member .content { display: inline-flex; gap: 23px; left: 0; position: absolute; top: 0; }
 
-.stark_lab_member .person {
-  align-self: stretch;
-  width: 100%;
-}
+.stark_lab_member .person { align-self: stretch; width: 100%; }
 
-.stark_lab_member .picture {
-  height: 102.82px;
-  position: relative;
-  width: 102.82px;
-}
+.stark_lab_member .picture { height: 102.82px; position: relative; width: 102.82px; }
 
-.stark_lab_member .overlap-group-2 {
-  height: 500px;
-  position: relative; 
-  width: 103px;
-}
+.stark_lab_member .overlap-group-2 { height: 500px; position: relative; width: 103px; }
 
-.stark_lab_member .vector {
-  height: 98px;
-  left: 5px;
-  position: absolute;
-  top: 5px;
-  width: 98px;
-}
+.stark_lab_member .vector { height: 98px; left: 5px; position: absolute; top: 5px; width: 98px; }
 
-.stark_lab_member .mask-group {
-  height: 98px;
-  left: 0;
-  position: absolute;
-  top: 0;
-  width: 98px;
-}
+.stark_lab_member .mask-group { height: 98px; left: 0; position: absolute; top: 0; width: 98px; }
 
-.stark_lab_member .name {
-  height: 49.18px;
-  margin-right: -80.00px;
-  position: relative;
-  width: 198.18px;
-}
+.stark_lab_member .name { height: 49.18px; margin-right: -80.00px; position: relative; width: 198.18px; }
 
-.stark_lab_member .name-1 {
-  left: 0;
-  letter-spacing: 0;
-  line-height: normal;
-  position: absolute;
-  top: 0;
-}
+.stark_lab_member .name-1 { left: 0; letter-spacing: 0; line-height: normal; position: absolute; top: 0; }
 
 .stark_lab_member .director-of-operations {
   left: 0;
@@ -292,65 +240,47 @@
   width: 34px;
 }
 
-.stark_lab_member .text-1 {
-  letter-spacing: 0;
-  line-height: 30px;
-  position: relative;
-  width: 317px;
-}
+.stark_lab_member .text-1 { letter-spacing: 0; line-height: 30px; position: relative; width: 317px; }
 
-.stark_lab_member .link {
-  left: 282px;
-  top: 0;
-}
+
+.stark_lab_member .link { left: 282px; top: 0; }
+.stark_lab_member .group .overlap-group-1 { position: relative; }  /* 這行對圖示無效 */
+
+
+
+
 
 .stark_lab_member .overlap-group2 {
   background-color: var(--white);
-  border: 2px solid;
-  border-color: var(--black);
+  border: 2px solid var(--black);
   border-radius: 65px;
-  box-shadow: 0px 5px 0px #000000;
+  box-shadow: 0 5px 0 #000;
   height: 339px;
   position: relative;
   width: 413px;
 }
 
-.stark_lab_member .content-1 {
-  display: inline-flex;
-  gap: 23px;
-  left: 48px;
-  position: absolute;
-  top: 44px;
-}
+.stark_lab_member .content-1 { display: inline-flex; gap: 23px; left: 48px; position: absolute; top: 44px; }
 
-.stark_lab_member .link-1 {
-  left: 330px;
-  top: 44px;
-}
+.stark_lab_member .link-1 { left: 330px; top: 44px; }
 
-.stark_lab_member .group-container-1 {
-  align-items: flex-start;
-  display: flex;
-  gap: 50px;
-  margin-right: 1.0px;
-  margin-top: 20px;
-  min-width: 1339px;
-}
-
+/* ====== 大學部標題置中，與卡片齊寬 ====== */
 .stark_lab_member .group-25 {
-  align-items: flex-start;
-  align-self: flex-start;
   display: flex;
-  margin-left: 98px;
-  margin-top: 100px;
-  min-width: 176px;
+  justify-content: center;
+  width: 100%;
+  max-width: 1339px;
+  margin: 100px auto 0;
+  align-self: auto;
 }
 
+/* ====== Footer 外層改為自動高度 ====== */
 .stark_lab_member .overlap-group19 {
-  height: 277px;
-  margin-top: 146px;
   position: relative;
-  width: 1378px;
+  width: 100%;
+  max-width: 1378px;
+  margin: 80px auto 0;
+  height: auto;   /* 取代固定 277px，避免被切或留空白 */
 }
 
 .stark_lab_member .navigation-and-contacts {
@@ -379,52 +309,35 @@
   flex: 0 0 auto;
   flex-direction: column;
   gap: 10px;
-  padding: 0px 7px;
+  padding: 0 7px;
   position: relative;
 }
 
-.stark_lab_member .label-1 {
-  letter-spacing: 0;
-  line-height: normal;
-  margin-top: -1.00px;
-  position: relative;
-  width: fit-content;
-}
+.stark_lab_member .label-1 { letter-spacing: 0; line-height: normal; margin-top: -1.00px; width: fit-content; position: relative; }
 
-.stark_lab_member .info {
-  align-items: flex-start;
-  display: inline-flex;
-  flex: 0 0 auto;
-  flex-direction: column;
-  gap: 20px;
-  position: relative;
-}
+.stark_lab_member .info { align-items: flex-start; display: inline-flex; flex-direction: column; gap: 20px; position: relative; }
 
-.stark_lab_member .address-100 {
-  letter-spacing: 0;
-  line-height: normal;
-  position: relative;
-  width: 497px;
-}
+.stark_lab_member .address-100 { letter-spacing: 0; line-height: normal; position: relative; width: 497px; }
 
-.stark_lab_member .group-30 {
-  height: 30px;
-  left: 1152px;
+.stark_lab_member .group-30 { height: 30px; left: 1152px; position: absolute; top: 197px; width: 114px; }
+
+.stark_lab_member .content-3 { align-items: flex-start; flex-direction: column; }
+
+.stark_lab_member .link-2 { height: 35px; position: absolute; width: 35px; }
+/* 固定連結圖示在卡片右上角 */
+.stark_lab_member .group .link-2 {
   position: absolute;
-  top: 197px;
-  width: 114px;
+  top: 10px;      /* 距離卡片上邊緣 */
+  right: 10px;    /* 距離卡片右邊緣 */
+  width: 50px;    /* 圖示大小 */
+  height: 50px;
+  z-index: 10;    /* 確保在最上層 */
+  cursor: pointer;
 }
 
-.stark_lab_member .content-3 {
-  align-items: flex-start;
-  flex-direction: column;
-}
 
-.stark_lab_member .link-2 {
-  height: 35px;
-  position: absolute;
-  width: 35px;
-}
+
+
 
 .stark_lab_member .navbar-link-text {
   cursor: pointer;
@@ -436,9 +349,47 @@
   width: fit-content;
 }
 
-.stark_lab_member .person-2 {
-  align-items: flex-start;
-  display: flex;
-  flex: 0 0 auto;
+.stark_lab_member .person-2 { align-items: flex-start; display: flex; flex: 0 0 auto; position: relative; }
+
+/*（需要 RWD 時再補 media query，現在先對齊桌面版 1440 設計）*/
+
+
+
+
+/* 讓整張卡片成為定位基準 */
+.stark_lab_member .group{
   position: relative;
+  overflow: visible; /* 防止圖示被圓角裁切 */
 }
+
+/* 清掉舊的 left/top 以免衝突 */
+.stark_lab_member .group .link{
+  left: auto !important;
+  top: auto !important;
+}
+
+/* 用 <a> 當定位目標，擴大可點區域 */
+.stark_lab_member .group > a{
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  display: block;
+  z-index: 20;       /* 壓在最上層 */
+  pointer-events: auto;
+}
+
+/* 讓圖示填滿 <a> 區域 */
+.stark_lab_member .group > a > img{
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* 若 SVG 太淡或是白色，可先反相或加濃（視需求保留/移除） */
+/* .stark_lab_member .group > a > img.link-2{ filter: invert(30%); } */
+
+
+
+
