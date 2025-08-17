@@ -23,6 +23,9 @@ import pandas as pd
 import os
 import csv
 
+
+
+
 #導入api key
 from mylab.config import xai_api_key, model_name
 
@@ -76,7 +79,7 @@ def setup_chatbot(xai_api_key, model_name, training_prompt, disaster_phase):
     initial_messages = []
     
     output_prompt = """
-    請用剛剛記錄的格式輸出新的一篇新聞稿，新聞稿長度約五百字，並且附上標題。
+    請用剛剛記錄的格式輸出新的一篇新聞稿，新聞稿長度約五百字，並且請務必附上新聞標題，標題需置於新聞稿最前方，且與內文明確區隔。
 
     第一部分：請描述天氣或災害狀況，例如天氣情況，例如:降雨或地震相關資訊。
 
@@ -134,7 +137,7 @@ def setup_chatbot(xai_api_key, model_name, training_prompt, disaster_phase):
             'output_prompt': output_prompt,
         }
     
-    print(f"API 調用失敗 (狀態碼: {response.status_code})")
+    print(f"API 調用失敗 (狀態碼: {response.status_code}, 回應: {response.text})")
     return None
 
 def load_and_filter_data(disaster_phase):
