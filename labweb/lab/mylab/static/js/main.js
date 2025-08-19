@@ -30,7 +30,7 @@ function rewriteFollowUp(msg){
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  fetch("/static/data/基金資料1140405.csv")
+  fetch("/static/基金資料1140405.csv")
     .then(response => response.text())
     .then(text => {
       parseCSV(text);

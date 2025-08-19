@@ -200,6 +200,7 @@
   position: relative;
   white-space: nowrap;
   width: fit-content;
+  margin-top: auto; /* 自動把 label 推到卡片底部 */
 }
 
 .stark_lab_project_linebot .x2-1 {
@@ -443,6 +444,15 @@
   width: 269px;
 }
 
+.stark_lab_project_linebot .text-3-2 {
+  font-size: 22px;   /* 你想要的大小 */
+  letter-spacing: 0;
+  line-height: normal;
+  margin-top: 22px;
+  min-height: 114px;
+  width: 269px;
+}
+
 .stark_lab_project_linebot .link-1 {
   margin-top: 45px;
   position: relative;
@@ -540,4 +550,24 @@
   position: relative;
   white-space: nowrap;
   width: fit-content;
+}
+
+
+
+
+
+
+
+.clickable-text {
+  color: #000;              /* 固定字體顏色 (黑色) */
+  text-decoration: none;    /* 移除底線 */
+  cursor: pointer;          /* 滑鼠移過去有手指效果 */
+}
+
+.clickable-text:visited {
+  color: #000;              /* 點過的連結也維持黑色 */
+}
+
+.clickable-text:hover {
+  text-decoration: underline;  /* 滑鼠移過去才出現底線 (可選) */
 }
