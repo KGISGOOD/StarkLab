@@ -55,15 +55,16 @@ urlpatterns = [
     # project3
     
     # 啟動爬蟲
-    path('api/news/', project3_views.crawler_first_stage, name='crawler_first_stage'),
+    #path('api/news/', project3_views.crawler_first_stage, name='crawler_first_stage'),
 
     # ai 處理的api
-    path('api/news/ai/', project3_views.news_ai, name='news_ai'),
+    #path('api/news/ai/', project3_views.news_ai, name='news_ai'),
+    path("api/gemini/generate", views.gemini_generate, name="gemini_generate"),
 
     # 查看爬蟲的原始資料api
     path('api/news/sql/', project3_views.view_raw_news, name='view_raw_news'),
 
-    path('api/run_crawler_and_ai/', project3_views.run_crawler_and_ai, name='run_crawler_and_ai'),
+    #path('api/run_crawler_and_ai/', project3_views.run_crawler_and_ai, name='run_crawler_and_ai'),
 
 
 

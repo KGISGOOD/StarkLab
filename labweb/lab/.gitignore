@@ -4,3 +4,12 @@ __pycache__/
 *.pyo
 *.pyd
 config.py
+.env
+/.env
+
+
+stark_lab/logs/         # 你的圖片路徑看起來在這裡
+**/logs/                # 任何子資料夾叫 logs 的都忽略
+*.log                   # 所有 .log
+*.log.*                 # 旋轉後的 log（app.log.2025-10-12 等）
+*.gz                    # 若有壓縮的 log

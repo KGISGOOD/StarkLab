@@ -1,0 +1,527 @@
+/* screen - home page */
+
+.stark_lab_home {
+  align-items: center;
+  background-color: var(--white);
+  display: flex;
+  flex-direction: column;
+  height: 2606px;
+  width: 1440px;
+}
+
+/* Header Section */
+.stark_lab_home .overlap-group5 {
+  height: 714px;
+  margin-top: 60px;
+  position: relative;
+  width: 1440px;
+}
+
+.stark_lab_home .landing-page {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 70px;
+  height: 714px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 1440px;
+}
+
+/* Navigation Bar */
+.stark_lab_home .navigation-bar {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: space-between;
+  padding: 0px 100px;
+  position: relative;
+  width: 1440px;
+}
+
+.stark_lab_home .navbar {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 40px;
+  justify-content: center;
+  position: relative;
+}
+
+.stark_lab_home .navbar-link-text {
+  cursor: pointer;
+  letter-spacing: 0;
+  line-height: 28px;
+  margin-top: -1.00px;
+  position: relative;
+  white-space: nowrap;
+  width: fit-content;
+}
+
+.stark_lab_home .line-31-1 {
+  height: 2px;
+  left: 920px;
+  position: absolute;
+  top: 56px;
+  width: 85px;
+}
+/* Header Content */
+.stark_lab_home .header {
+  align-items: flex-start;
+  background-color: transparent;
+  display: flex;
+  gap: 70px;
+  height: 559px;
+  padding: 0px 100px;
+  position: relative;
+  width: 1440px;
+}
+
+.stark_lab_home .frame-13 {
+  flex-direction: column;
+  gap: 35px;
+  height: 527px;
+  width: 552px;
+}
+
+.stark_lab_home .pioneering-solutions {
+  align-self: stretch;
+  color: var(--navy-blue);
+  font-family: var(--font-family-noto_sans);
+  font-size: var(--font-size-xxxxxl);
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: normal;
+  margin-top: -1.00px;
+  position: relative;
+}
+
+.stark_lab_home .text_label {
+  color: var(--black);
+  font-family: var(--font-family-noto_sans_tc);
+  font-size: var(--font-size-l);
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 40px;
+  margin-bottom: -22.00px;
+  position: relative;
+  text-align: justify;
+  width: 509px;
+}
+
+.stark_lab_home .x1-1 {
+  height: 422px;
+  left: 673px;
+  object-fit: cover;
+  position: absolute;
+  top: 234px;
+  width: 685px;
+}
+
+/* Process Block - Card Section */
+.stark_lab_home .process-block {
+  align-items: flex-start;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 30px;
+  margin-top: 500px;
+  padding: 0px 100px;
+  position: relative;
+}
+
+/* Card Base Styles */
+.stark_lab_home .card,
+.stark_lab_home .card-1 {
+  align-items: flex-start;
+  background-color: #F3F3F3;
+  border: 1px solid var(--mirage);
+  border-radius: 45px;
+  box-shadow: 0px 5px 0px #191a23;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+  padding: 41px 60px;
+  position: relative;
+  width: 1234px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+/* Card Content Layout */
+.stark_lab_home .content {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: space-between;
+  margin-right: -3.00px;
+  margin-top: 2rem;
+  position: relative;
+  width: 1117px;
+}
+
+.stark_lab_home .label {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 25px;
+  position: relative;
+}
+
+/* Card Typography */
+.stark_lab_home .number,
+.stark_lab_home .number-4 {
+  color: #1088E1;
+  font-family: var(--font-family-noto_sans);
+  font-size: 60px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: normal;
+  margin-top: -1.00px;
+  position: relative;
+  width: fit-content;
+}
+
+.stark_lab_home .fintech,
+.stark_lab_home .science-and-technology-education,
+.stark_lab_home .medical-science-and-technology,
+.stark_lab_home .intelligent-transformation {
+  color: #1088E1;
+  font-family: var(--font-family-noto_sans_tc);
+  font-size: var(--font-size-xxl);
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: normal;
+  position: relative;
+  width: 612px;
+}
+
+/* Card Expandable Content */
+.stark_lab_home .fin-tech,
+.stark_lab_home .tech-edu,
+.stark_lab_home .med-tech,
+.stark_lab_home .intel-trans {
+  color: var(--white);
+  font-family: var(--font-family-noto_sans_tc);
+  font-size: var(--font-size-m);
+  font-weight: 500;
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  line-height: 35px;
+  width: 1114px;
+}
+
+/* Card Elements */
+.stark_lab_home .plus-icon {
+  background-image: url("../img/plus_icon.svg");
+  background-repeat: no-repeat;
+  background-size: contain;
+  height: 58px;
+  width: 58px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.stark_lab_home .plus-icon.expanded {
+  background-image: url("../img/minus_icon.svg");
+}
+
+.stark_lab_home .card.expanded .plus-icon {
+  background-image: url("../img/minus_icon.svg");
+}
+
+.stark_lab_home .line-25 {
+  height: 2px;
+  position: relative;
+  width: 1114px;
+  opacity: 0.3;
+  transition: opacity 0.3s ease;
+}
+
+/* Card Expanded State */
+.stark_lab_home .card.expanded {
+  background-color: var(--navy-blue);
+}
+
+.stark_lab_home .card.expanded .fin-tech,
+.stark_lab_home .card.expanded .tech-edu,
+.stark_lab_home .card.expanded .med-tech,
+.stark_lab_home .card.expanded .intel-trans {
+  height: auto;
+  opacity: 1;
+  margin-top: 20px;
+}
+
+.stark_lab_home .card.expanded .line-25 {
+  opacity: 0.8;
+}
+
+.stark_lab_home .card.expanded .fintech,
+.stark_lab_home .card.expanded .science-and-technology-education,
+.stark_lab_home .card.expanded .medical-science-and-technology,
+.stark_lab_home .card.expanded .intelligent-transformation,
+.stark_lab_home .card.expanded .number,
+.stark_lab_home .card.expanded .number-4 {
+  color: var(--white);
+}
+
+/* Card First Item Special Style */
+.stark_lab_home .card-1 {
+  background-color: #1088E1;
+  align-items: flex-start;
+  border: 1px solid var(--mirage);
+  border-radius: 45px;
+  box-shadow: 0px 5px 0px #191a23;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+  padding: 41px 60px;
+  position: relative;
+  width: 1234px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+}
+
+.stark_lab_home .card-1 .fintech,
+.stark_lab_home .card-1 .number,
+.stark_lab_home .card-1 .number-4 {
+  color: var(--white);
+}
+
+.stark_lab_home .card-1 .fin-tech {
+  height: 60px;
+  opacity: 1;
+}
+
+/* Card Hover Effect */
+.stark_lab_home .card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0px 7px 0px #191a23;
+}
+
+/* Project Section */
+.stark_lab_home .group-1 {
+  align-items: flex-start;
+  align-self: flex-start;
+  display: flex;
+  height: 65px;
+  margin-left: 103px;
+  margin-top: 94px;
+  min-width: 575px;
+}
+
+.stark_lab_home .project {
+  color: var(--navy-blue);
+  font-family: var(--font-family-noto_sans);
+  font-size: var(--font-size-xxxxxl);
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: normal;
+  min-height: 65px;
+  width: 573px;
+}
+
+/* Project Groups */
+.stark_lab_home .group-52 {
+  align-items: flex-start;
+  display: flex;
+  gap: 19px;
+  margin-right: 15.0px;
+  margin-top: 92px;
+  min-width: 1279px;
+}
+
+.stark_lab_home .overlap-group3 {
+  align-items: flex-start;
+  background-color: var(--navy-blue);
+  border: 1px solid;
+  border-color: var(--black);
+  border-radius: 57px;
+  box-shadow: 0px 7px 0px #000000;
+  display: flex;
+  gap: 63px;
+  height: 330px;
+  min-width: 628px;
+  padding: 42px 68px;
+}
+
+.stark_lab_home .flex-col {
+  align-items: flex-start;
+  align-self: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+  margin-bottom: 1px;
+  min-height: 190px;
+  width: 180px;
+}
+
+.stark_lab_home .line-bot {
+  letter-spacing: 0;
+  line-height: normal;
+  min-height: 75px;
+}
+
+.stark_lab_home .span1 {
+  color: var(--white);
+  font-family: var(--font-family-noto_sans);
+  font-size: var(--font-size-xxl);
+  font-weight: 500;
+}
+
+.stark_lab_home .overlap-group {
+  align-items: flex-start;
+  background-color: var(--white);
+  border-radius: 21px;
+  display: flex;
+  height: 42px;
+  justify-content: flex-end;
+  min-width: 42px;
+  padding: 11.0px 10.9px;
+}
+
+.stark_lab_home .text-1 {
+  align-self: center;
+  line-height: 28px;
+  margin-bottom: 3.0px;
+  min-width: 100px;
+}
+
+.stark_lab_home .overlap-group2 {
+  align-items: flex-start;
+  background-color: var(--grey);
+  border: 1px solid;
+  border-color: var(--black);
+  border-radius: 57px;
+  box-shadow: 0px 7px 0px #000000;
+  display: flex;
+  gap: 71px;
+  height: 330px;
+  min-width: 628px;
+  padding: 34px 70px;
+}
+
+.stark_lab_home .flex-col-1 {
+  align-items: flex-start;
+  align-self: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: 99px;
+  margin-bottom: 9px;
+  min-height: 190px;
+  width: 172px;
+}
+
+.stark_lab_home .text-15 {
+  color: var(--navy-blue);
+  font-family: var(--font-family-noto_sans_tc);
+  font-size: var(--font-size-xxl);
+  font-weight: 500;
+  line-height: normal;
+  min-height: 36px;
+}
+
+.stark_lab_home .group-34 {
+  align-items: flex-start;
+  display: flex;
+  gap: 17px;
+  height: 55px;
+  min-width: 172px;
+  padding: 6px 3px;
+}
+
+.stark_lab_home .overlap-group1 {
+  align-items: flex-start;
+  background-color: var(--navy-blue);
+  border-radius: 21px;
+  display: flex;
+  height: 42px;
+  justify-content: flex-end;
+  min-width: 42px;
+  padding: 11.0px 10.9px;
+}
+
+.stark_lab_home .overlap-group4 {
+  height: 277px;
+  margin-top: 92px;
+  position: relative;
+  width: 1378px;
+}
+
+.stark_lab_home .navigation-and-contacts {
+  align-items: flex-start;
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 66px;
+  margin-bottom: -22.00px;
+  position: relative;
+  width: 532px;
+}
+
+.stark_lab_home .frame-26 {
+  flex: 0 0 auto;
+  gap: 120px;
+  width: 504px;
+}
+
+.stark_lab_home .label-1 {
+  align-items: flex-start;
+  background-color: var(--white);
+  border-radius: 7px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0px 7px;
+  position: relative;
+}
+
+.stark_lab_home .info {
+  align-items: flex-start;
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  width: 484px;
+}
+
+.stark_lab_home .address-100 {
+  align-self: stretch;
+  letter-spacing: 0;
+  line-height: normal;
+  position: relative;
+}
+
+.stark_lab_home .group-30 {
+  height: 30px;
+  left: 1152px;
+  position: absolute;
+  top: 167px;
+  width: 114px;
+}
+
+.stark_lab_home .frame {
+  align-items: flex-start;
+  display: flex;
+  position: relative;
+}
+
+.stark_lab_home .number-4 {
+  letter-spacing: 0;
+  line-height: normal;
+  margin-top: -1.00px;
+  position: relative;
+  width: fit-content;
+}
+
+.stark_lab_home .text {
+  letter-spacing: 0;
+  white-space: nowrap;
+}

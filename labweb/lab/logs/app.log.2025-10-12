@@ -1,0 +1,20 @@
+2025-10-12 23:56:45 INFO django.utils.autoreload:636 Watching for file changes with StatReloader
+2025-10-12 23:56:54 INFO django.server:161 "GET /project/ HTTP/1.1" 200 6643
+2025-10-12 23:56:58 INFO django.server:161 "GET / HTTP/1.1" 200 11047
+2025-10-12 23:57:00 INFO django.server:161 "GET /project/ HTTP/1.1" 200 6643
+2025-10-12 23:57:02 INFO django.server:161 "GET /project_linebot/ HTTP/1.1" 200 9712
+2025-10-12 23:57:02 WARNING django.server:161 "GET /project_linebot/%%20static%20'img/group-30-2@2x.png'%20%%7D HTTP/1.1" 404 7726
+2025-10-12 23:59:20 INFO django.server:161 "GET /project_linebot/ HTTP/1.1" 200 9727
+2025-10-12 23:59:20 WARNING django.server:161 "GET /project_linebot/%%20static%20'img/group-30-2@2x.png'%20%%7D HTTP/1.1" 404 7726
+2025-10-12 23:59:30 INFO django.server:161 "GET /project_stock/ HTTP/1.1" 200 10104
+2025-10-12 23:59:30 WARNING django.server:161 "GET /project_stock/%%20static%20'img/group-30-2@2x.png'%20%%7D HTTP/1.1" 404 7720
+2025-10-12 23:59:30 INFO django.server:161 "GET /static/img/arrow-1.svg HTTP/1.1" 200 649
+2025-10-12 23:59:32 INFO django.server:161 "GET /query/ HTTP/1.1" 200 3793
+2025-10-12 23:59:32 WARNING django.server:161 "GET /favicon.ico HTTP/1.1" 404 7564
+2025-10-12 23:59:35 INFO django.server:161 "GET /project_wra/ HTTP/1.1" 200 11025
+2025-10-12 23:59:38 INFO django.server:161 "GET /api/news/sql/ HTTP/1.1" 200 33150
+2025-10-12 23:59:48 INFO django.server:161 "GET /project_wra_repoet/ HTTP/1.1" 200 7498
+2025-10-12 23:59:48 WARNING django.server:161 "GET /project_wra_repoet/%%20static%20'img/group-30-2@2x.png'%20%%7D HTTP/1.1" 404 7735
+2025-10-12 23:59:48 INFO django.server:161 "GET /static/img/news_report.png HTTP/1.1" 200 139066
+2025-10-12 23:59:53 INFO django.server:161 "GET /ai_report/ HTTP/1.1" 200 2738
+2025-10-12 23:59:53 INFO django.server:161 "GET /static/favicon.ico HTTP/1.1" 200 0

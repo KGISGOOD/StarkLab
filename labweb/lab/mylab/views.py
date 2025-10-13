@@ -4,7 +4,19 @@ import logging
 from .project3_views import crawler_first_stage  # 導入原本的爬蟲主函數
 from django.views.decorators.csrf import csrf_exempt  
 from .translation import translate_text, save_conversation, get_conversation, clear_conversation 
+import os
+import json
+from django.http import JsonResponse, HttpResponseBadRequest
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
+from dotenv import load_dotenv
+load_dotenv()  # 讀取 .env
+
+from google import genai
+from google.genai import types
+
+DEFAULT_MODEL = "gemini-2.0-flash"
 
 logger = logging.getLogger(__name__)
 
@@ -173,3 +185,67 @@ def get_history(request):
 #測試用文字api
 def emergency_alert(request):
     return JsonResponse({"message": "緊急警報"})
+
+
+def _get_client():
+    api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        raise RuntimeError("Missing GEMINI_API_KEY / GOOGLE_API_KEY in .env")
+    return genai.Client(api_key=api_key)
+
+@csrf_exempt
+@require_POST
+def gemini_generate(request):
+    # 1) 取前端 payload
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except Exception:
+        return HttpResponseBadRequest("Invalid JSON")
+
+    model  = payload.get("model") or DEFAULT_MODEL
+    contents = payload.get("contents")
+    gen_cfg = payload.get("generationConfig") or {}
+    safety  = payload.get("safetySettings")
+    sys_inst = payload.get("systemInstruction")
+
+    if not contents:
+        return HttpResponseBadRequest("`contents` is required.")
+
+    # 2) 把前端 camelCase 轉給 SDK：用 config=
+    #    可在這裡做基本的 key rename（可省略，SDK 大多接受這些 key）
+    if isinstance(gen_cfg, dict):
+        # 允許前端傳 temperature / max_output_tokens 等
+        cfg = types.GenerateContentConfig(**gen_cfg)
+    else:
+        cfg = gen_cfg  # 已是 GenerateContentConfig
+
+    # 若提供 system_instruction，就放進 config
+    if sys_inst:
+        cfg.system_instruction = sys_inst
+
+    # （選）安全設定可以寫在 config.safety_settings
+    if safety:
+        cfg.safety_settings = safety
+
+    try:
+        client = _get_client()
+        resp = client.models.generate_content(
+            model=model,
+            contents=contents,
+            config=cfg,               # ✅ 正確參數名稱
+        )
+
+        # 3) 安全轉 dict：不要在 resp 上做 item assignment
+        #    先拿 SDK 的 dict 版本（若無 to_dict，就備援建構）
+        base_dict = resp.to_dict() if hasattr(resp, "to_dict") else {}
+
+        # 再用「新 dict」合併你想加的便利欄位（例如 text）
+        out = {
+            **base_dict,
+            "text": getattr(resp, "text", None),   # 方便前端直接讀 .text
+        }
+
+        return JsonResponse(out, safe=False, status=200)
+
+    except Exception as e:
+        return JsonResponse({"error": f"{type(e).__name__}: {e}"}, status=502)

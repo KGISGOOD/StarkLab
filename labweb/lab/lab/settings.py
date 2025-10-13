@@ -32,12 +32,23 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-j#*ny3)2z5&)$@4rkbi*bd%(k)+^rr4@my^#y1-(tf2bgde-_*"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
+CSRF_TRUSTED_ORIGINS = ['https://starklab.tw']
 
+FORCE_SCRIPT_NAME = None
+from pathlib import Path
+BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Application definition
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"      # 收合後要讓 Caddy 指到這裡
+STATICFILES_DIRS = [
+    BASE_DIR / "mylab" / "static",          # 你的專案裡自備的靜態原始資料夾
+]
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -108,24 +119,51 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+LOG_DIR = BASE_DIR / "logs"
+LOG_DIR.mkdir(exist_ok=True)  # 若無 logs 資料夾就自動建立
+
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "%(asctime)s %(levelname)s %(name)s:%(lineno)d %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
         },
     },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': True,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+        "app_file": {
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "filename": str(LOG_DIR / "app.log"),
+            "when": "midnight",
+            "backupCount": 14,
+            "encoding": "utf-8",
+            "formatter": "verbose",
+            "delay": True,
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console", "app_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": ["console", "app_file"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "waitress": {
+            "handlers": ["console", "app_file"],
+            "level": "INFO",
+            "propagate": False,
         },
     },
 }
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/

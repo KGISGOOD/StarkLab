@@ -1,0 +1,133 @@
+  body {
+      font-family: "Microsoft JhengHei", sans-serif;
+      background-color: #f0f2f5;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    .card-container {
+      max-width: 900px;
+      margin: 20px auto;
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-container p.intro {
+      font-size: 16px;
+      color: #34495e;
+      margin-top: 10px;
+      font-weight: normal;
+    }
+
+    .card-container form {
+      margin-top: 20px;
+    }
+
+    p {
+      font-weight: bold;
+      margin-top: 20px;
+      color: #34495e;
+    }
+
+    label {
+      display: block;
+      margin: 5px 0 10px 20px;
+      color: #555;
+    }
+
+    button {
+      margin-top: 20px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    #result {
+      background-color: #ffffff;
+      border-radius: 10px;
+      padding: 25px;
+      max-width: 900px;
+      margin: 20px auto;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .filter-box {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin: 20px 0;
+    }
+
+    .filter-box label {
+      font-size: 16px;
+      font-weight: bold;
+      color: #2c3e50;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .filter-box select {
+      padding: 10px 14px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background-color: #fff;
+      min-width: 200px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      background-color: #fff;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: center;
+      font-size: 15px;
+    }
+
+    th {
+      background-color: #ecf0f1;
+    }
+
+    .risk-conservative {
+      color: #27ae60;
+      font-weight: bold;
+    }
+
+    .risk-balanced {
+      color: #e67e22;
+      font-weight: bold;
+    }
+
+    .risk-aggressive {
+      color: #e74c3c;
+      font-weight: bold;
+    }
+
+
+
