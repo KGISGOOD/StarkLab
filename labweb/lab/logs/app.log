@@ -1,4 +1,0 @@
-2025-10-13 09:17:50 INFO django.utils.autoreload:636 Watching for file changes with StatReloader
-2025-10-13 09:18:00 INFO django.server:161 "GET / HTTP/1.1" 200 11047
-2025-10-13 09:18:03 INFO django.server:161 "GET /member/ HTTP/1.1" 200 20352
-2025-10-13 09:18:03 INFO django.server:161 "GET /project/ HTTP/1.1" 200 6643
