@@ -1,19 +1,22 @@
 /* screen - project page */
 
 .stark_lab_project {
-  align-items: flex-start;
+  align-items: center;
   background-color: var(--white);
   display: flex;
   flex-direction: column;
-  height: 1518px;
   width: 1440px;
+  height: auto;
+  min-height: 100vh;
+  overflow: hidden;
 }
 
+/* ── Navigation ── */
 .stark_lab_project .overlap-group3 {
-  height: 76px;
-  margin-top: 60px;
+  height: 136px;
   position: relative;
   width: 1440px;
+  flex-shrink: 0;
 }
 
 .stark_lab_project .navigation-bar {
@@ -23,8 +26,14 @@
   left: 0;
   padding: 0px 100px;
   position: absolute;
-  top: 0;
+  top: 60px;
   width: 1440px;
+}
+
+.stark_lab_project .logo-1 {
+  height: 56px;
+  object-fit: cover;
+  width: auto;
 }
 
 .stark_lab_project .navbar {
@@ -37,210 +46,256 @@
   position: relative;
 }
 
+.stark_lab_project .navbar-link-text {
+  cursor: pointer;
+  letter-spacing: 0;
+  line-height: 28px;
+  margin-top: -1px;
+  position: relative;
+  white-space: nowrap;
+  width: fit-content;
+  color: #000;
+  font-weight: 600;
+}
+
+.stark_lab_project .navbar-link-text:hover {
+  color: #1a3e6f;
+}
 
 .stark_lab_project .line-30 {
   height: 2px;
-  left: 1018px;
+  left: 0;
   position: absolute;
-  top: 56px;
-  width: 85px;
+  bottom: 0;
+  width: 1440px;
+  background-color: #1a3e6f;
 }
 
+/* ── Page title ── */
 .stark_lab_project .project {
-  color: var(--navy-blue);
-  font-family: var(--font-family-noto_sans);
-  font-size: var(--font-size-xxxxxl);
+  color: #1a3e6f;
+  font-size: 36px;
   font-weight: 700;
   letter-spacing: 0;
   line-height: normal;
+  margin-top: 50px;
+  align-self: flex-start;
   margin-left: 100px;
-  margin-top: 103px;
-  min-height: 65px;
-  width: 573px;
 }
 
+/* ── Project cards container (top row: 2 cards) ── */
 .stark_lab_project .overlap-group-container {
   align-items: flex-start;
-  align-self: center;
   display: flex;
-  gap: 19px;
-  margin-right: 19.0px;
-  margin-top: 71px;
-  min-width: 1275px;
+  gap: 40px;
+  margin-top: 40px;
+  margin-left: 100px;
+  margin-right: 100px;
+  width: 1240px;
 }
 
+/* ── Card base (dark bg, wide) ── */
 .stark_lab_project .overlap-group5 {
-  align-items: flex-start;
-  background-color: var(--navy-blue);
-  border: 1px solid;
-  border-color: var(--black);
-  border-radius: 57px;
-  box-shadow: 0px 7px 0px #000000;
+  background-color: #1a3e6f;
+  border-radius: 16px;
   display: flex;
-  gap: 63px;
-  height: 330px;
-  min-width: 628px;
-  padding: 42px 68px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 40px 40px;
+  flex: 1;
+  min-height: 220px;
+  overflow: hidden;
+  position: relative;
 }
 
+/* ── Card base (light bg) ── */
+.stark_lab_project .overlap-group4 {
+  background-color: #e8eef5;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 40px 40px;
+  flex: 1;
+  min-height: 220px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Full-width dark card ── */
+.stark_lab_project .overlap-group6 {
+  background-color: #1a3e6f;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 40px 60px;
+  margin-top: 40px;
+  margin-left: 100px;
+  margin-right: 100px;
+  width: 1240px;
+  min-height: 200px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Full-width light card ── */
+.stark_lab_project .overlap-group8 {
+  background-color: #e8eef5;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 40px 60px;
+  margin-top: 40px;
+  margin-left: 100px;
+  margin-right: 100px;
+  width: 1240px;
+  min-height: 200px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Card text columns ── */
 .stark_lab_project .flex-col {
   align-items: flex-start;
-  align-self: flex-end;
   display: flex;
   flex-direction: column;
-  gap: 61px;
-  margin-bottom: 1px;
-  min-height: 191px;
-  width: 180px;
-}
-
-.stark_lab_project .line-bot {
-  letter-spacing: 0;
-  line-height: normal;
-  min-height: 75px;
-}
-
-.stark_lab_project .span1 {
-  color: var(--white);
-  font-family: var(--font-family-noto_sans);
-  font-size: var(--font-size-xxl);
-  font-weight: 500;
-}
-
-.stark_lab_project .overlap-group {
-  align-items: flex-start;
-  background-color: var(--white);
-  border-radius: 21px;
-  display: flex;
-  height: 42px;
-  justify-content: flex-end;
-  min-width: 42px;
-  padding: 11.0px 10.9px;
-}
-
-.stark_lab_project .text-2 {
-  align-self: center;
-  letter-spacing: 0;
-  line-height: 28px;
-  margin-bottom: 3.0px;
-  min-width: 100px;
-  white-space: nowrap;
-}
-
-.stark_lab_project .overlap-group4 {
-  align-items: center;
-  background-color: var(--grey);
-  border: 1px solid;
-  border-color: var(--black);
-  border-radius: 57px;
-  box-shadow: 0px 7px 0px #000000;
-  display: flex;
-  gap: 71px;
-  height: 330px;
-  min-width: 628px;
-  padding: 34px 70px;
+  gap: 24px;
+  z-index: 1;
 }
 
 .stark_lab_project .flex-col-1 {
-  gap: 100px;
-  margin-bottom: 9px;
-  position: relative;
-}
-
-.stark_lab_project .text-24 {
-  color: var(--navy-blue);
-  font-family: var(--font-family-noto_sans_tc);
-  font-size: var(--font-size-xxl);
-  font-weight: 500;
-  letter-spacing: 0;
-  line-height: normal;
-  min-height: 36px;
-  white-space: nowrap;
-}
-
-.stark_lab_project .group-3 {
   align-items: flex-start;
   display: flex;
-  gap: 17px;
-  height: 55px;
-  min-width: 172px;
-  padding: 6px 3px;
-}
-
-.stark_lab_project .overlap-group2 {
-  align-items: flex-start;
-  background-color: var(--navy-blue);
-  border-radius: 21px;
-  display: flex;
-  height: 42px;
-  justify-content: flex-end;
-  min-width: 42px;
-  padding: 11.0px 10.9px;
-}
-
-.stark_lab_project .overlap-group6 {
-  align-items: flex-start;  
-  background-color: var(--navy-blue);
-  border: 1px solid;
-  border-color: var(--black);
-  border-radius: 57px;
-  box-shadow: 0px 7px 0px #000000;
-  display: flex;
-  gap: 122px;
-  height: 330px;
-  margin-left: 73px;
-  margin-top: 60px;
-  min-width: 628px;
-  padding: 34px 70px;
-}
-
-.stark_lab_project .overlap-group8 {
-  align-items: flex-start;
-  background-color: var(--grey);
-  border: 1px solid;
-  border-color: var(--black);
-  border-radius: 57px;
-  box-shadow: 0px 7px 0px #000000;
-  display: flex;
-  gap: 71px;
-  margin-left: 720px;
-  margin-top: -330px;
-  height: 330px;
-  min-width: 628px;
-  padding: 34px 70px
+  flex-direction: column;
+  gap: 24px;
+  z-index: 1;
 }
 
 .stark_lab_project .flex-col-2 {
-  gap: 93px;
-  margin-bottom: 13px;
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  z-index: 1;
+}
+
+.stark_lab_project .flex-col-3 {
+  /* shared modifier */
+}
+
+/* ── Card titles ── */
+.stark_lab_project .line-bot {
+  letter-spacing: 0;
+  line-height: 1.4;
 }
 
 .stark_lab_project .text-22 {
+  color: #fff;
+  font-size: 30px;
+  font-weight: 500;
   letter-spacing: 0;
-  line-height: normal;
-  min-height: 43px;
+  line-height: 1.4;
+  font-family: var(--font-family-noto_sans_tc, "Noto Sans TC", sans-serif);
+}
+
+.stark_lab_project .text-24 {
+  color: #1a3e6f;
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.4;
+  font-family: var(--font-family-noto_sans_tc, "Noto Sans TC", sans-serif);
+}
+
+.stark_lab_project .span1 {
+  font-style: italic;
+}
+
+/* ── "More" button ── */
+.stark_lab_project .group-33,
+.stark_lab_project .group-3 {
+  align-items: center;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 12px;
+}
+
+.stark_lab_project .overlap-group {
+  align-items: center;
+  background-color: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  display: flex;
+  height: 40px;
+  justify-content: center;
+  width: 40px;
+}
+
+.stark_lab_project .overlap-group2 {
+  align-items: center;
+  background-color: rgba(26,62,111,0.15);
+  border-radius: 50%;
+  display: flex;
+  height: 40px;
+  justify-content: center;
+  width: 40px;
+}
+
+.stark_lab_project .arrow-3 {
+  height: 18px;
+  width: 18px;
+  object-fit: contain;
+}
+
+.stark_lab_project .text-2 {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+/* ── Card images ── */
+.stark_lab_project .rectangle-79 {
+  height: 180px;
+  object-fit: cover;
+  border-radius: 8px;
+  z-index: 0;
+}
+
+.stark_lab_project .x1-2 {
+  height: 160px;
+  object-fit: cover;
+  border-radius: 8px;
+  z-index: 0;
 }
 
 .stark_lab_project .x1 {
-  height: 269px;
+  height: 160px;
   object-fit: cover;
-  width: 170px;
+  border-radius: 8px;
+  z-index: 0;
 }
 
+/* ── Footer ── */
 .stark_lab_project .group-36 {
-  align-self: center;
-  height: 277px;
-  margin-top: 146px;
+  background-color: #1a3e6f;
+  margin-top: 80px;
+  padding: 40px 100px 40px;
   position: relative;
-  width: 1378px;
+  width: 1440px;
+}
+
+.stark_lab_project .footer {
+  display: flex;
+  flex-direction: column;
 }
 
 .stark_lab_project .navigation-and-contacts {
   align-items: flex-start;
   display: inline-flex;
   flex-direction: column;
-  gap: 66px;
-  height: 157px;
+  gap: 20px;
   position: relative;
 }
 
@@ -248,70 +303,63 @@
   align-items: flex-start;
   display: inline-flex;
   flex: 0 0 auto;
-  gap: 120px;
-  margin-bottom: -52.00px;
   position: relative;
+}
+
+.stark_lab_project .contact-us {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stark_lab_project .heading {
+  display: flex;
 }
 
 .stark_lab_project .label {
-  align-items: flex-start;
-  background-color: var(--white);
+  background-color: var(--white, #fff);
   border-radius: 7px;
   display: inline-flex;
-  flex: 0 0 auto;
-  flex-direction: column;
-  gap: 10px;
-  padding: 0px 7px;
-  position: relative;
+  padding: 2px 10px;
 }
 
 .stark_lab_project .label-1 {
+  color: #1a3e6f;
+  font-size: 20px;
+  font-weight: 700;
   letter-spacing: 0;
   line-height: normal;
-  margin-top: -1.00px;
-  position: relative;
-  width: fit-content;
+  white-space: nowrap;
 }
 
 .stark_lab_project .info {
   align-items: flex-start;
   display: inline-flex;
-  flex: 0 0 auto;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   position: relative;
 }
 
-.stark_lab_project .address-100 {
+.stark_lab_project .email-d04921004ntuedutw {
+  color: #fff;
+  font-size: 18px;
   letter-spacing: 0;
   line-height: normal;
-  position: relative;
-  width: 490px;
+}
+
+.stark_lab_project .address-100 {
+  color: #fff;
+  font-size: 18px;
+  letter-spacing: 0;
+  line-height: 1.6;
+  width: 514px;
 }
 
 .stark_lab_project .group-30 {
   height: 30px;
-  left: 1152px;
   position: absolute;
-  top: 208px;
+  right: 100px;
+  bottom: 40px;
   width: 114px;
-}
-
-.stark_lab_project .flex-col-3 {
-  align-items: flex-start;
-  align-self: flex-end;
-  display: flex;
-  flex-direction: column;
-  min-height: 191px;
-  width: 172px;
-}
-
-.stark_lab_project .navbar-link-text {
-  cursor: pointer;
-  letter-spacing: 0;
-  line-height: 28px;
-  margin-top: -1.00px;
-  position: relative;
-  white-space: nowrap;
-  width: fit-content;
+  object-fit: contain;
 }

@@ -1,197 +1,306 @@
 {% load static %}
 <!DOCTYPE html>
 <html>
-
 <head>
   <meta charset="utf-8" />
-  <!--<meta name=description content="This site was generated with Anima. www.animaapp.com"/>-->
-  <!-- <link rel="shortcut icon" type=image/png href="https://animaproject.s3.amazonaws.com/home/favicon.png" /> -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=yes">
-  <link rel="shortcut icon" type="image/png" href="https://animaproject.s3.amazonaws.com/home/favicon.png" />
   <meta name="og:type" content="website" />
-  <meta name="twitter:card" content="photo" />
   <title>論文研究</title>
-  <!-- <link rel="stylesheet" type="text/css" href="css/stark_lab_professor.css" />
-    <link rel="stylesheet" type="text/css" href="css/styleguide.css" />
-    <link rel="stylesheet" type="text/css" href="css/globals.css" /> -->
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { margin: 0; background: #ffffff; font-family: "Noto Sans TC", "Noto Sans", sans-serif; color: #000; }
+    a { text-decoration: none; color: inherit; }
 
-  <link rel="stylesheet" href="{% static 'css/stark_lab_professor.css' %}">
-  <link rel="stylesheet" href="{% static 'css/styleguide.css' %}">
-  <link rel="stylesheet" href="{% static 'css/globals.css' %}">
+    /* ── Page wrapper ── */
+    .page-wrapper {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
 
+    /* ── Navigation ── */
+    .navigation-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 30px 100px;
+      border-bottom: 2px solid #1a3e6f;
+    }
+    .logo-1 { height: 48px; width: auto; }
+    .navbar {
+      display: flex;
+      gap: 40px;
+      align-items: center;
+    }
+    .navbar-link-text {
+      font-size: 20px;
+      font-weight: 600;
+      color: #000;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .navbar-link-text:hover { color: #1a3e6f; }
+
+    /* ── Profile section ── */
+    .profile-section {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+      padding: 50px 100px 30px;
+    }
+    .profile-photo-wrapper {
+      position: relative;
+      width: 116px;
+      height: 110px;
+      flex-shrink: 0;
+    }
+    .profile-photo-wrapper img.vector {
+      position: absolute;
+      top: 5px; left: 6px;
+      width: 110px; height: 102px;
+    }
+    .profile-photo-wrapper img.mask-group {
+      position: absolute;
+      top: 0; left: 0;
+      width: 110px; height: 102px;
+    }
+    .profile-name { font-size: 36px; font-weight: 700; color: #1a3e6f; margin-bottom: 8px; }
+    .profile-title { font-size: 20px; font-weight: 700; color: #1a3e6f; }
+    .profile-orcid {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-left: auto;
+    }
+    .profile-orcid img { width: 33px; height: 33px; }
+    .profile-orcid span { font-size: 16px; font-weight: 700; color: #363636; }
+
+    /* ── Dividers ── */
+    .divider {
+      height: 3px;
+      background: #1a3e6f;
+      margin: 0 100px;
+    }
+    .divider-light {
+      height: 1px;
+      background: #ccc;
+      margin: 30px 100px 0;
+    }
+
+    /* ── Section header badge ── */
+    .section-header {
+      margin: 36px 100px 0;
+    }
+    .section-badge {
+      display: inline-block;
+      background-color: #1a3e6f;
+      border-radius: 9px;
+      padding: 10px 18px;
+      color: #fff;
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    /* ── Papers list ── */
+    .papers-list {
+      margin: 16px 100px 0;
+    }
+    .paper-entry {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      padding: 14px 0;
+      border-bottom: 1px solid #eee;
+      line-height: 1.7;
+      font-size: 20px;
+    }
+    .paper-entry:last-child { border-bottom: none; }
+    .paper-info { flex: 1; }
+    .paper-year {
+      flex-shrink: 0;
+      color: #888;
+      font-size: 16px;
+      padding-top: 4px;
+      white-space: nowrap;
+      min-width: 45px;
+      text-align: right;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      background-color: #1a3e6f;
+      margin-top: 60px;
+      padding: 40px 100px;
+      width: 100%;
+    }
+    .footer-contact-label {
+      display: inline-block;
+      background-color: #fff;
+      border-radius: 7px;
+      padding: 2px 10px;
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a3e6f;
+      margin-bottom: 20px;
+    }
+    .footer-text {
+      color: #fff;
+      font-size: 18px;
+      line-height: 1.8;
+    }
+  </style>
 </head>
 
-<body style="margin: 0; background: #ffffff">
-  <input type="hidden" id="anPageName" name="page" value="stark_lab_professor" />
-  <div class="container-center-horizontal">
-    <div class="stark_lab_professor notosanstc-normal-black-24px screen">
-      <div class="overlap-group5">
-        <div class="navigation-bar">
-          <img class="logo-1" src="{% static 'img/------logo-1@2x.png' %}" alt="logo 1" />
-          <a href="stark_lab_home.html">
-            <div class="navbar notosanstc-semi-bold-black-20px">
-              <a href="/">
-                <div class="navbar-link-text notosanstc-semi-bold-black-20px">首頁</div>
-              </a>
-              <a href="/project/">
-                <div class="navbar-link-text notosanstc-semi-bold-black-20px">研究專案</div>
-              </a>
-              <a href="/member/">
-                <div class="navbar-link-text notosanstc-semi-bold-black-20px">成員介紹</div>
-              </a>
-              <a href="/professor/">
-                <div class="navbar-link-text notosanstc-semi-bold-black-20px">論文研究</div>
-              </a>
-            </div>
-          </a>
-        </div>
-        <img class="line-30" src="{% static 'img/line-30.svg' %}" alt="Line 30" />
+<body>
+  <div class="page-wrapper">
+
+    <!-- Navigation -->
+    <div class="navigation-bar">
+      <img class="logo-1" src="{% static 'img/------logo-1@2x.png' %}" alt="logo" />
+      <nav class="navbar">
+        <a href="/"><div class="navbar-link-text">首頁</div></a>
+        <a href="/project/"><div class="navbar-link-text">研究專案</div></a>
+        <a href="/member/"><div class="navbar-link-text">成員介紹</div></a>
+        <a href="/professor/"><div class="navbar-link-text">論文研究</div></a>
+      </nav>
+    </div>
+
+    <!-- Profile -->
+    <div class="profile-section">
+      <div class="profile-photo-wrapper">
+        <img src="https://bigdata.scu.edu.tw/wp-content/uploads/2024/02/1130310B062-%E9%82%B1%E5%AE%B6%E8%B1%AA-168-%E8%82%96%E5%83%8F-1-scaled-e1710397040683-450x450.jpg" alt="邱嘉豪" style="width:110px; height:110px; object-fit:cover; border-radius:50%;" />
       </div>
-      <div class="flex-row">
-        <div class="overlap-group">
-          <img class="vector" src="{% static 'img/vector.svg' %}" alt="Vector" />
-          <img class="mask-group" src="{% static 'img/mask-group@2x.png' %}" alt="Mask group" />
-        </div>
-        <div class="flex-col">
-          <h1 class="text-5 notosanstc-bold-navy-blue-36px">邱嘉豪</h1>
-          <div class="assistant-professor">Assistant Professor</div>
-        </div>
-        <div class="group-29">
-          <img class="intersect" src="{% static 'img/intersect@2x.png' %}" alt="Intersect" />
-          <div class="httpsorcidorg0000-0000-0000-0000">https://orcid.org/0000-0000-0000-0000</div>
-        </div>
+      <div>
+        <div class="profile-name">邱嘉豪</div>
+        <div class="profile-title">Assistant Professor</div>
       </div>
-      <img class="line-3" src="{% static 'img/line-33.svg' %}" alt="Line 33" />
-      <div class="group-25">
-        <div class="overlap-group1">
-          <div class="journal-papers notosans-bold-white-32px"> 期刊</div>
-        </div>
-      </div>
-
-        <div class="text">
-          <div class="paper-entry">
-            <div class="paper-info">
-              1. Predicting Period Stock Spread Ranking Using Revenue Indicators and Machine Learning Techniques CH Chiu, YC Tsai IOP Conference Series: Earth and Environmental Science 704 (1), 012014
-            </div>
-            <div class="paper-year">2021</div>
-          </div>
-          <div class="paper-entry">
-            <div class="paper-info">
-              2. Long text to image converter for financial reports CH Chiu, YC Tsai, HL Chen International Journal of Data Mining, Modelling and Management 13 (3),211-230
-            </div>
-            <div class="paper-year">2021</div>
-          </div>
-        </div>
-  
-
-      <hr style="margin-top: 20px; border: none; border-top: 1px solid #ccc;" />
-      <!-- <img class="line-3" src="{% static 'img/line-33.svg' %}" alt="Line 33" /> -->
-      <br>
-      <br>
-      <br>
-      <div class="group-26">
-        <div class="overlap-group2">
-          <div class="conference-papers notosans-bold-white-32px">研討會</div>
-        </div>
-      </div>
-
-        <div class="text">
-          <div class="paper-entry">
-            1. Enhancing the brightness of GaN light-emitting diodes by manipulating the illumination direction in the photoelectrochemical process HP Shiao, CY Wang, ML Wu, CH Chiu IEEE Photonics Technology Letters 22 (22), 1653-1655
-            <div class="paper-year">2010</div>
-          </div>
-          <div class="paper-entry">
-            2. The Improvement of Efficiency and Uniformity in Non-image LED Illumination for Field-Sequential-Color Pico-projector SD Jiang, CH Chiu, HC Wu, PS Lee, YC Lee, WS Sun, ML Wu
-            <div class="paper-year">2011</div>
-          </div>
-          <div class="paper-entry">
-            3. The modulation of LEDs driving current and duration ratio in application of Color-Sequential Pico-Projector CH Chiu, SD Jiang, PS Lee, YC Lee, WS Sun, ML Wu
-            <div class="paper-year">2011</div>
-          </div>
-          <div class="paper-entry">
-            4. Study of the optical effects of nanostructure embedded GaN light emitting diodes formed by nanorod template overgrowth CY Wang, YC Lee, PS Lee, CH Chiu, CH Kuo, ML Wu Thin solid films 539, 245-250
-            <div class="paper-year">2013</div>
-          </div>
-          <div class="paper-entry">
-            5. GCCCE2017 使用賽局理論分析挑選團體成員之戰略達到高滿意度配對之研究 Game-Theory Analysis for Strategic Decision High satisfaction Matching
-            <div class="paper-year">2017</div>
-          </div>
-          <div class="paper-entry">
-            6. Use Text Mining for Financial Reports Analysis: Long Text to Image Converter CH Chiu, YC Tsai 2020 the 6th International Conference on Communication and Information ...
-            <div class="paper-year">2020</div>
-          </div>
-          <div class="paper-entry">
-            7. Practical Impact of ChatGPT in Introduction to Computer Science Course: Exam Performance and Real Learning Outcomes, GCCCE
-            <div class="paper-year">2024</div>
-          </div>
-          <div class="paper-entry">
-            8. 邱嘉豪, ChatGPT於計算機概論課程中的實際效果：測驗成效以及真實學習成效 2024全國科普論壇, 高雄, 台灣。
-            <div class="paper-year">2024</div>
-          </div>
-          <div class="paper-entry">
-            9. A Comprehensive Analysis of ChatGPT-Assisted Learning: A Systematic Exploration from Learning Outcomes to Student Behavior Patterns, ICAIE
-            <div class="paper-year">2025</div>
-          </div>
-          <div class="paper-entry">
-            10. Chia-Hao Chiu, Practical Impact of ChatGPT in Introduction to Computer Science Course: Exam Score and Real Learning Effectiveness, IEEE-ICIET, Fukuyama, Japan.
-            <div class="paper-year">2025</div>
-          </div>
-        </div>
-
-
-
-
-
-
-      <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-
-      <img class="line-3" src="{% static 'img/line-33.svg' %}" alt="Line 33" />
-      <div class="group-27">
-        <div class="overlap-group3">
-          <div class="books notosans-bold-white-32px">書籍</div>
-        </div>
-      </div>
-        <div class="text">
-          <div class="paper-entry">
-            1. 洞悉新興產業的23堂課-史塔克實驗室StarkLab(上)
-            <div class="paper-year">2022</div>
-          </div>
-          <div class="paper-entry">
-            2. 洞悉新興產業的23堂課-史塔克實驗室StarkLab(下)
-            <div class="paper-year">2022</div>
-          </div>
-        </div>
-
-      
-      <div class="overlap-group4">
-        <div class="footer">
-          <div class="navigation-and-contacts">
-            <div class="frame-26">
-              <div class="contact-us">
-                <div class="heading">
-                  <div class="label">
-                    <div class="label-1 notosans-bold-navy-blue-20px">Contact us:</div>
-                  </div>
-                </div>
-                <div class="info">
-                  <div class="email-d04921004ntuedutw notosans-normal-white-18px">Email: D04921004@ntu.edu.tw</div>
-                  <p class="address-100 notosanstc-normal-white-18px">
-                    Address: 100台北市中正區貴陽街一段56號 No. 56, Sec. 1, Guiyang St., Zhongzheng Dist., Taipei
-                    City<br /><br />
-                    ©2025 Soochow University Starklab . All Rights Reserved.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <img class="group-30" src="{% static 'img/group-30@2x.png' %}" alt="Group 30" />
+      <div class="profile-orcid">
+        <img src="{% static 'img/intersect@2x.png' %}" alt="ORCID" />
+        <span>https://orcid.org/0000-0000-0000-0000</span>
       </div>
     </div>
 
+    <div class="divider"></div>
 
+    <!-- ══ 期刊 ══ -->
+    <div class="section-header">
+      <span class="section-badge">期刊</span>
+    </div>
+    <div class="papers-list">
+      <div class="paper-entry">
+        <div class="paper-info">1. Temperature-dependent electroluminescence efficiency in blue InGaN–GaN light-emitting diodes with different well widths &nbsp;CH Wang, JR Chen, CH Chiu, HC Kuo, YL Li, TC Lu, SC Wang &nbsp;IEEE Photonics Technology Letters 22 (4), 236-238</div>
+        <div class="paper-year">2010</div>
+      </div>
+      <div class="paper-entry">
+        <div class="paper-info">2. Study of the optical effects of nanostructure embedded GaN light emitting diodes formed by nanorod template overgrowth &nbsp;CY Wang, YC Lee, PS Lee, CH Chiu, CH Kuo, ML Wu &nbsp;Thin solid films 539, 245-250</div>
+        <div class="paper-year">2013</div>
+      </div>
+      <div class="paper-entry">
+        <div class="paper-info">3. Long text to image converter for financial reports &nbsp;CH Chiu, YC Tsai, HL Chen &nbsp;International Journal of Data Mining, Modelling and Management 13 (3), 211-230</div>
+        <div class="paper-year">2021</div>
+      </div>
+    </div>
+
+    <div class="divider-light"></div>
+
+    <!-- ══ 研討會 ══ -->
+    <div class="section-header">
+      <span class="section-badge">研討會</span>
+    </div>
+    <div class="papers-list">
+      <div class="paper-entry">
+        <div class="paper-info">1. Enhancing the brightness of GaN light-emitting diodes by manipulating the illumination direction in the photoelectrochemical process &nbsp;HP Shiao, CY Wang, ML Wu, CH Chiu &nbsp;IEEE Photonics Technology Letters 22 (22), 1653-1655</div>
+        <div class="paper-year">2010</div>
+      </div>
+      <div class="paper-entry">
+        <div class="paper-info">2. The Improvement of Efficiency and Uniformity in Non-image LED Illumination for Field-Sequential-Color Pico-projector &nbsp;SD Jiang, CH Chiu, HC Wu, PS Lee, YC Lee, WS Sun, ML Wu</div>
+        <div class="paper-year">2011</div>
+      </div>
+      <div class="paper-entry">
+        <div class="paper-info">3. The modulation of LEDs driving current and duration ratio in application of Color-Sequential Pico-Projector &nbsp;CH Chiu, SD Jiang, PS Lee, YC Lee, WS Sun, ML Wu</div>
+        <div class="paper-year">2011</div>
+      </div>
+      <div class="paper-entry">
+        <div class="paper-info">4. Color-Temperature Modulation of RGB LEDs and It's Application of Color-Sequential Pico-Projectors &nbsp;邱嘉豪</div>
+        <div class="paper-year">2011</div>
+      </div>
+      <div class="paper-entry">
+        <div class="paper-info">5. GCCCE2017 使用賽局理論分析挑選團體成員之戰略達到高滿意度配對之研究 Game-Theory Analysis for Strategic Decision High satisfaction Matching</div>
+        <div class="paper-year">2017</div>
+      </div>
+      <div class="paper-entry">
+        <div class="paper-info">6. Use Text Mining for Financial Reports Analysis: Long Text to Image Converter &nbsp;CH Chiu, YC Tsai &nbsp;2020 the 6th International Conference on Communication and Information Processing, Tokyo</div>
+        <div class="paper-year">2020</div>
+      </div>
+      <div class="paper-entry">
+        <div class="paper-info">7. Predicting Period Stock Spread Ranking Using Revenue Indicators and Machine Learning Techniques &nbsp;CH Chiu, YC Tsai &nbsp;IOP Conference Series: Earth and Environmental Science 704 (1), 012014</div>
+        <div class="paper-year">2021</div>
+      </div>
+      <div class="paper-entry">
+        <div class="paper-info">8. Chia-En Wu, Chia-Hao Chiu. Practical Impact of ChatGPT in Introduction to Computer Science Course: Exam Performance and Real Learning Outcomes. GCCCE2024, Chongqing, China.</div>
+        <div class="paper-year">2024</div>
+      </div>
+      <div class="paper-entry">
+        <div class="paper-info">9. Practical Impact of ChatGPT in Introduction to Computer Science Course: Exam Performance and Real Learning Outcomes, ICIET</div>
+        <div class="paper-year">2024</div>
+      </div>
+      <div class="paper-entry">
+        <div class="paper-info">10. 邱嘉豪, ChatGPT於計算機概論課程中的實際效果：測驗成效以及真實學習成效 2024全國科普論壇, 高雄, 台灣。</div>
+        <div class="paper-year">2024</div>
+      </div>
+      <div class="paper-entry">
+        <div class="paper-info">11. A Comprehensive Analysis of ChatGPT-Assisted Learning: A Systematic Exploration from Learning Outcomes to Student Behavior Patterns, ICAIE, Suzhou, China. (Chiao-Hsi Hsiao; Chia-Hao Chiu)</div>
+        <div class="paper-year">2025</div>
+      </div>
+      <div class="paper-entry">
+        <div class="paper-info">12. The Impact of Gamified Learning on Financial Literacy and Behavioral Change. 2025 5th International Conference on Artificial Intelligence and Education (ICAIE), Suzhou, China. CH Chiu</div>
+        <div class="paper-year">2025</div>
+      </div>
+      <div class="paper-entry">
+        <div class="paper-info">13. Chia-Hao Chiu, Practical Impact of ChatGPT in Introduction to Computer Science Course: Exam Score and Real Learning Effectiveness, IEEE-ICIET, Fukuyama, Japan.</div>
+        <div class="paper-year">2025</div>
+      </div>
+      <div class="paper-entry">
+        <div class="paper-info">14. Integrating Large Language Models and Vector Databases for Podcast Semantic Search. I-Ting Lin, Chia-Hao Chiu, Bo-Tang Liao, Bo-Jyun Chen. 2025 IEEE 14th International Workshop on Computational Intelligence and Applications, Hiroshima, Japan.</div>
+        <div class="paper-year">2025</div>
+      </div>
+      <div class="paper-entry">
+        <div class="paper-info">15. AI與理學的跨域探索：一場關於際關係的實驗教育旅程。邱嘉豪、Wei Tzu-Hsiang。2025年第九屆實驗教育國際研討會，台灣、台北。</div>
+        <div class="paper-year">2025</div>
+      </div>
+    </div>
+
+    <div class="divider-light"></div>
+
+    <!-- ══ 書籍 ══ -->
+    <div class="section-header">
+      <span class="section-badge">書籍</span>
+    </div>
+    <div class="papers-list">
+      <div class="paper-entry">
+        <div class="paper-info">1. 洞悉新興產業的23堂課－史塔克實驗室 StarkLab（上）</div>
+        <div class="paper-year">2022</div>
+      </div>
+      <div class="paper-entry">
+        <div class="paper-info">2. 洞悉新興產業的23堂課－史塔克實驗室 StarkLab（下）</div>
+        <div class="paper-year">2022</div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <div class="footer-contact-label">Contact us:</div>
+      <div class="footer-text">
+        Email: D04921004@ntu.edu.tw<br><br>
+        Address: 100台北市中正區貴陽街一段56號 No. 56, Sec. 1, Guiyang St., Zhongzheng Dist., Taipei City<br><br>
+        ©2025 Soochow University Starklab . All Rights Reserved.
+      </div>
+    </div>
 
   </div>
 </body>
-
 </html>

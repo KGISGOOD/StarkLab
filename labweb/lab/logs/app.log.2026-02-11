@@ -1,0 +1,2 @@
+2026-02-11 09:37:59 INFO django.utils.autoreload:636 Watching for file changes with StatReloader
+2026-02-11 16:12:40 INFO django.server:161 "GET / HTTP/1.1" 200 11060
