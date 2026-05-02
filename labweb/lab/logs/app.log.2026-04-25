@@ -1,0 +1,37 @@
+2026-04-25 00:16:01 INFO django.server:212 "GET / HTTP/1.1" 200 11060
+2026-04-25 04:34:15 INFO django.server:212 "GET / HTTP/1.1" 200 11060
+2026-04-25 04:34:15 WARNING django.server:212 "GET /asdkjh2k3h4_nonexistent_path HTTP/1.1" 404 179
+2026-04-25 04:34:15 WARNING django.server:212 "GET /env HTTP/1.1" 404 179
+2026-04-25 04:34:17 WARNING django.server:212 "GET /config.yaml HTTP/1.1" 404 179
+2026-04-25 04:34:17 WARNING django.server:212 "GET /application.yaml HTTP/1.1" 404 179
+2026-04-25 04:34:17 WARNING django.server:212 "GET /application.properties HTTP/1.1" 404 179
+2026-04-25 04:34:17 WARNING django.server:212 "GET /application-production.properties HTTP/1.1" 404 179
+2026-04-25 04:34:17 WARNING django.server:212 "GET /docker-compose.yaml HTTP/1.1" 404 179
+2026-04-25 04:34:17 WARNING django.server:212 "GET /Dockerfile HTTP/1.1" 404 179
+2026-04-25 04:34:18 WARNING django.server:212 "GET /local.settings.json HTTP/1.1" 404 179
+2026-04-25 04:34:18 WARNING django.server:212 "GET /settings.py HTTP/1.1" 404 179
+2026-04-25 04:34:18 WARNING django.server:212 "GET /local_settings.py HTTP/1.1" 404 179
+2026-04-25 04:34:18 WARNING django.server:212 "GET /settings/production.py HTTP/1.1" 404 179
+2026-04-25 04:34:18 WARNING django.server:212 "GET /logs/error.log HTTP/1.1" 404 179
+2026-04-25 04:34:19 WARNING django.server:212 "GET /logs/application.log HTTP/1.1" 404 179
+2026-04-25 04:34:19 WARNING django.server:212 "GET /storage/logs/laravel.log HTTP/1.1" 404 179
+2026-04-25 04:34:19 WARNING django.server:212 "GET /var/log/app.log HTTP/1.1" 404 179
+2026-04-25 04:34:19 WARNING django.server:212 "GET /database.sql HTTP/1.1" 404 179
+2026-04-25 04:34:19 WARNING django.server:212 "GET /dump.sql HTTP/1.1" 404 179
+2026-04-25 04:34:19 WARNING django.server:212 "GET /db.sql HTTP/1.1" 404 179
+2026-04-25 04:34:19 WARNING django.server:212 "GET /composer.json HTTP/1.1" 404 179
+2026-04-25 04:34:20 WARNING django.server:212 "GET /Jenkinsfile HTTP/1.1" 404 179
+2026-04-25 04:34:20 WARNING django.server:212 "GET /next.config.js HTTP/1.1" 404 179
+2026-04-25 04:34:20 WARNING django.server:212 "GET /nuxt.config.js HTTP/1.1" 404 179
+2026-04-25 04:34:20 WARNING django.server:212 "GET /vite.config.js HTTP/1.1" 404 179
+2026-04-25 04:34:20 WARNING django.server:212 "GET /firebase.json HTTP/1.1" 404 179
+2026-04-25 04:34:20 WARNING django.security.csrf:241 Forbidden (CSRF cookie not set.): /
+2026-04-25 04:34:20 WARNING django.server:212 "POST / HTTP/1.1" 403 1382
+2026-04-25 04:46:43 INFO django.server:212 "GET / HTTP/1.1" 200 11060
+2026-04-25 04:46:44 WARNING django.server:212 "GET /_ignition/health-check HTTP/1.1" 404 179
+2026-04-25 04:46:50 WARNING django.server:212 "GET /actuator/env HTTP/1.1" 404 179
+2026-04-25 04:46:55 WARNING django.server:212 "GET /_nuxt/app.js HTTP/1.1" 404 179
+2026-04-25 04:46:56 WARNING django.server:212 "GET /bundle.js HTTP/1.1" 404 179
+2026-04-25 04:46:57 WARNING django.server:212 "GET /app.js HTTP/1.1" 404 179
+2026-04-25 05:09:57 INFO django.server:212 "GET / HTTP/1.1" 200 11060
+2026-04-25 16:26:27 INFO django.utils.autoreload:667 Watching for file changes with StatReloader

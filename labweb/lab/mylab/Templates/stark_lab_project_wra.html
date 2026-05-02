@@ -1,235 +1,528 @@
 {% load static %}
-<!DOCTYPE html><html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=yes"> 
-    <link rel="shortcut icon" type="image/png" href="https://animaproject.s3.amazonaws.com/home/favicon.png" />
-    <meta name="og:type" content="website" />
-    <meta name="twitter:card" content="photo" />
-    <title>國際新聞機器人</title>
-    <link rel="stylesheet" href="{% static 'css/stark_lab_project_war.css' %}">
-    <!-- <link rel="stylesheet" type="text/css" href="{% static 'css/stark_lab_project3.css' %}" /> -->
-    <link rel="stylesheet" href="{% static 'css/styleguide.css' %}">
-    <link rel="stylesheet" href="{% static 'css/globals.css' %}">
-  </head>
-  <body style="margin: 0; background: #ffffff">
-    <input
-      type="hidden"
-      id="anPageName"
-      name="page"
-      value="stark_lab_project_linebot"
-    />
-    <div class="container-center-horizontal">
-      <div class="stark_lab_project_linebot screen">
-        <div class="overlap-group3">
-          <div class="navigation-bar">
-            <img class="logo-1" src="{% static 'img/------logo-1@2x.png' %}" alt="logo 1" />
-            <div class="navbar notosanstc-semi-bold-black-20px">
-              <a href="/">
-                <div class="navbar-link-text notosanstc-semi-bold-black-20px">首頁</div>
-              </a>
-              <a href="/project/">  
-                <div class="navbar-link-text notosanstc-semi-bold-black-20px">研究專案</div>
-              </a>
-              <a href="/member/">
-                <div class="navbar-link-text notosanstc-semi-bold-black-20px">成員介紹</div>
-              </a>
-              <a href="/professor/">
-                <div class="navbar-link-text notosanstc-semi-bold-black-20px">論文研究</div>
-              </a>
-            </div>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=yes">
+  <link rel="shortcut icon" type="image/png" href="https://animaproject.s3.amazonaws.com/home/favicon.png" />
+  <meta name="og:type" content="website" />
+  <meta name="twitter:card" content="photo" />
+  <title>國際新聞機器人</title>
+
+  <style>
+    /* ════════════════════════════════════════
+       RESET
+    ════════════════════════════════════════ */
+    @import url("https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css");
+    @import url("https://fonts.googleapis.com/css?family=Noto+Sans+TC:500,700,600,400|Noto+Sans:500,700,800,400|Space+Grotesk:500,400");
+
+    /* ════════════════════════════════════════
+       DESIGN TOKENS
+    ════════════════════════════════════════ */
+    :root {
+      --black:     #000000;
+      --grey:      #f3f3f3;
+      --mirage:    #191a23;
+      --navy-blue: #0f87e0;
+      --white:     #ffffff;
+
+      --font-size-l:      20px;
+      --font-size-m:      18px;
+      --font-size-xl:     24px;
+      --font-size-xxl:    30px;
+      --font-size-xxxl:   32px;
+      --font-size-xxxxl:  36px;
+      --font-size-xxxxxl: 48px;
+
+      --font-family-noto_sans:     "Noto Sans", Helvetica;
+      --font-family-noto_sans_tc:  "Noto Sans TC", Helvetica;
+      --font-family-space_grotesk: "Space Grotesk", Helvetica;
+    }
+
+    /* ════════════════════════════════════════
+       TYPOGRAPHY
+    ════════════════════════════════════════ */
+    .notosanstc-semi-bold-black-20px  { color:var(--black);     font-family:var(--font-family-noto_sans_tc);  font-size:var(--font-size-l);     font-weight:600; }
+    .spacegrotesk-medium-black-20px   { color:var(--black);     font-family:var(--font-family-space_grotesk); font-size:var(--font-size-l);     font-weight:500; }
+    .notosanstc-normal-black-24px     { color:var(--black);     font-family:var(--font-family-noto_sans_tc);  font-size:var(--font-size-xl);    font-weight:400; }
+    .notosanstc-bold-navy-blue-20px   { color:var(--navy-blue); font-family:var(--font-family-noto_sans_tc);  font-size:var(--font-size-l);     font-weight:700; }
+    .notosanstc-bold-navy-blue-36px   { color:var(--navy-blue); font-family:var(--font-family-noto_sans_tc);  font-size:var(--font-size-xxxxl); font-weight:700; }
+    .notosanstc-normal-white-18px     { color:var(--white);     font-family:var(--font-family-noto_sans_tc);  font-size:var(--font-size-m);     font-weight:400; }
+    .notosans-bold-navy-blue-20px     { color:var(--navy-blue); font-family:var(--font-family-noto_sans);     font-size:var(--font-size-l);     font-weight:700; }
+    .notosans-normal-white-18px       { color:var(--white);     font-family:var(--font-family-noto_sans);     font-size:var(--font-size-m);     font-weight:400; }
+    .spacegrotesk-medium-white-36px   { color:var(--white);     font-family:var(--font-family-space_grotesk); font-size:var(--font-size-xxxxl); font-weight:500; }
+
+    /* ════════════════════════════════════════
+       GLOBALS
+    ════════════════════════════════════════ */
+    .screen a { display:contents; text-decoration:none; }
+    .container-center-horizontal {
+      display:flex; flex-direction:row; justify-content:center;
+      pointer-events:none; width:100%;
+    }
+    .container-center-horizontal > * { flex-shrink:0; pointer-events:auto; }
+    .valign-text-middle { display:flex; flex-direction:column; justify-content:center; }
+    * { box-sizing:border-box; }
+
+    .logo-1 { height:76px; position:relative; width:126px; }
+
+    .footer {
+      align-items:flex-start;
+      background-color:var(--navy-blue);
+      border-radius:45px 45px 0 0;
+      display:flex; flex-direction:column;
+      gap:50px; height:277px;
+      left:0; padding:40px 60px 50px;
+      position:absolute; top:0; width:100%;
+    }
+    .contact-us { align-items:flex-start; display:inline-flex; flex:0 0 auto; flex-direction:column; gap:27px; position:relative; }
+    .heading    { align-items:flex-start; display:inline-flex; flex:0 0 auto; flex-direction:column; position:relative; }
+    .email-d04921004ntuedutw { letter-spacing:0; line-height:normal; margin-top:-1px; position:relative; width:fit-content; }
+    .label-2    { letter-spacing:0; line-height:normal; margin-top:-1px; position:relative; width:fit-content; }
+
+    /* ════════════════════════════════════════
+       PAGE LAYOUT
+    ════════════════════════════════════════ */
+    .stark_lab_project_linebot {
+      align-items:center;
+      background-color:var(--white);
+      display:flex; flex-direction:column;
+      overflow:hidden;
+      width:1440px;
+      min-height:2200px;
+    }
+
+    /* ── NavBar ── */
+    .stark_lab_project_linebot .overlap-group3 {
+      height:76px; margin-top:60px; position:relative; width:1440px;
+    }
+    .stark_lab_project_linebot .navigation-bar {
+      align-items:center; display:flex; justify-content:space-between;
+      left:0; padding:0 100px; position:absolute; top:0; width:1440px;
+    }
+    .stark_lab_project_linebot .navbar {
+      align-items:center; display:inline-flex; flex:0 0 auto;
+      gap:40px; justify-content:center; position:relative;
+    }
+    .stark_lab_project_linebot .line-30 {
+      height:2px; left:1018px; position:absolute; top:56px; width:85px;
+    }
+    .stark_lab_project_linebot .navbar-link-text {
+      cursor:pointer; letter-spacing:0; line-height:28px; margin-top:-1px;
+      position:relative; white-space:nowrap; width:fit-content;
+    }
+
+    /* ── Back button ── */
+    .stark_lab_project_linebot .overlap-group4 {
+      align-self:flex-start; border-radius:8.3px; height:46px;
+      margin-left:111px; margin-top:63px; position:relative; width:130px;
+    }
+    .stark_lab_project_linebot .group-31 {
+      align-items:flex-end; background-color:var(--navy-blue);
+      border-radius:12.41px; display:flex; height:25px;
+      left:14px; min-width:25px; padding:7px 5.1px;
+      position:absolute; top:11px;
+    }
+    .stark_lab_project_linebot .arrow-2 { height:11px; width:14px; }
+    .stark_lab_project_linebot .text-40 {
+      color:var(--navy-blue); font-family:var(--font-family-noto_sans_tc);
+      font-size:16px; font-weight:400; left:48px; letter-spacing:0;
+      line-height:28px; position:absolute; top:8px; white-space:nowrap;
+    }
+    .stark_lab_project_linebot .rectangle-83 {
+      border:1.84px solid; border-color:var(--navy-blue);
+      border-radius:8.3px; cursor:pointer; height:46px;
+      left:0; position:absolute; top:0; width:130px;
+    }
+
+    /* ── Hero Banner ── */
+    .stark_lab_project_linebot .overlap-group5 {
+      height:591px; margin-left:1px; margin-top:61px;
+      position:relative; width:1341px;
+    }
+    .stark_lab_project_linebot .overlap-group {
+      align-items:flex-start; background-color:var(--navy-blue);
+      border:2px solid; border-color:var(--black);
+      border-radius:65px; box-shadow:0 5px 0 #000000;
+      display:flex; gap:186px; height:591px;
+      justify-content:flex-end; left:0; min-width:1339px;
+      padding:99.4px 66px; position:absolute; top:0;
+    }
+    .stark_lab_project_linebot .xxx-xxx-xxx-xxx {
+      color:var(--white);
+      font-family:var(--font-family-noto_sans_tc);
+      font-size:var(--font-size-xl); font-weight:400;
+      letter-spacing:0.05em; line-height:normal;
+      white-space:nowrap;
+      position:absolute;
+      left:113px;
+      bottom:90px;
+    }
+    .stark_lab_project_linebot .content { background-color:var(--grey); height:1px; width:488px; }
+    .stark_lab_project_linebot .line-bot {
+      color:var(--white); font-family:var(--font-family-noto_sans_tc);
+      font-size:96px; font-weight:500; height:222px;
+      left:113px; letter-spacing:0; line-height:120px;
+      position:absolute; top:132px; width:576px;
+    }
+    .stark_lab_project_linebot .x2-1 {
+      height:468px; left:709px; object-fit:cover;
+      position:absolute; top:66px; width:542px;
+    }
+
+    /* ── 專案介紹 ── */
+    .stark_lab_project_linebot .frame-27 {
+      align-items:flex-start; display:flex; flex-direction:column;
+      gap:35px; margin-right:2px; margin-top:70px;
+      padding:0 83px; width:1440px;
+    }
+    .stark_lab_project_linebot .overlap-group-1 {
+      align-items:center; background-color:var(--navy-blue);
+      border-radius:9px; display:flex; height:62px;
+      margin-top:30px; margin-left:23px; min-width:174px; padding:0 15px;
+    }
+    .stark_lab_project_linebot .text {
+      letter-spacing:0; line-height:normal; min-height:46px; min-width:144px;
+    }
+    .stark_lab_project_linebot .group-15 {
+      align-items:center; align-self:flex-end; display:flex;
+      flex-direction:column; gap:45px; width:1271px;
+    }
+    .stark_lab_project_linebot .line-26 {
+      height:2px; margin-right:2px; margin-top:-2px; width:1269px;
+    }
+    .stark_lab_project_linebot .text-29 {
+      color:#363636; font-family:var(--font-family-noto_sans_tc);
+      font-size:var(--font-size-xl); font-weight:500;
+      letter-spacing:0; line-height:50px;
+      margin-right:17px; width:1226px;
+    }
+
+    /* ── 成果展現 照片區 ── */
+    .photo-container {
+      display:flex;
+      gap:40px;
+      justify-content:center;
+      flex-wrap:wrap;
+      width:1226px;
+      margin:0 auto;
+    }
+    .photo-section {
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:16px;
+      flex:1 1 300px;
+      max-width:360px;
+    }
+    .photo-section .photo {
+      width:100%;
+      height:480px;
+      object-fit:contain;
+      border-radius:16px;
+      border:1.5px solid #e0e0e0;
+      background:#f8f8f8;
+    }
+    .photo-section .caption {
+      font-family:var(--font-family-noto_sans_tc);
+      font-size:var(--font-size-m);
+      color:#555;
+      text-align:center;
+      letter-spacing:0.03em;
+    }
+
+    /* ── 相關連結標題 ── */
+    .stark_lab_project_linebot .group-25 {
+      align-items:flex-start; align-self:flex-start;
+      display:flex; margin-left:105px; margin-top:80px; min-width:176px;
+    }
+    .stark_lab_project_linebot .overlap-group1 {
+      align-items:center; background-color:var(--navy-blue);
+      border-radius:9px; display:flex; height:62px;
+      min-width:174px; padding:0 15px;
+    }
+
+    /* ── 相關連結卡片（Grid）── */
+    .stark_lab_project_linebot .overlap-group2 {
+      background-color:var(--white);
+      border:2px solid var(--black);
+      border-radius:41px;
+      box-shadow:0 5px 0 #000000;
+      margin-top:40px;
+      width:1242px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      position:relative;
+      overflow:hidden;
+    }
+    .stark_lab_project_linebot .overlap-group2::before {
+      content:'';
+      position:absolute;
+      left:50%; top:45px; bottom:45px;
+      width:1px; background:var(--black);
+      pointer-events:none;
+    }
+    .stark_lab_project_linebot .line-container { display:none; }
+
+    .stark_lab_project_linebot .overlap-group2 > a {
+      display:flex; flex-direction:column;
+      padding:78px 98px 70px;
+      text-decoration:none;
+      transition:background-color .2s ease;
+    }
+    .stark_lab_project_linebot .overlap-group2 > a:hover { background-color:#f5f9ff; }
+    .stark_lab_project_linebot .overlap-group2 > a:last-child:nth-child(odd) { grid-column:1 / -1; }
+
+    .stark_lab_project_linebot .text-31,
+    .stark_lab_project_linebot .text-36,
+    .stark_lab_project_linebot .text-38,
+    .stark_lab_project_linebot .etf {
+      letter-spacing:0; line-height:normal;
+      margin-bottom:18px; display:block;
+    }
+    .stark_lab_project_linebot .text-32,
+    .stark_lab_project_linebot .text-3,
+    .stark_lab_project_linebot .text-3-1 {
+      letter-spacing:0; line-height:1.6;
+      width:100%; max-width:360px; display:block;
+    }
+    .stark_lab_project_linebot .link-3,
+    .stark_lab_project_linebot .link-1,
+    .stark_lab_project_linebot .link {
+      margin-top:40px; position:static;
+    }
+    .stark_lab_project_linebot .icon {
+      background-color:var(--navy-blue);
+      border-radius:20.5px; height:41px;
+      position:relative; width:41px; flex-shrink:0;
+    }
+    .stark_lab_project_linebot .icon-1 {
+      background-color:var(--white);
+      border-radius:20.5px; height:41px;
+      position:relative; width:41px;
+    }
+    .stark_lab_project_linebot .arrow-1 {
+      height:20px; left:10px; position:absolute; top:11px; width:20px;
+    }
+    .stark_lab_project_linebot .label {
+      letter-spacing:0; line-height:28px;
+      position:relative; white-space:nowrap; width:fit-content;
+    }
+    .stark_lab_project_linebot .link-4 {
+      align-items:center; display:inline-flex; gap:15px;
+    }
+
+    /* ── Footer ── */
+    .stark_lab_project_linebot .group-36 {
+      height:277px; margin-top:146px;
+      position:relative; width:1378px;
+    }
+    .stark_lab_project_linebot .navigation-and-contacts {
+      align-items:flex-start; display:inline-flex;
+      flex-direction:column; gap:66px; height:157px; position:relative;
+    }
+    .stark_lab_project_linebot .frame-26 {
+      align-items:flex-start; display:inline-flex; flex:0 0 auto;
+      gap:120px; margin-bottom:-52px; position:relative;
+    }
+    .stark_lab_project_linebot .label-1 {
+      align-items:flex-start; background-color:var(--white);
+      border-radius:7px; display:inline-flex; flex:0 0 auto;
+      flex-direction:column; gap:10px; padding:0 7px; position:relative;
+    }
+    .stark_lab_project_linebot .info {
+      align-items:flex-start; display:inline-flex; flex:0 0 auto;
+      flex-direction:column; gap:20px; position:relative;
+    }
+    .stark_lab_project_linebot .address-100 {
+      letter-spacing:0; line-height:normal; position:relative; width:490px;
+    }
+    .stark_lab_project_linebot .group-30 {
+      height:30px; left:1152px; position:absolute; top:208px; width:114px;
+    }
+
+    /* ── Utility ── */
+    .clickable-text         { color:#000; text-decoration:none; cursor:pointer; }
+    .clickable-text:visited { color:#000; }
+    .clickable-text:hover   { text-decoration:underline; }
+
+    /* ── 架構圖 ── */
+    .arch-section {
+      width:1226px;
+      margin:0 auto;
+      padding-bottom: 20px;
+    }
+    .arch-section img {
+      width:100%;
+      border-radius:20px;
+      border:1.5px solid #e0e0e0;
+      box-shadow:0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    /* ── 功能列表 ── */
+    .feature-list {
+      width:1226px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:24px;
+      padding-bottom:20px;
+    }
+    .feature-item {
+      background:#f5f9ff;
+      border-radius:16px;
+      border:1.5px solid #d4e8fa;
+      padding:32px 36px;
+    }
+    .feature-item .fi-title {
+      font-family:var(--font-family-noto_sans_tc);
+      font-size:var(--font-size-xl);
+      font-weight:700;
+      color:var(--navy-blue);
+      margin-bottom:12px;
+    }
+    .feature-item .fi-desc {
+      font-family:var(--font-family-noto_sans_tc);
+      font-size:var(--font-size-m);
+      color:#444;
+      line-height:1.8;
+    }
+    .feature-item .fi-tags {
+      margin-top:14px;
+      display:flex; flex-wrap:wrap; gap:8px;
+    }
+    .fi-tag {
+      background:var(--navy-blue);
+      color:#fff;
+      font-family:var(--font-family-noto_sans_tc);
+      font-size:16px;
+      border-radius:20px;
+      padding:4px 14px;
+    }
+  </style>
+</head>
+<body style="margin:0; background:#ffffff">
+  <input type="hidden" id="anPageName" name="page" value="stark_lab_project_linebot" />
+
+  <div class="container-center-horizontal">
+    <div class="stark_lab_project_linebot screen">
+
+      <!-- ══ Navigation ══ -->
+      <div class="overlap-group3">
+        <div class="navigation-bar">
+          <img class="logo-1" src="{% static 'img/------logo-1@2x.png' %}" alt="StarkLab Logo" />
+          <div class="navbar notosanstc-semi-bold-black-20px">
+            <a href="/"><div class="navbar-link-text notosanstc-semi-bold-black-20px">首頁</div></a>
+            <a href="/project/"><div class="navbar-link-text notosanstc-semi-bold-black-20px">研究專案</div></a>
+            <a href="/member/"><div class="navbar-link-text notosanstc-semi-bold-black-20px">成員介紹</div></a>
+            <a href="/professor/"><div class="navbar-link-text notosanstc-semi-bold-black-20px">論文研究</div></a>
           </div>
-          <img class="line-30" src="{% static 'img/line-30.svg' %}" alt="Line 30" />
         </div>
-        <div class="overlap-group4">
-          <div class="group-31"><img class="arrow-2" src="{% static 'img/arrow-2.svg' %}" alt="Arrow 2" /></div>
-          <div class="text-40">回上一頁</div>
-          <a href="/project/"><div class="rectangle-83"></div></a>
-        </div>
-        <div class="overlap-group5">
-          <div class="overlap-group">
-            <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-            <div class="xxx-xxx-xxx-xxx">開發者：鄭凱峻、黃昱睿</div>
-            <div class="content"></div>
-          </div>
-          <h1 class="line-bot valign-text-middle">國際新聞<br/>機器人</h1>
-          <div class="link-2 link-4"></div>
-          <img class="x2-1" src="{% static 'img/2-1.png' %}" alt="2 1" />
-        </div>
-<!-- 成果展現區域 -->
-<br><br><br>
-<div class="frame-27">
-  <div class="overlap-group-1">
-    <div class="text spacegrotesk-medium-white-36px">專案介紹</div>
-  </div>
-  <div class="group-15">
-    <img class="line-26" src="{% static 'img/line-26.svg' %}" alt="Line 26" />
-    <div class="text-29">
-      本專案運用網路爬蟲技術與大數據分析，即時蒐集並整理全球重大水文災害資訊，協助水利署長官們迅速掌握最新情勢，以便在行政院會議、立法院質詢及各類政策討論中提供具體案例與數據支持，並作為未來施政規劃的重要參考依據。
-<p>技術架構與作業方式:</p>
-本專案目前採用關鍵字訂閱與自動爬蟲技術，每日從各大新聞平台、政府機構報告及國際防災組織網站擷取相關資訊，篩選並彙整成簡訊或報告格式，提供給水利署決策者。未來將逐步導入自然語言處理（NLP）技術與機器學習演算法，進一步提高資訊過濾與分類的準確度，確保獲取的數據更具時效性與價值。
-透過本專案，水利署將能夠更精準地掌握全球水文災害發展趨勢，強化政策應變能力，確保防災決策的前瞻性與科學依據。
-
-    </div>
-  </div>
-
-  <!-- 成果展現 -->
-  <div class="frame-27">
-    <div class="overlap-group-1">
-      <div class="text spacegrotesk-medium-white-36px">成果展現</div>
-    </div>
-    <br><br><br>
-    <div class="group-15">
-      <div class="main-content">
-        <div class="photo-container">
-            <!-- 照片區域 1 -->
-            <div class="photo-section">
-                <img src="{% static 'img/picture_1.jpg' %}" alt="照片1描述" class="photo">
-                <p class="caption">Linebot上的成果_1</p>
-            </div>
-
-            <!-- 照片區域 2 -->
-            <div class="photo-section">
-                <img src="{% static 'img/picture_2.jpg' %}" alt="照片2描述" class="photo">
-                <p class="caption">Linebot上的成果_2</p>
-            </div>
-
-            <!-- 照片區域 3 -->
-            <div class="photo-section">
-                <img src="{% static 'img/picture_3.jpg' %}" alt="照片3描述" class="photo">
-                <p class="caption">Linebot上的成果_3</p>
-            </div>
-        </div>
-
-
-        <!-- 成品連結 -->
-        <!-- <br><br><br>
-        <a href="http://starklab.tw:3000/api/news/" 
-        style="color: rgb(82, 126, 214); font-size: 25px; text-align: left; display: block;" 
-        target="_blank" 
-        rel="noopener noreferrer">
-        爬取新聞資料
-        </a>        <br><br>
-        <a href="http://starklab.tw:3000/api/news/ai/" 
-        style="color: rgb(82, 126, 214); font-size: 25px; text-align: left; display: block;" 
-        target="_blank" 
-        rel="noopener noreferrer">
-        AI自動化處理資料
-        </a>        <br><br>
-        <a href="http://starklab.tw:3000/api/news/sql/" 
-        style="color: rgb(82, 126, 214); font-size: 25px; text-align: left; display: block;" 
-        target="_blank" 
-        rel="noopener noreferrer">
-        JSON檔成品展示
-        </a>        <br><br>
-        <a href="https://github.com/KGISGOOD/StarkLab/blob/main/labweb/lab/mylab/project3_README.md" style="color: rgb(82, 126, 214); font-size: 25px; text-align: left; display: block;">程式碼介紹</a>
-         -->
-
-
-        <div class="group-25">
-          <div class="overlap-group1"><div class="text spacegrotesk-medium-white-36px">相關連結</div></div>
-        </div>
-
-
-        <div class="overlap-group2">
-          <div class="line-container">
-            <img class="line" src="{% static 'img/line-27.svg' %}" alt="Line 27" />
-            <img class="line" src="{% static 'img/line-27.svg' %}" alt="Line 31" />
-            <img class="line-28" src="{% static 'img/line-28.svg' %}" alt="Line 28" />
-            <img class="line-29" src="{% static 'img/line-28.svg' %}" alt="Line 29" />      
-          </div>          
-<!--           <a href="http://starklab.tw:3000" target="_blank" rel="noopener noreferrer">
-            <div class="link-3 link-4">
-              <div class="icon"><img class="arrow-1" src="{% static 'img/arrow-1-1.svg' %}" alt="Arrow 1" /></div>
-              <div class="label notosanstc-bold-navy-blue-20px">點我前往</div>
-            </div>
-            <div class="text-31 notosanstc-bold-navy-blue-36px">爬取新聞資料</div>
-            <div class="text-32 notosanstc-normal-black-24px">
-              點擊後會開始爬取七天內的國際災害新聞
-            </div>
-          </a> -->
-        
-        <a href="https://github.com/KGISGOOD/StarkLab/blob/main/labweb/lab/mylab/project3_README.md">
-        <div class="group-48">
-          <div class="etf notosanstc-bold-navy-blue-36px">程式碼介紹</div>
-          <div class="text-3 notosanstc-normal-black-24px">
-            將前往GITHUB上觀看程式碼介紹  
-          </div>
-          <div class="link">
-            <div class="icon"><img class="arrow-1" src="{% static 'img/arrow-1-1.svg' %}" alt="Arrow 1" /></div>
-            <div class="label notosanstc-bold-navy-blue-20px">點我前往</div>
-          </div>
-        </div>
-        </a>
-        
-<!--         <a href="http://starklab.tw:3000" target="_blank" rel="noopener noreferrer">
-          <div class="group-48">
-            <div class="text-36 notosanstc-bold-navy-blue-36px">AI自動資料處理</div>
-            <div class="text-3-1 notosanstc-normal-black-24px">
-              點擊後ai會開始處理剛剛所爬取到的國際災害新聞
-            </div>
-            <div class="link-1 link-4">
-              <div class="icon"><img class="arrow-1" src="{% static 'img/arrow-1-1.svg' %}" alt="Arrow 1" /></div>
-              <div class="label notosanstc-bold-navy-blue-20px">點我前往</div>
-            </div>
-          </div>
-        </a> -->
-
-        <a href="http://starklab.tw:3000/api/news/sql/" target="_blank" rel="noopener noreferrer">
-          <div class="group-47">
-            <div class="text-38 notosanstc-bold-navy-blue-36px">成品展示</div>
-            <div class="text-3-1 notosanstc-normal-black-24px">
-              點擊後會開始展示剛剛所處理過的國際災害新聞
-            </div>
-            <div class="link-1 link-4">
-              <div class="icon"><img class="arrow-1" src="{% static 'img/arrow-1-1.svg' %}" alt="Arrow 1" /></div>
-              <div class="label notosanstc-bold-navy-blue-20px">點我前往</div>
-            </div>
-          </div>
-        </a>
-        <!-- <a href="http://starklab.tw:3000/api/run_crawler_and_ai/" target="_blank" rel="noopener noreferrer">
-          <div class="group-50">
-            <div class="text-34 notosanstc-bold-navy-blue-36px">一鍵執行</div>
-            <div class="text-3 notosanstc-normal-black-24px">
-              按下此按鈕來執行爬蟲與AI自動化處理
-            </div>
-            <div class="link">
-              <div class="icon"><img class="arrow-1" src="{% static 'img/arrow-1-1.svg' %}" alt="Arrow 1" /></div>
-              <div class="label notosanstc-bold-navy-blue-20px">點我前往</div>
-            </div>
-          </div>
-        </a> -->
-
-        </div>
-
+        <img class="line-30" src="{% static 'img/line-30.svg' %}" alt="" />
       </div>
-    </div>
-  </div>
-</div>
 
-        <!-- footer -->
-        <div class="group-36">
-          <div class="footer">
-            <div class="navigation-and-contacts">
-              <div class="frame-26">
-                <div class="contact-us">
-                  <div class="heading">
-                    <div class="label-1"><div class="label-2 notosans-bold-navy-blue-20px">Contact us:</div></div>
+      <!-- ══ Back button ══ -->
+      <div class="overlap-group4">
+        <div class="group-31">
+          <img class="arrow-2" src="{% static 'img/arrow-2.svg' %}" alt="" />
+        </div>
+        <div class="text-40">回上一頁</div>
+        <a href="/project/"><div class="rectangle-83"></div></a>
+      </div>
+
+      <!-- ══ Hero Banner ══ -->
+      <div class="overlap-group5">
+        <div class="overlap-group"></div>
+        <div class="xxx-xxx-xxx-xxx">開發者：鄭凱峻　黃昱睿</div>
+        <h1 class="line-bot valign-text-middle">國際新聞<br />機器人</h1>
+        <img class="x2-1" src="{% static 'img/2-1.png' %}" alt="專案封面圖" />
+      </div>
+
+      <!-- ══ 專案介紹 ══ -->
+      <div class="frame-27">
+        <div class="overlap-group-1">
+          <div class="text spacegrotesk-medium-white-36px">專案介紹</div>
+        </div>
+        <div class="group-15">
+          <img class="line-26" src="{% static 'img/line-26.svg' %}" alt="" />
+          <div class="text-29">
+            本專案運用網路爬蟲技術與大數據分析，自動即時蒐集並彙整全球重大水文災害資訊，協助水利署長官迅速掌握最新國際情勢，以便在行政院會議、立法院質詢及各類政策討論中提供具體案例與數據佐證，並作為未來施政規劃的重要參考依據。
+
+            在技術架構上，本專案採用關鍵字訂閱與自動爬蟲機制，每日從各大新聞平台、政府機構報告及國際防災組織網站擷取相關資訊，經篩選彙整後以簡訊或摘要報告形式推播給決策者。未來將逐步導入自然語言處理（NLP）技術與機器學習演算法，進一步提升資訊過濾與分類的精準度，確保所獲取的數據兼具時效性與實用價值。
+
+            透過本專案，水利署將能更精準掌握全球水文災害發展趨勢，強化政策應變能力，確保防災決策兼具前瞻性與科學依據。
+          </div>
+
+          <!-- 功能列表 -->
+          <div class="feature-list">
+            <div class="feature-item">
+              <div class="fi-title">🔍 資料搜尋</div>
+              <div class="fi-desc">從可靠的國際新聞與氣象網站，自動蒐集與國際相關的天災資訊，確保資料來源的可信度與時效性。</div>
+            </div>
+            <div class="feature-item">
+              <div class="fi-title">🗂 災害分類</div>
+              <div class="fi-desc">自動識別並分類多種天災類型，涵蓋水文、氣旋、地震海嘯與乾旱火災四大類別。</div>
+              <div class="fi-tags">
+                <span class="fi-tag">🌧 水災／洪水</span>
+                <span class="fi-tag">🌀 颱風／颶風</span>
+                <span class="fi-tag">🌊 地震／海嘯</span>
+                <span class="fi-tag">☀ 乾旱／野火</span>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="fi-title">⚙️ 資料處理</div>
+              <div class="fi-desc">結合 AI Prompt Engineering 與機器學習，過濾、整理並提取關鍵資訊，確保內容準確且具備時效性。</div>
+            </div>
+            <div class="feature-item">
+              <div class="fi-title">📲 自動推播</div>
+              <div class="fi-desc">將處理後的天災資訊透過 LINE 等通訊管道即時推送給決策者，無需手動搜尋，第一時間掌握情勢。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ 架構圖 ══ -->
+      <div class="frame-27" style="margin-top:20px;">
+        <div class="overlap-group-1">
+          <div class="text spacegrotesk-medium-white-36px">技術架構圖</div>
+        </div>
+        <div class="group-15">
+          <img class="line-26" src="{% static 'img/line-26.svg' %}" alt="" />
+          <div class="arch-section">
+            <img src="{% static 'img/架構圖.jpg' %}" alt="系統技術架構圖" />
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ Footer ══ -->
+      <div class="group-36">
+        <div class="footer">
+          <div class="navigation-and-contacts">
+            <div class="frame-26">
+              <div class="contact-us">
+                <div class="heading">
+                  <div class="label-1">
+                    <div class="label-2 notosans-bold-navy-blue-20px">Contact us:</div>
                   </div>
-                  <div class="info">
-                    <div class="email-d04921004ntuedutw notosans-normal-white-18px">Email: D04921004@ntu.edu.tw</div>
-                    <p class="address-100 notosanstc-normal-white-18px">
-                      Address: 100台北市中正區貴陽街一段56號 No. 56, Sec. 1, Guiyang St., Zhongzheng Dist., Taipei City<br /><br />
-                      ©2025 Soochow University Starklab . All Rights Reserved.
-                    </p>
+                </div>
+                <div class="info">
+                  <div class="email-d04921004ntuedutw notosans-normal-white-18px">
+                    Email: D04921004@ntu.edu.tw
                   </div>
+                  <p class="address-100 notosanstc-normal-white-18px">
+                    Address: 100 台北市中正區貴陽街一段 56 號<br />
+                    No. 56, Sec. 1, Guiyang St., Zhongzheng Dist., Taipei City<br /><br />
+                    ©2025 Soochow University Starklab．All Rights Reserved.
+                  </p>
                 </div>
               </div>
             </div>
           </div>
-          <img class="group-30" src="{% static 'img/group-30-2@2x.png' %}" alt="Group 30" />
         </div>
+        <img class="group-30" src="{% static 'img/group-30-2@2x.png' %}" alt="StarkLab" />
       </div>
+
     </div>
-  </body>
+  </div>
+</body>
 </html>

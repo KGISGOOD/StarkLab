@@ -1,0 +1,26 @@
+2026-04-24 02:10:34 INFO django.server:212 "GET / HTTP/1.1" 200 11060
+2026-04-24 02:10:37 INFO django.server:212 "GET /member/ HTTP/1.1" 200 20342
+2026-04-24 02:10:45 INFO django.server:212 "GET /project_ETFbot/ HTTP/1.1" 200 9426
+2026-04-24 02:10:54 INFO django.server:212 "GET /professor/ HTTP/1.1" 200 12108
+2026-04-24 02:10:56 INFO django.server:212 "GET /project/ HTTP/1.1" 200 8278
+2026-04-24 02:11:06 INFO django.server:212 "GET /project_wra/ HTTP/1.1" 200 22547
+2026-04-24 02:11:06 INFO django.server:212 "GET /project_linebot/ HTTP/1.1" 200 22639
+2026-04-24 02:11:07 INFO django.server:212 "GET /project_wra_repoet/ HTTP/1.1" 200 17044
+2026-04-24 02:11:07 INFO django.server:212 "GET /project_financial/ HTTP/1.1" 200 18923
+2026-04-24 02:11:08 INFO django.server:212 "GET /project_stock/ HTTP/1.1" 200 10104
+2026-04-24 02:11:13 INFO django.server:212 "GET /query/ HTTP/1.1" 200 3793
+2026-04-24 10:44:04 INFO django.utils.autoreload:265 C:\py310\Lib\site-packages\websockets\__init__.py changed, reloading.
+2026-04-24 10:44:04 INFO django.utils.autoreload:667 Watching for file changes with StatReloader
+2026-04-24 11:23:06 INFO django.server:212 "GET / HTTP/1.1" 200 11060
+2026-04-24 16:07:20 INFO django.server:212 "GET / HTTP/1.1" 200 11060
+2026-04-24 16:07:20 WARNING django.security.csrf:241 Forbidden (CSRF cookie not set.): /
+2026-04-24 16:07:20 WARNING django.server:212 "POST / HTTP/1.1" 403 1382
+2026-04-24 16:07:20 WARNING django.security.csrf:241 Forbidden (CSRF cookie not set.): /
+2026-04-24 16:07:20 WARNING django.server:212 "POST / HTTP/1.1" 403 1382
+2026-04-24 16:07:21 WARNING django.security.csrf:241 Forbidden (CSRF cookie not set.): /
+2026-04-24 16:07:21 WARNING django.server:212 "POST / HTTP/1.1" 403 1382
+2026-04-24 16:07:21 WARNING django.security.csrf:241 Forbidden (CSRF cookie not set.): /
+2026-04-24 16:07:21 WARNING django.server:212 "POST / HTTP/1.1" 403 1382
+2026-04-24 16:07:42 WARNING django.server:212 "GET /info HTTP/1.1" 404 179
+2026-04-24 16:07:44 WARNING django.server:212 "GET /_environment HTTP/1.1" 404 179
+2026-04-24 21:59:16 INFO django.server:212 "GET / HTTP/1.1" 200 11060

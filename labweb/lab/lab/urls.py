@@ -29,16 +29,16 @@ urlpatterns = [
 
 
 
-    path("about/", views.about),
-    path("contact/", views.contact),
-    path("gallery/", views.gallery),
-    path("products/", views.products),
-    path("project1/", views.project1),
-    path("project2/", views.project2),
-    path('project3/', views.project3, name='project3'),  # 確保路徑設置正確
-    path("project4/", views.project4),
-    path("project5/", views.project5),
-    path("project6/", views.project6),
+    # path("about/", views.about),
+    # path("contact/", views.contact),
+    # path("gallery/", views.gallery),
+    # path("products/", views.products),
+    # path("project1/", views.project1),
+    # path("project2/", views.project2),
+    # path('project3/', views.project3, name='project3'),  # 確保路徑設置正確
+    # path("project4/", views.project4),
+    # path("project5/", views.project5),
+    # path("project6/", views.project6),
 
     # project1
     path('fund/', project1_views.fund, name='fund'),

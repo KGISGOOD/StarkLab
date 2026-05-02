@@ -1,198 +1,396 @@
 {% load static %}
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <!--<meta name=description content="This site was generated with Anima. www.animaapp.com"/>-->
-    <!-- <link rel="shortcut icon" type=image/png href="https://animaproject.s3.amazonaws.com/home/favicon.png" /> -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=yes"> 
-    <link rel="shortcut icon" type="image/png" href="https://animaproject.s3.amazonaws.com/home/favicon.png" />
-    <meta name="og:type" content="website" />
-    <meta name="twitter:card" content="photo" />
-    <title>基金優化機器人</title>
-    <!-- <link rel="stylesheet" type="text/css" href="css/stark_lab_project_linebot.css" />
-    <link rel="stylesheet" type="text/css" href="css/styleguide.css" />
-    <link rel="stylesheet" type="text/css" href="css/globals.css" /> -->
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=yes">
+  <link rel="shortcut icon" type="image/png" href="https://animaproject.s3.amazonaws.com/home/favicon.png" />
+  <meta name="og:type" content="website" />
+  <meta name="twitter:card" content="photo" />
+  <title>基金優化機器人</title>
 
-    <link rel="stylesheet" href="{% static 'css/stark_lab_project_linebot.css' %}">
-    <link rel="stylesheet" href="{% static 'css/styleguide.css' %}">
-    <link rel="stylesheet" href="{% static 'css/globals.css' %}">
+  <style>
+    @import url("https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css");
+    @import url("https://fonts.googleapis.com/css?family=Noto+Sans+TC:500,700,600,400|Noto+Sans:500,700,800,400|Space+Grotesk:500,400");
 
-  </head>
-  <body style="margin: 0; background: #ffffff">
-    <input
-      type="hidden"
-      id="anPageName"
-      name="page"
-      value="stark_lab_project_linebot"
-    />
-    <div class="container-center-horizontal">
-      <div class="stark_lab_project_linebot screen">
-        <div class="overlap-group3">
-          <div class="navigation-bar">
-            <img class="logo-1" src="{% static 'img/------logo-1@2x.png' %}" alt="logo 1" />
-            <div class="navbar notosanstc-semi-bold-black-20px">
-              <a href="/"
-                ><div class="navbar-link-text notosanstc-semi-bold-black-20px">首頁</div>
-            </a>
-            <a href="/project/"  
-              ><div class="navbar-link-text notosanstc-semi-bold-black-20px">研究專案</div>
-            </a>
-            <a href="/member/"
-              ><div class="navbar-link-text notosanstc-semi-bold-black-20px">成員介紹</div>
-            </a>
-            <a href="/professor/"
-              ><div class="navbar-link-text notosanstc-semi-bold-black-20px">論文研究</div>
-            </a>
-            </div>
+    :root {
+      --black:     #000000;
+      --grey:      #f3f3f3;
+      --navy-blue: #0f87e0;
+      --white:     #ffffff;
+
+      --font-size-l:      20px;
+      --font-size-m:      18px;
+      --font-size-xl:     24px;
+      --font-size-xxl:    30px;
+      --font-size-xxxl:   32px;
+      --font-size-xxxxl:  36px;
+
+      --font-family-noto_sans:     "Noto Sans", Helvetica;
+      --font-family-noto_sans_tc:  "Noto Sans TC", Helvetica;
+      --font-family-space_grotesk: "Space Grotesk", Helvetica;
+    }
+
+    /* ── Typography ── */
+    .notosanstc-semi-bold-black-20px { color:var(--black);     font-family:var(--font-family-noto_sans_tc);  font-size:var(--font-size-l);     font-weight:600; }
+    .notosanstc-bold-navy-blue-20px  { color:var(--navy-blue); font-family:var(--font-family-noto_sans_tc);  font-size:var(--font-size-l);     font-weight:700; }
+    .notosanstc-bold-navy-blue-36px  { color:var(--navy-blue); font-family:var(--font-family-noto_sans_tc);  font-size:var(--font-size-xxxxl); font-weight:700; }
+    .notosanstc-normal-black-24px    { color:var(--black);     font-family:var(--font-family-noto_sans_tc);  font-size:var(--font-size-xl);    font-weight:400; }
+    .notosanstc-normal-white-18px    { color:var(--white);     font-family:var(--font-family-noto_sans_tc);  font-size:var(--font-size-m);     font-weight:400; }
+    .notosans-bold-navy-blue-20px    { color:var(--navy-blue); font-family:var(--font-family-noto_sans);     font-size:var(--font-size-l);     font-weight:700; }
+    .notosans-normal-white-18px      { color:var(--white);     font-family:var(--font-family-noto_sans);     font-size:var(--font-size-m);     font-weight:400; }
+    .spacegrotesk-medium-white-36px  { color:var(--white);     font-family:var(--font-family-space_grotesk); font-size:var(--font-size-xxxxl); font-weight:500; }
+
+    /* ── Globals ── */
+    .screen a { display:contents; text-decoration:none; }
+    .container-center-horizontal { display:flex; flex-direction:row; justify-content:center; pointer-events:none; width:100%; }
+    .container-center-horizontal > * { flex-shrink:0; pointer-events:auto; }
+    .valign-text-middle { display:flex; flex-direction:column; justify-content:center; }
+    * { box-sizing:border-box; }
+    .logo-1 { height:76px; position:relative; width:126px; }
+
+    .footer {
+      align-items:flex-start; background-color:var(--navy-blue);
+      border-radius:45px 45px 0 0; display:flex; flex-direction:column;
+      gap:50px; height:277px; left:0; padding:40px 60px 50px;
+      position:absolute; top:0; width:100%;
+    }
+    .contact-us { align-items:flex-start; display:inline-flex; flex:0 0 auto; flex-direction:column; gap:27px; position:relative; }
+    .heading    { align-items:flex-start; display:inline-flex; flex:0 0 auto; flex-direction:column; position:relative; }
+    .email-d04921004ntuedutw { letter-spacing:0; line-height:normal; margin-top:-1px; position:relative; width:fit-content; }
+    .label-2    { letter-spacing:0; line-height:normal; margin-top:-1px; position:relative; width:fit-content; }
+
+    /* ── Page ── */
+    .stark_lab_project_linebot {
+      align-items:center; background-color:var(--white);
+      display:flex; flex-direction:column;
+      overflow:hidden; width:1440px; min-height:2000px;
+    }
+
+    /* NavBar */
+    .stark_lab_project_linebot .overlap-group3 { height:76px; margin-top:60px; position:relative; width:1440px; }
+    .stark_lab_project_linebot .navigation-bar {
+      align-items:center; display:flex; justify-content:space-between;
+      left:0; padding:0 100px; position:absolute; top:0; width:1440px;
+    }
+    .stark_lab_project_linebot .navbar {
+      align-items:center; display:inline-flex; flex:0 0 auto; gap:40px; justify-content:center; position:relative;
+    }
+    .stark_lab_project_linebot .line-30 { height:2px; left:1018px; position:absolute; top:56px; width:85px; }
+    .stark_lab_project_linebot .navbar-link-text {
+      cursor:pointer; letter-spacing:0; line-height:28px; margin-top:-1px;
+      position:relative; white-space:nowrap; width:fit-content;
+    }
+
+    /* Back button */
+    .stark_lab_project_linebot .overlap-group4 {
+      align-self:flex-start; border-radius:8.3px; height:46px;
+      margin-left:111px; margin-top:63px; position:relative; width:130px;
+    }
+    .stark_lab_project_linebot .group-31 {
+      align-items:flex-end; background-color:var(--navy-blue); border-radius:12.41px;
+      display:flex; height:25px; left:14px; min-width:25px; padding:7px 5.1px;
+      position:absolute; top:11px;
+    }
+    .stark_lab_project_linebot .arrow-2 { height:11px; width:14px; }
+    .stark_lab_project_linebot .text-40 {
+      color:var(--navy-blue); font-family:var(--font-family-noto_sans_tc);
+      font-size:16px; font-weight:400; left:48px; letter-spacing:0;
+      line-height:28px; position:absolute; top:8px; white-space:nowrap;
+    }
+    .stark_lab_project_linebot .rectangle-83 {
+      border:1.84px solid; border-color:var(--navy-blue); border-radius:8.3px;
+      cursor:pointer; height:46px; left:0; position:absolute; top:0; width:130px;
+    }
+
+    /* Hero Banner */
+    .stark_lab_project_linebot .overlap-group5 {
+      height:591px; margin-left:1px; margin-top:61px; position:relative; width:1341px;
+    }
+    .stark_lab_project_linebot .overlap-group {
+      align-items:flex-start; background-color:var(--navy-blue);
+      border:2px solid; border-color:var(--black); border-radius:65px;
+      box-shadow:0 5px 0 #000000; display:flex; gap:186px; height:591px;
+      justify-content:flex-end; left:0; min-width:1339px;
+      padding:99.4px 66px; position:absolute; top:0;
+    }
+    .stark_lab_project_linebot .xxx-xxx-xxx-xxx {
+      color:var(--white); font-family:var(--font-family-noto_sans_tc);
+      font-size:var(--font-size-xl); font-weight:400;
+      letter-spacing:0.05em; line-height:normal;
+      white-space:nowrap; position:absolute; left:113px; bottom:90px;
+    }
+    .stark_lab_project_linebot .line-bot {
+      color:var(--white); font-family:var(--font-family-noto_sans_tc);
+      font-size:96px; font-weight:500; height:222px;
+      left:113px; letter-spacing:0; line-height:120px;
+      position:absolute; top:132px; width:700px;
+    }
+    .stark_lab_project_linebot .x2-1 {
+      height:468px; left:709px; object-fit:cover;
+      position:absolute; top:66px; width:542px;
+    }
+
+    /* 專案介紹 */
+    .stark_lab_project_linebot .frame-27 {
+      align-items:flex-start; display:flex; flex-direction:column;
+      gap:35px; margin-right:2px; margin-top:70px; padding:0 83px; width:1440px;
+    }
+    .stark_lab_project_linebot .overlap-group-1 {
+      align-items:center; background-color:var(--navy-blue); border-radius:9px;
+      display:flex; height:62px; margin-top:30px; margin-left:23px;
+      min-width:174px; padding:0 15px;
+    }
+    .stark_lab_project_linebot .text {
+      letter-spacing:0; line-height:normal; min-height:46px; min-width:144px;
+    }
+    .stark_lab_project_linebot .group-15 {
+      align-items:center; align-self:flex-end; display:flex;
+      flex-direction:column; gap:45px; width:1271px;
+    }
+    .stark_lab_project_linebot .line-26 { height:2px; margin-right:2px; margin-top:-2px; width:1269px; }
+    .stark_lab_project_linebot .text-29 {
+      color:#363636; font-family:var(--font-family-noto_sans_tc);
+      font-size:var(--font-size-xl); font-weight:500;
+      letter-spacing:0; line-height:50px; margin-right:17px; width:1226px;
+    }
+    .stark_lab_project_linebot .text-29 p       { margin-bottom:20px; }
+    .stark_lab_project_linebot .text-29 strong  { font-weight:700; color:var(--navy-blue); }
+
+    /* 基金類型卡片 */
+    .fund-cards {
+      display:grid; grid-template-columns:repeat(3, 1fr);
+      gap:24px; width:1226px; margin:0 auto;
+    }
+    .fund-card {
+      border:2px solid var(--navy-blue); border-radius:20px;
+      padding:32px 28px; background:#f5f9ff;
+    }
+    .fund-card .fc-title {
+      font-family:var(--font-family-noto_sans_tc);
+      font-size:var(--font-size-xl); font-weight:700;
+      color:var(--navy-blue); margin-bottom:14px;
+    }
+    .fund-card .fc-desc {
+      font-family:var(--font-family-noto_sans_tc);
+      font-size:var(--font-size-m); color:#444; line-height:1.8;
+      margin-bottom:16px;
+    }
+    .fund-card .fc-examples {
+      font-family:var(--font-family-noto_sans_tc);
+      font-size:16px; color:#888; line-height:1.7;
+      border-top:1px solid #d4e8fa; padding-top:12px;
+    }
+
+    /* 相關連結標題 */
+    .stark_lab_project_linebot .group-25 {
+      align-items:flex-start; align-self:flex-start;
+      display:flex; margin-left:105px; margin-top:80px; min-width:176px;
+    }
+    .stark_lab_project_linebot .overlap-group1 {
+      align-items:center; background-color:var(--navy-blue); border-radius:9px;
+      display:flex; height:62px; min-width:174px; padding:0 15px;
+    }
+
+    /* 相關連結卡片（Grid，單卡置中）*/
+    .stark_lab_project_linebot .overlap-group2 {
+      background-color:var(--white);
+      border:2px solid var(--black); border-radius:41px;
+      box-shadow:0 5px 0 #000000;
+      margin-top:40px; width:1242px;
+      display:grid; grid-template-columns:1fr;
+      overflow:hidden;
+    }
+    .stark_lab_project_linebot .line-container { display:none; }
+
+    .stark_lab_project_linebot .overlap-group2 > a {
+      display:flex; flex-direction:column;
+      padding:78px 98px 70px;
+      text-decoration:none;
+      transition:background-color .2s ease;
+    }
+    .stark_lab_project_linebot .overlap-group2 > a:hover { background-color:#f5f9ff; }
+
+    .stark_lab_project_linebot .text-31 {
+      letter-spacing:0; line-height:normal; margin-bottom:18px; display:block;
+    }
+    .stark_lab_project_linebot .text-32 {
+      letter-spacing:0; line-height:1.6; display:block;
+    }
+    .stark_lab_project_linebot .link-3 { margin-top:40px; position:static; }
+    .stark_lab_project_linebot .icon {
+      background-color:var(--navy-blue); border-radius:20.5px;
+      height:41px; position:relative; width:41px; flex-shrink:0;
+    }
+    .stark_lab_project_linebot .arrow-1 {
+      height:20px; left:10px; position:absolute; top:11px; width:20px;
+    }
+    .stark_lab_project_linebot .label {
+      letter-spacing:0; line-height:28px; position:relative; white-space:nowrap; width:fit-content;
+    }
+    .stark_lab_project_linebot .link-4 { align-items:center; display:inline-flex; gap:15px; }
+
+    /* Footer */
+    .stark_lab_project_linebot .group-36 {
+      height:277px; margin-top:146px; position:relative; width:1378px;
+    }
+    .stark_lab_project_linebot .navigation-and-contacts {
+      align-items:flex-start; display:inline-flex; flex-direction:column;
+      gap:66px; height:157px; position:relative;
+    }
+    .stark_lab_project_linebot .frame-26 {
+      align-items:flex-start; display:inline-flex; flex:0 0 auto;
+      gap:120px; margin-bottom:-52px; position:relative;
+    }
+    .stark_lab_project_linebot .label-1 {
+      align-items:flex-start; background-color:var(--white); border-radius:7px;
+      display:inline-flex; flex:0 0 auto; flex-direction:column;
+      gap:10px; padding:0 7px; position:relative;
+    }
+    .stark_lab_project_linebot .info {
+      align-items:flex-start; display:inline-flex; flex:0 0 auto;
+      flex-direction:column; gap:20px; position:relative;
+    }
+    .stark_lab_project_linebot .address-100 {
+      letter-spacing:0; line-height:normal; position:relative; width:490px;
+    }
+    .stark_lab_project_linebot .group-30 {
+      height:30px; left:1152px; position:absolute; top:208px; width:114px;
+    }
+  </style>
+</head>
+<body style="margin:0; background:#ffffff">
+  <input type="hidden" id="anPageName" name="page" value="stark_lab_project_linebot" />
+
+  <div class="container-center-horizontal">
+    <div class="stark_lab_project_linebot screen">
+
+      <!-- ══ Navigation ══ -->
+      <div class="overlap-group3">
+        <div class="navigation-bar">
+          <img class="logo-1" src="{% static 'img/------logo-1@2x.png' %}" alt="StarkLab Logo" />
+          <div class="navbar notosanstc-semi-bold-black-20px">
+            <a href="/"><div class="navbar-link-text notosanstc-semi-bold-black-20px">首頁</div></a>
+            <a href="/project/"><div class="navbar-link-text notosanstc-semi-bold-black-20px">研究專案</div></a>
+            <a href="/member/"><div class="navbar-link-text notosanstc-semi-bold-black-20px">成員介紹</div></a>
+            <a href="/professor/"><div class="navbar-link-text notosanstc-semi-bold-black-20px">論文研究</div></a>
           </div>
-          <img class="line-30" src="{% static 'img/line-30.svg' %}" alt="Line 30" />
         </div>
-        <div class="overlap-group4">
-          <div class="group-31"><img class="arrow-2" src="{% static 'img/arrow-2.svg' %}" alt="Arrow 2" /></div>
-          <div class="text-40">回上一頁</div>
-          <a href="/project/"> <div class="rectangle-83"></div></a>
+        <img class="line-30" src="{% static 'img/line-30.svg' %}" alt="" />
+      </div>
+
+      <!-- ══ Back button ══ -->
+      <div class="overlap-group4">
+        <div class="group-31">
+          <img class="arrow-2" src="{% static 'img/arrow-2.svg' %}" alt="" />
         </div>
-        <div class="overlap-group5">
-          <div class="overlap-group">
-            <div class="xxx-xxx-xxx-xxx"><br/>作者：</div>
-            <div class="content"></div>
-          </div>
-          <h1 class="line-bot valign-text-middle">基金優化<br />機器人</h1>
-          <div class="link-2 link-4">
-            <!-- <div class="icon-1"><img class="arrow-1" src="{% static 'img/arrow-1.svg' %}" alt="Arrow 1" /></div> -->
-            <!-- <div class="label notosanstc-bold-white-20px">專案介紹</div> -->
-          </div>
-          <img class="x2-1" src="{% static 'img/2-1.png' %}" alt="2 1" />
+        <div class="text-40">回上一頁</div>
+        <a href="/project/"><div class="rectangle-83"></div></a>
+      </div>
+
+      <!-- ══ Hero Banner ══ -->
+      <div class="overlap-group5">
+        <div class="overlap-group"></div>
+        <div class="xxx-xxx-xxx-xxx">作者：張婷婷　張睿宸</div>
+        <h1 class="line-bot valign-text-middle">基金優化<br />機器人</h1>
+        <img class="x2-1" src="{% static 'img/2-1.png' %}" alt="專案封面圖" />
+      </div>
+
+      <!-- ══ 專案介紹 ══ -->
+      <div class="frame-27">
+        <div class="overlap-group-1">
+          <div class="text spacegrotesk-medium-white-36px">專案介紹</div>
         </div>
-        <div class="frame-27">
-          <div class="overlap-group-1"><div class="text spacegrotesk-medium-white-36px">專案介紹</div></div>
-          <div class="group-15">
-            <img class="line-26" src="{% static 'img/line-26.svg' %}" alt="Line 26" />
+        <div class="group-15">
+          <img class="line-26" src="{% static 'img/line-26.svg' %}" alt="" />
           <div class="text-29">
-            <p>
-              本專案旨在打造一個智能理財基金推薦小幫手網頁，協助投資人依據自身風險屬性及投資偏好，
-              快速篩選出最適合的五檔基金標的。系統結合人工智慧與風險評估模型，透過使用者填寫簡易問卷，
-              即可判斷其風險承受度，並即時提供與其屬性相符、績效穩健的投資組合建議。
-              推薦內容參考基金之夏普值、標準差、歷史報酬率等指標，確保建議具有客觀依據。
-              無論是保守型、穩健型還是積極型的投資人，都能在平台上找到符合自身需求的投資建議。
-            </p>
-
-            <p>
-              <strong>股票型基金：</strong>
-              投資標的以股票為主的基金。如：貝萊德全球智慧數據股票入息基金、摩根基金－美國科技基金、聯博－美國成長基金。
-            </p>
-
-            <p>
-              <strong>債券型基金：</strong>
-              投資標的以債券為主的基金，又因債券有發行者按期支付利息給投資人的特性，因此也常被稱為「固定收益型基金」。
-              如：PIMCO 多元收益債券基金、摩根基金－環球債券收益基金、聯博－美國收益基金。
-            </p>
-
-            <p>
-              <strong>平衡型基金：</strong>
-              一部分投資於股票，一部分投資於債券，可以動態調整股票與債券的比例，達到進可攻退可守的目的。
-              如：安聯收益成長基金、摩根投資基金－多重收益基金、富蘭克林坦伯頓全球投資系列－穩定月收益基金。
-            </p>
+            <p>本專案旨在打造一套智能理財基金推薦系統，協助投資人依據自身的風險屬性與投資偏好，快速篩選出最適合的五檔基金標的。系統結合人工智慧與風險評估模型，透過簡易問卷掌握使用者的風險承受度，並即時提供績效穩健、屬性相符的投資組合建議。推薦依據涵蓋夏普值、標準差、歷史報酬率等客觀量化指標，確保建議有所本、有所憑。無論是保守型、穩健型或積極型的投資人，皆能在平台上獲得量身訂製的投資方向。</p>
+            <p>系統支援以下三大基金類型：</p>
           </div>
+
+          <!-- 三大基金類型卡片 -->
+          <div class="fund-cards">
+            <div class="fund-card">
+              <div class="fc-title">📈 股票型基金</div>
+              <div class="fc-desc">以股票為主要投資標的，追求較高的資本增值潛力，適合風險承受度較高、追求長期成長的投資人。</div>
+              <div class="fc-examples">
+                貝萊德全球智慧數據股票入息基金<br />
+                摩根基金－美國科技基金<br />
+                聯博－美國成長基金
+              </div>
+            </div>
+            <div class="fund-card">
+              <div class="fc-title">🏦 債券型基金</div>
+              <div class="fc-desc">以債券為主要投資標的，發行者定期支付利息，又稱「固定收益型基金」，波動相對較低，適合穩健保守型投資人。</div>
+              <div class="fc-examples">
+                PIMCO 多元收益債券基金<br />
+                摩根基金－環球債券收益基金<br />
+                聯博－美國收益基金
+              </div>
+            </div>
+            <div class="fund-card">
+              <div class="fc-title">⚖️ 平衡型基金</div>
+              <div class="fc-desc">同時配置股票與債券，可依市況動態調整比例，兼顧成長與防禦，達到進可攻、退可守的投資效果。</div>
+              <div class="fc-examples">
+                安聯收益成長基金<br />
+                摩根投資基金－多重收益基金<br />
+                富蘭克林坦伯頓全球投資系列－穩定月收益基金
+              </div>
+            </div>
           </div>
         </div>
-        <div class="group-25">
-          <div class="overlap-group1"><div class="text spacegrotesk-medium-white-36px">相關連結</div></div>
+      </div>
+
+      <!-- ══ 相關連結標題 ══ -->
+      <div class="group-25">
+        <div class="overlap-group1">
+          <div class="text spacegrotesk-medium-white-36px">相關連結</div>
         </div>
+      </div>
 
-
-        <div class="overlap-group2">
-          <div class="line-container">
-            <img class="line" src="{% static 'img/line-27.svg' %}" alt="Line 27" />
-            <img class="line" src="{% static 'img/line-27.svg' %}" alt="Line 31" />
-            <img class="line-28" src="{% static 'img/line-28.svg' %}" alt="Line 28" />
-            <img class="line-29" src="{% static 'img/line-28.svg' %}" alt="Line 29" />
-          </div>          
-          <a href="/financial_1/">
-          <div class="link-3 link-4">
-            <div class="icon"><img class="arrow-1" src="{% static 'img/arrow-1-1.svg' %}" alt="Arrow 1" /></div>
-            <div class="label notosanstc-bold-navy-blue-20px">點我前往</div>
-          </div>
-          <div class="text-31 notosanstc-bold-navy-blue-36px">問卷-1</div>
+      <!-- ══ 相關連結：僅論文發表 ══ -->
+      <div class="overlap-group2">
+        <a href="https://ndltd.ncl.edu.tw/cgi-bin/gs32/gsweb.cgi/login?o=dnclcdr&s=id=%22114SCU01392004%22.&searchmode=basic" target="_blank" rel="noopener noreferrer">
+          <div class="text-31 notosanstc-bold-navy-blue-36px">論文發表</div>
           <div class="text-32 notosanstc-normal-black-24px">
-            問卷-1
+            前往國家圖書館全國碩博士論文資訊網，查閱本專案之完整學術論文。
           </div>
-          </a>
-        
-        <!-- <a href="{% url 'etf' %}">
-        <div class="group-49">
-          <div class="etf notosanstc-bold-navy-blue-36px">ETF</div>
-          <div class="text-3 notosanstc-normal-black-24px">
-            專案論述專案論述專案論述專案論述專案論述專案論述專案論述
-          </div>
-          <div class="link">
-            <div class="icon"><img class="arrow-1" src="{% static 'img/arrow-1-1.svg' %}" alt="Arrow 1" /></div>
+          <div class="link-3 link-4">
+            <div class="icon"><img class="arrow-1" src="{% static 'img/arrow-1-1.svg' %}" alt="" /></div>
             <div class="label notosanstc-bold-navy-blue-20px">點我前往</div>
-          </div>
-        </div>
-        </a> -->
-        
-        <!-- <a href="{% url 'report' %}">
-          <div class="group-50">
-            <div class="text-34 notosanstc-bold-navy-blue-36px">三大報表</div>
-            <div class="text-3 notosanstc-normal-black-24px">
-              專案論述專案論述專案論述專案論述專案論述專案論述專案論述
-            </div>
-            <div class="link">
-              <div class="icon"><img class="arrow-1" src="{% static 'img/arrow-1-1.svg' %}" alt="Arrow 1" /></div>
-              <div class="label notosanstc-bold-navy-blue-20px">點我前往</div>
-            </div>
-          </div> -->
-        <!-- </a> -->
-        <a href="/financial_2/">
-          <div class="group-47">
-            <div class="text-36 notosanstc-bold-navy-blue-36px">問卷-2</div>
-            <div class="text-3-1 notosanstc-normal-black-24px">
-              問卷-2
-            </div>
-            <div class="link-1 link-4">
-              <div class="icon"><img class="arrow-1" src="{% static 'img/arrow-1-1.svg' %}" alt="Arrow 1" /></div>
-              <div class="label notosanstc-bold-navy-blue-20px">點我前往</div>
-            </div>
           </div>
         </a>
-        <!-- <a href="{% url 'stock' %}">
-          <div class="group-48">
-            <div class="text-38 notosanstc-bold-navy-blue-36px">股票</div>
-            <div class="text-3-1 notosanstc-normal-black-24px">
-              專案論述專案論述專案論述專案論述專案論述專案論述專案論述
-            </div>
-            <div class="link-1 link-4">
-              <div class="icon"><img class="arrow-1" src="{% static 'img/arrow-1-1.svg' %}" alt="Arrow 1" /></div>
-              <div class="label notosanstc-bold-navy-blue-20px">點我前往</div>
-            </div>
-          </div>
-        </a> -->
-        </div>
-        <div class="group-36">
-          <div class="footer">
-            <div class="navigation-and-contacts">
-              <div class="frame-26">
-                <div class="contact-us">
-                  <div class="heading">
-                    <div class="label-1"><div class="label-2 notosans-bold-navy-blue-20px">Contact us:</div></div>
+      </div>
+
+      <!-- ══ Footer ══ -->
+      <div class="group-36">
+        <div class="footer">
+          <div class="navigation-and-contacts">
+            <div class="frame-26">
+              <div class="contact-us">
+                <div class="heading">
+                  <div class="label-1">
+                    <div class="label-2 notosans-bold-navy-blue-20px">Contact us:</div>
                   </div>
-                  <div class="info">
-                    <div class="email-d04921004ntuedutw notosans-normal-white-18px">Email: D04921004@ntu.edu.tw</div>
-                    <p class="address-100 notosanstc-normal-white-18px">
-                      Address: 100台北市中正區貴陽街一段56號 No. 56, Sec. 1, Guiyang St., Zhongzheng Dist., Taipei
-                      City<br /><br />
-                      ©2025 Soochow University Starklab . All Rights Reserved.
-                    </p>
+                </div>
+                <div class="info">
+                  <div class="email-d04921004ntuedutw notosans-normal-white-18px">
+                    Email: D04921004@ntu.edu.tw
                   </div>
+                  <p class="address-100 notosanstc-normal-white-18px">
+                    Address: 100 台北市中正區貴陽街一段 56 號<br />
+                    No. 56, Sec. 1, Guiyang St., Zhongzheng Dist., Taipei City<br /><br />
+                    ©2025 Soochow University Starklab．All Rights Reserved.
+                  </p>
                 </div>
               </div>
             </div>
-          </div>{
-          <img class="group-30" src="% static 'img/group-30-2@2x.png' %}" alt="Group 30" />
+          </div>
         </div>
+        <img class="group-30" src="{% static 'img/group-30-2@2x.png' %}" alt="StarkLab" />
       </div>
+
     </div>
-  </body>
+  </div>
+</body>
 </html>

@@ -1,0 +1,7 @@
+2026-04-22 15:48:53 INFO django.server:212 "GET / HTTP/1.1" 200 11060
+2026-04-22 15:48:53 WARNING django.server:212 "GET /credentials.json HTTP/1.1" 404 179
+2026-04-22 15:48:53 WARNING django.server:212 "GET /secrets.json HTTP/1.1" 404 179
+2026-04-22 15:48:53 WARNING django.server:212 "GET /serviceAccountKey.json HTTP/1.1" 404 179
+2026-04-22 15:48:54 INFO django.server:212 "GET / HTTP/1.1" 200 11060
+2026-04-22 20:22:22 INFO django.server:212 "GET / HTTP/1.1" 200 11060
+2026-04-22 20:22:29 WARNING django.server:212 "GET /favicon.ico HTTP/1.1" 404 179

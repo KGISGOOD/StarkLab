@@ -1,146 +1,354 @@
 {% load static %}
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <!--<meta name=description content="This site was generated with Anima. www.animaapp.com"/>-->
-    <!-- <link rel="shortcut icon" type=image/png href="https://animaproject.s3.amazonaws.com/home/favicon.png" /> -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=yes"> 
-    <link rel="shortcut icon" type="image/png" href="https://animaproject.s3.amazonaws.com/home/favicon.png" />
-    <meta name="og:type" content="website" />
-    <meta name="twitter:card" content="photo" />
-    <title>應變報告生成</title>
-    <!-- <link rel="stylesheet" type="text/css" href="css/stark_lab_project_linebot.css" />
-    <link rel="stylesheet" type="text/css" href="css/styleguide.css" />
-    <link rel="stylesheet" type="text/css" href="css/globals.css" /> -->
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=yes">
+  <link rel="shortcut icon" type="image/png" href="https://animaproject.s3.amazonaws.com/home/favicon.png" />
+  <meta name="og:type" content="website" />
+  <meta name="twitter:card" content="photo" />
+  <title>應變報告生成</title>
 
-    <link rel="stylesheet" href="{% static 'css/stark_lab_project_linebot.css' %}">
-    <link rel="stylesheet" href="{% static 'css/styleguide.css' %}">
-    <link rel="stylesheet" href="{% static 'css/globals.css' %}">
+  <style>
+    @import url("https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css");
+    @import url("https://fonts.googleapis.com/css?family=Noto+Sans+TC:500,700,600,400|Noto+Sans:500,700,800,400|Space+Grotesk:500,400");
 
-  </head>
-  <body style="margin: 0; background: #ffffff">
-    <input
-      type="hidden"
-      id="anPageName"
-      name="page"
-      value="stark_lab_project_linebot"
-    />
-    <div class="container-center-horizontal">
-      <div class="stark_lab_project_linebot screen">
-        <div class="overlap-group3">
-          <div class="navigation-bar">
-            <img class="logo-1" src="{% static 'img/------logo-1@2x.png' %}" alt="logo 1" />
-            <div class="navbar notosanstc-semi-bold-black-20px">
-              <a href="/"
-                ><div class="navbar-link-text notosanstc-semi-bold-black-20px">首頁</div>
-            </a>
-            <a href="/project/"  
-              ><div class="navbar-link-text notosanstc-semi-bold-black-20px">研究專案</div>
-            </a>
-            <a href="/member/"
-              ><div class="navbar-link-text notosanstc-semi-bold-black-20px">成員介紹</div>
-            </a>
-            <a href="/professor/"
-              ><div class="navbar-link-text notosanstc-semi-bold-black-20px">論文研究</div>
-            </a>
+    :root {
+      --black:     #000000;
+      --grey:      #f3f3f3;
+      --navy-blue: #0f87e0;
+      --white:     #ffffff;
+
+      --font-size-l:      20px;
+      --font-size-m:      18px;
+      --font-size-xl:     24px;
+      --font-size-xxl:    30px;
+      --font-size-xxxl:   32px;
+      --font-size-xxxxl:  36px;
+
+      --font-family-noto_sans:     "Noto Sans", Helvetica;
+      --font-family-noto_sans_tc:  "Noto Sans TC", Helvetica;
+      --font-family-space_grotesk: "Space Grotesk", Helvetica;
+    }
+
+    /* ── Typography ── */
+    .notosanstc-semi-bold-black-20px { color:var(--black);     font-family:var(--font-family-noto_sans_tc);  font-size:var(--font-size-l);     font-weight:600; }
+    .notosanstc-bold-navy-blue-20px  { color:var(--navy-blue); font-family:var(--font-family-noto_sans_tc);  font-size:var(--font-size-l);     font-weight:700; }
+    .notosanstc-bold-navy-blue-36px  { color:var(--navy-blue); font-family:var(--font-family-noto_sans_tc);  font-size:var(--font-size-xxxxl); font-weight:700; }
+    .notosanstc-normal-white-18px    { color:var(--white);     font-family:var(--font-family-noto_sans_tc);  font-size:var(--font-size-m);     font-weight:400; }
+    .notosans-bold-navy-blue-20px    { color:var(--navy-blue); font-family:var(--font-family-noto_sans);     font-size:var(--font-size-l);     font-weight:700; }
+    .notosans-normal-white-18px      { color:var(--white);     font-family:var(--font-family-noto_sans);     font-size:var(--font-size-m);     font-weight:400; }
+    .spacegrotesk-medium-white-36px  { color:var(--white);     font-family:var(--font-family-space_grotesk); font-size:var(--font-size-xxxxl); font-weight:500; }
+
+    /* ── Globals ── */
+    .screen a { display:contents; text-decoration:none; }
+    .container-center-horizontal { display:flex; flex-direction:row; justify-content:center; pointer-events:none; width:100%; }
+    .container-center-horizontal > * { flex-shrink:0; pointer-events:auto; }
+    .valign-text-middle { display:flex; flex-direction:column; justify-content:center; }
+    * { box-sizing:border-box; }
+    .logo-1 { height:76px; position:relative; width:126px; }
+
+    .footer {
+      align-items:flex-start; background-color:var(--navy-blue);
+      border-radius:45px 45px 0 0; display:flex; flex-direction:column;
+      gap:50px; height:277px; left:0; padding:40px 60px 50px;
+      position:absolute; top:0; width:100%;
+    }
+    .contact-us { align-items:flex-start; display:inline-flex; flex:0 0 auto; flex-direction:column; gap:27px; position:relative; }
+    .heading    { align-items:flex-start; display:inline-flex; flex:0 0 auto; flex-direction:column; position:relative; }
+    .email-d04921004ntuedutw { letter-spacing:0; line-height:normal; margin-top:-1px; position:relative; width:fit-content; }
+    .label-2    { letter-spacing:0; line-height:normal; margin-top:-1px; position:relative; width:fit-content; }
+
+    /* ── Page ── */
+    .stark_lab_project_linebot {
+      align-items:center; background-color:var(--white);
+      display:flex; flex-direction:column;
+      overflow:hidden; width:1440px; min-height:2000px;
+    }
+
+    /* NavBar */
+    .stark_lab_project_linebot .overlap-group3 { height:76px; margin-top:60px; position:relative; width:1440px; }
+    .stark_lab_project_linebot .navigation-bar {
+      align-items:center; display:flex; justify-content:space-between;
+      left:0; padding:0 100px; position:absolute; top:0; width:1440px;
+    }
+    .stark_lab_project_linebot .navbar {
+      align-items:center; display:inline-flex; flex:0 0 auto; gap:40px; justify-content:center; position:relative;
+    }
+    .stark_lab_project_linebot .line-30 { height:2px; left:1018px; position:absolute; top:56px; width:85px; }
+    .stark_lab_project_linebot .navbar-link-text {
+      cursor:pointer; letter-spacing:0; line-height:28px; margin-top:-1px;
+      position:relative; white-space:nowrap; width:fit-content;
+    }
+
+    /* Back button */
+    .stark_lab_project_linebot .overlap-group4 {
+      align-self:flex-start; border-radius:8.3px; height:46px;
+      margin-left:111px; margin-top:63px; position:relative; width:130px;
+    }
+    .stark_lab_project_linebot .group-31 {
+      align-items:flex-end; background-color:var(--navy-blue); border-radius:12.41px;
+      display:flex; height:25px; left:14px; min-width:25px; padding:7px 5.1px;
+      position:absolute; top:11px;
+    }
+    .stark_lab_project_linebot .arrow-2 { height:11px; width:14px; }
+    .stark_lab_project_linebot .text-40 {
+      color:var(--navy-blue); font-family:var(--font-family-noto_sans_tc);
+      font-size:16px; font-weight:400; left:48px; letter-spacing:0;
+      line-height:28px; position:absolute; top:8px; white-space:nowrap;
+    }
+    .stark_lab_project_linebot .rectangle-83 {
+      border:1.84px solid; border-color:var(--navy-blue); border-radius:8.3px;
+      cursor:pointer; height:46px; left:0; position:absolute; top:0; width:130px;
+    }
+
+    /* Hero Banner */
+    .stark_lab_project_linebot .overlap-group5 {
+      height:591px; margin-left:1px; margin-top:61px; position:relative; width:1341px;
+    }
+    .stark_lab_project_linebot .overlap-group {
+      align-items:flex-start; background-color:var(--navy-blue);
+      border:2px solid; border-color:var(--black); border-radius:65px;
+      box-shadow:0 5px 0 #000000; display:flex; gap:186px; height:591px;
+      justify-content:flex-end; left:0; min-width:1339px;
+      padding:99.4px 66px; position:absolute; top:0;
+    }
+    .stark_lab_project_linebot .xxx-xxx-xxx-xxx {
+      color:var(--white); font-family:var(--font-family-noto_sans_tc);
+      font-size:var(--font-size-xl); font-weight:400;
+      letter-spacing:0.05em; line-height:normal;
+      white-space:nowrap; position:absolute; left:113px; bottom:90px;
+    }
+    .stark_lab_project_linebot .line-bot {
+      color:var(--white); font-family:var(--font-family-noto_sans_tc);
+      font-size:96px; font-weight:500; height:222px;
+      left:113px; letter-spacing:0; line-height:120px;
+      position:absolute; top:132px; width:700px;
+    }
+    .stark_lab_project_linebot .x2-1 {
+      height:468px; left:709px; object-fit:cover;
+      position:absolute; top:66px; width:542px;
+    }
+
+    /* 專案介紹 */
+    .stark_lab_project_linebot .frame-27 {
+      align-items:flex-start; display:flex; flex-direction:column;
+      gap:35px; margin-right:2px; margin-top:70px; padding:0 83px; width:1440px;
+    }
+    .stark_lab_project_linebot .overlap-group-1 {
+      align-items:center; background-color:var(--navy-blue); border-radius:9px;
+      display:flex; height:62px; margin-top:30px; margin-left:23px;
+      min-width:174px; padding:0 15px;
+    }
+    .stark_lab_project_linebot .text {
+      letter-spacing:0; line-height:normal; min-height:46px; min-width:144px;
+    }
+    .stark_lab_project_linebot .group-15 {
+      align-items:center; align-self:flex-end; display:flex;
+      flex-direction:column; gap:45px; width:1271px;
+    }
+    .stark_lab_project_linebot .line-26 { height:2px; margin-right:2px; margin-top:-2px; width:1269px; }
+    .stark_lab_project_linebot .text-29 {
+      color:#363636; font-family:var(--font-family-noto_sans_tc);
+      font-size:var(--font-size-xl); font-weight:500;
+      letter-spacing:0; line-height:50px; margin-right:17px; width:1226px;
+    }
+    .stark_lab_project_linebot .text-29 p  { margin-bottom:16px; }
+    .stark_lab_project_linebot .text-29 ul { padding-left:28px; margin-bottom:16px; }
+    .stark_lab_project_linebot .text-29 li { margin-bottom:10px; }
+    .stark_lab_project_linebot .text-29 strong { font-weight:700; color:var(--navy-blue); }
+
+    /* 階段卡片 */
+    .phase-cards {
+      display:grid; grid-template-columns:repeat(3, 1fr);
+      gap:24px; width:1226px; margin:10px auto 0;
+    }
+    .phase-card {
+      border:2px solid var(--navy-blue); border-radius:20px;
+      padding:32px 28px; background:#f5f9ff;
+    }
+    .phase-card .pc-label {
+      display:inline-block; background:var(--navy-blue); color:#fff;
+      border-radius:20px; padding:4px 18px; font-size:18px;
+      font-family:var(--font-family-noto_sans_tc); font-weight:700;
+      margin-bottom:16px;
+    }
+    .phase-card .pc-desc {
+      font-family:var(--font-family-noto_sans_tc);
+      font-size:var(--font-size-m); color:#444; line-height:1.8;
+    }
+
+    /* 架構展示 圖片 */
+    .arch-img-wrap {
+      width:1226px; margin:0 auto; padding-bottom:20px;
+    }
+    .arch-img-wrap img {
+      width:100%; height:auto;
+      border-radius:20px;
+      border:1.5px solid #e0e0e0;
+      box-shadow:0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    /* 相關連結標題 */
+    .stark_lab_project_linebot .group-25 {
+      align-items:flex-start; align-self:flex-start;
+      display:flex; margin-left:105px; margin-top:80px; min-width:176px;
+    }
+    .stark_lab_project_linebot .overlap-group1 {
+      align-items:center; background-color:var(--navy-blue); border-radius:9px;
+      display:flex; height:62px; min-width:174px; padding:0 15px;
+    }
+
+    /* Footer */
+    .stark_lab_project_linebot .group-36 {
+      height:277px; margin-top:146px; position:relative; width:1378px;
+    }
+    .stark_lab_project_linebot .navigation-and-contacts {
+      align-items:flex-start; display:inline-flex; flex-direction:column;
+      gap:66px; height:157px; position:relative;
+    }
+    .stark_lab_project_linebot .frame-26 {
+      align-items:flex-start; display:inline-flex; flex:0 0 auto;
+      gap:120px; margin-bottom:-52px; position:relative;
+    }
+    .stark_lab_project_linebot .label-1 {
+      align-items:flex-start; background-color:var(--white); border-radius:7px;
+      display:inline-flex; flex:0 0 auto; flex-direction:column;
+      gap:10px; padding:0 7px; position:relative;
+    }
+    .stark_lab_project_linebot .info {
+      align-items:flex-start; display:inline-flex; flex:0 0 auto;
+      flex-direction:column; gap:20px; position:relative;
+    }
+    .stark_lab_project_linebot .address-100 {
+      letter-spacing:0; line-height:normal; position:relative; width:490px;
+    }
+    .stark_lab_project_linebot .group-30 {
+      height:30px; left:1152px; position:absolute; top:208px; width:114px;
+    }
+  </style>
+</head>
+<body style="margin:0; background:#ffffff">
+  <input type="hidden" id="anPageName" name="page" value="stark_lab_project_linebot" />
+
+  <div class="container-center-horizontal">
+    <div class="stark_lab_project_linebot screen">
+
+      <!-- ══ Navigation ══ -->
+      <div class="overlap-group3">
+        <div class="navigation-bar">
+          <img class="logo-1" src="{% static 'img/------logo-1@2x.png' %}" alt="StarkLab Logo" />
+          <div class="navbar notosanstc-semi-bold-black-20px">
+            <a href="/"><div class="navbar-link-text notosanstc-semi-bold-black-20px">首頁</div></a>
+            <a href="/project/"><div class="navbar-link-text notosanstc-semi-bold-black-20px">研究專案</div></a>
+            <a href="/member/"><div class="navbar-link-text notosanstc-semi-bold-black-20px">成員介紹</div></a>
+            <a href="/professor/"><div class="navbar-link-text notosanstc-semi-bold-black-20px">論文研究</div></a>
+          </div>
+        </div>
+        <img class="line-30" src="{% static 'img/line-30.svg' %}" alt="" />
+      </div>
+
+      <!-- ══ Back button ══ -->
+      <div class="overlap-group4">
+        <div class="group-31">
+          <img class="arrow-2" src="{% static 'img/arrow-2.svg' %}" alt="" />
+        </div>
+        <div class="text-40">回上一頁</div>
+        <a href="/project/"><div class="rectangle-83"></div></a>
+      </div>
+
+      <!-- ══ Hero Banner ══ -->
+      <div class="overlap-group5">
+        <div class="overlap-group"></div>
+        <div class="xxx-xxx-xxx-xxx">開發者：黃昱睿</div>
+        <h1 class="line-bot valign-text-middle">應變報告<br />生成系統</h1>
+        <img class="x2-1" src="{% static 'img/2-1.png' %}" alt="專案封面圖" />
+      </div>
+
+      <!-- ══ 專案介紹 ══ -->
+      <div class="frame-27">
+        <div class="overlap-group-1">
+          <div class="text spacegrotesk-medium-white-36px">專案介紹</div>
+        </div>
+        <div class="group-15">
+          <img class="line-26" src="{% static 'img/line-26.svg' %}" alt="" />
+          <div class="text-29">
+            <p>水利署定期於官網發布新聞稿，內容涵蓋河川治理政策、水資源管理、水利知識普及，以及天然災害（風災、水災、旱災）的整備與應變處置等議題。由於臺灣受水資源短缺與天然災害威脅甚鉅，水利署的政策宣導與新聞稿發布在防災資訊傳遞上扮演著至關重要的角色。</p>
+
+            <p>目前，新聞稿主要由各組室草擬初稿，再由秘書室第四科進行潤飾與審核，撰寫過程需參考過往相似案例、會議紀錄及實際作業內容，耗費大量人力與時間。</p>
+
+            <p>為提升撰寫效率與內容品質，本專案運用大型語言模型（LLM）結合歷史新聞稿資料，開發災害應變新聞稿生成輔助系統，依據災害階段提供針對性的輔助：</p>
+          </div>
+
+          <!-- 三階段卡片 -->
+          <div class="phase-cards">
+            <div class="phase-card">
+              <span class="pc-label">災前整備</span>
+              <p class="pc-desc">根據整備會議紀錄自動生成初稿，清楚說明水利署已完成的備災措施，協助快速向外界傳達整備狀態。</p>
+            </div>
+            <div class="phase-card">
+              <span class="pc-label">災中應變</span>
+              <p class="pc-desc">以應變小組開設與長官巡查紀錄為基礎，即時生成應變說明，強調水利署持續監控與積極回應的行動力。</p>
+            </div>
+            <div class="phase-card">
+              <span class="pc-label">災後復建</span>
+              <p class="pc-desc">整合搶修進度與補助申請資訊，自動產出復建工作說明，確保民眾獲得正確且即時的後續救助資訊。</p>
             </div>
           </div>
-          <img class="line-30" src="{% static 'img/line-30.svg' %}" alt="Line 30" />
-        </div>
-        <div class="overlap-group4">
-          <div class="group-31"><img class="arrow-2" src="{% static 'img/arrow-2.svg' %}" alt="Arrow 2" /></div>
-          <div class="text-40">回上一頁</div>
-          <a href="/project/"> <div class="rectangle-83"></div></a>
-        </div>
-        <div class="overlap-group5">
-          <div class="overlap-group">
-            <div class="xxx-xxx-xxx-xxx">黃昱睿</div>
-            <div class="content"></div>
-          </div>
-          <h1 class="line-bot valign-text-middle">應變報告生成</h1>
 
-          <img class="x2-1" src="{% static 'img/2-1.png' %}" alt="2 1" />
-        </div>
-        <br><br><br>
-        <div class="frame-27">
-            <div class="overlap-group-1">
-            <div class="text spacegrotesk-medium-white-36px">專案介紹</div>
-            </div>
-            <div class="group-15">
-              <img class="line-26" src="{% static 'img/line-26.svg' %}" alt="Line 26" />
-              <div class="text-29">
-              <!-- <p>我們運用大型語言模型（LLM）開發了一款災害應變新聞稿生成機器人，旨在提升水利署新聞稿的撰寫效率與品質。</p> -->
-
-              <p>水利署定期於官網發布新聞稿，內容由水利署本部各組室及所屬機關提供，涵蓋河川治理政策、水資源管理、水利知識普及，以及天然災害（風災、水災、旱災）的整備與應變處置等議題。由於臺灣受水資源及天然災害影響甚鉅，水利署的政策宣導與新聞稿發布扮演著關鍵角色。</p>
-              
-              <p><strong>目前新聞稿撰寫作業流程</strong></p>
-              
-              <p>目前，新聞稿主要由各組室草擬初稿，再由水利署秘書室第四科進行潤飾與審核。撰寫過程通常參考過去相似案例、相關會議紀錄及實際作業內容，並搭配數張照片以增強新聞可讀性。</p>
-              
-              <p>以災害應變新聞稿為例，內容的撰寫方式依據災害階段不同而有所調整：</p>
-              
-              <p><strong>災前：</strong>根據整備會議紀錄撰寫，主要目的是向外界說明水利署已準備好應對可能發生的災害。</p>
-              <p><strong>災中：</strong>以應變小組開設或長官巡查為基礎撰寫，強調水利署正密切關注災情並持續應變。</p>
-              <p><strong>災後：</strong>以復建工作為主，說明搶修與搶險進度，以及補助申請辦法，確保民眾獲得必要資訊。</p>
-              
-              <!-- <p><strong>運用 LLM 提升新聞稿撰寫品質</strong></p> -->
-              
-              <p>為確保新聞稿的準確性、一致性與效率，我們初步規劃結合資訊檢索與生成式 AI 模型，應用歷史新聞稿資料來：</p>
-              
-              <ul>
-                <li>模仿既有寫作風格，確保新聞稿語調與內容連貫性</li>
-                <li>修正用詞，提升表達的專業度與流暢度</li>
-                <!-- <li>提供撰寫方向建議，確保新聞稿符合政策宣導需求</li> -->
-              </ul>
-              <br>
-              <br>
-              <!-- <p>透過 LLM 技術的輔助，新聞稿撰寫流程將更加高效、標準化，並確保災害應變資訊能即時且準確地傳達給社會大眾。</p> -->
-              
-                <!-- <br><br><br><br><br> -->
-
-<!--                 <div style="text-align: center;">
-                    <a href="{% url 'ai_report' %}" style="color: white; background-color: rgb(71, 99, 156); padding: 15px 30px; border-radius: 30px; display: inline-block;">點擊查看成果</a>
-                </div> -->
-                
-            </div>
-
+          <div class="text-29" style="margin-top:10px;">
+            <p>系統透過檢索增強生成（RAG）技術，從歷史新聞稿資料庫中提取相關案例，引導模型模仿既有寫作風格、修正專業用詞，確保生成內容在語調、格式與專業度上與官方標準一致，大幅縮短新聞稿從草稿到定稿的作業時程。</p>
           </div>
         </div>
-        <div class="group-25">
-          <div class="overlap-group1"><div class="text spacegrotesk-medium-white-36px">架構展示</div></div>
+      </div>
+
+      <!-- ══ 架構展示 ══ -->
+      <div class="frame-27" style="margin-top:20px;">
+        <div class="overlap-group-1">
+          <div class="text spacegrotesk-medium-white-36px">架構展示</div>
         </div>
-
-
-        <div class="overlap-group2">
-            <img src="{% static 'img/news_report.png' %}" alt="report" style="width: 1100px; height: auto; margin-left: 100px; margin-top: 80px;" />
-
+        <div class="group-15">
+          <img class="line-26" src="{% static 'img/line-26.svg' %}" alt="" />
+          <div class="arch-img-wrap">
+            <!--
+              圖片原始路徑：mylab/static/img/news_report.png
+              請確認已複製到：lab/static/img/news_report.png
+              或將下方路徑改為 {% static 'img/news_report.png' %}
+            -->
+            <img src="{% static 'img/report.png' %}" alt="應變報告生成系統架構圖" />
+          </div>
         </div>
+      </div>
 
-
-        <div class="group-36">
-          <div class="footer">
-            <div class="navigation-and-contacts">
-              <div class="frame-26">
-                <div class="contact-us">
-                  <div class="heading">
-                    <div class="label-1"><div class="label-2 notosans-bold-navy-blue-20px">Contact us:</div></div>
+      <!-- ══ Footer ══ -->
+      <div class="group-36">
+        <div class="footer">
+          <div class="navigation-and-contacts">
+            <div class="frame-26">
+              <div class="contact-us">
+                <div class="heading">
+                  <div class="label-1">
+                    <div class="label-2 notosans-bold-navy-blue-20px">Contact us:</div>
                   </div>
-                  <div class="info">
-                    <div class="email-d04921004ntuedutw notosans-normal-white-18px">Email: D04921004@ntu.edu.tw</div>
-                    <p class="address-100 notosanstc-normal-white-18px">
-                      Address: 100台北市中正區貴陽街一段56號 No. 56, Sec. 1, Guiyang St., Zhongzheng Dist., Taipei
-                      City<br /><br />
-                      ©2025 Soochow University Starklab . All Rights Reserved.
-                    </p>
+                </div>
+                <div class="info">
+                  <div class="email-d04921004ntuedutw notosans-normal-white-18px">
+                    Email: D04921004@ntu.edu.tw
                   </div>
+                  <p class="address-100 notosanstc-normal-white-18px">
+                    Address: 100 台北市中正區貴陽街一段 56 號<br />
+                    No. 56, Sec. 1, Guiyang St., Zhongzheng Dist., Taipei City<br /><br />
+                    ©2025 Soochow University Starklab．All Rights Reserved.
+                  </p>
                 </div>
               </div>
             </div>
-          </div>{
-          <img class="group-30" src="% static 'img/group-30-2@2x.png' %}" alt="Group 30" />
+          </div>
         </div>
+        <img class="group-30" src="{% static 'img/group-30-2@2x.png' %}" alt="StarkLab" />
       </div>
+
     </div>
-  </body>
+  </div>
+</body>
 </html>

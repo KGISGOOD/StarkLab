@@ -27,8 +27,6 @@ logger = logging.getLogger(__name__)
 def home(request):
     return render(request, 'stark_lab_home.html')
 
-
-
 def member(request):
     return render(request, 'stark_lab_member.html')
 
@@ -58,9 +56,10 @@ def project_wra_repoet(request):
 def project_financial(request):
     return render(request, 'stark_lab_project_financial.html')
 
+
+
 def financial_1(request):
     return render(request, 'financial_1.html')
-
 def financial_2(request):
     return render(request, 'financial_2.html')
 def financial_3(request):
@@ -68,35 +67,35 @@ def financial_3(request):
 
 
 
-def about(request):
-    return render(request, 'about.html')
+# def about(request):
+#     return render(request, 'about.html')
 
-def contact(request):
-    return render(request, 'contact.html')
+# def contact(request):
+#     return render(request, 'contact.html')
 
-def gallery(request):
-    return render(request, 'gallery.html')
+# def gallery(request):
+#     return render(request, 'gallery.html')
 
-def products(request):
-    return render(request, 'products.html')
+# def products(request):
+#     return render(request, 'products.html')
 
-def project1(request):
-    return render(request, 'project1.html')
+# def project1(request):
+#     return render(request, 'project1.html')
 
-def project2(request):
-    return render(request, 'project2.html')
+# def project2(request):
+#     return render(request, 'project2.html')
 
-def project3(request):
-    return render(request, 'project3.html')
+# def project3(request):
+#     return render(request, 'project3.html')
 
-def project4(request):
-    return render(request, 'project4.html')
+# def project4(request):
+#     return render(request, 'project4.html')
 
-def project5(request):
-    return render(request, 'project5.html')
+# def project5(request):
+#     return render(request, 'project5.html')
 
-def project6(request):
-    return render(request, 'project6.html')
+# def project6(request):
+#     return render(request, 'project6.html')
 
 
 

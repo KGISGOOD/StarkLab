@@ -1,0 +1,7 @@
+2026-04-19 07:13:33 INFO django.server:212 "GET / HTTP/1.1" 200 11060
+2026-04-19 12:21:28 INFO django.server:212 "GET / HTTP/1.1" 200 11060
+2026-04-19 12:21:30 WARNING django.server:212 "GET /config.js HTTP/1.1" 404 179
+2026-04-19 12:21:30 WARNING django.server:212 "GET /aws-config.js HTTP/1.1" 404 179
+2026-04-19 12:21:31 WARNING django.server:212 "GET /aws.config.js HTTP/1.1" 404 179
+2026-04-19 20:58:54 INFO django.server:212 "GET / HTTP/1.1" 200 11060
+2026-04-19 21:06:31 INFO django.server:212 "GET / HTTP/1.1" 200 11060

@@ -1,2 +1,0 @@
-2026-02-08 03:37:36 INFO django.server:161 "GET / HTTP/1.1" 200 11060
-2026-02-08 12:34:58 WARNING django.server:161 "GET /.well-known/security.txt HTTP/1.1" 404 179

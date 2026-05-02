@@ -1,0 +1,35 @@
+2026-04-20 01:13:23 INFO django.server:212 "GET / HTTP/1.1" 200 11060
+2026-04-20 01:13:23 WARNING django.security.csrf:241 Forbidden (CSRF cookie not set.): /
+2026-04-20 01:13:23 WARNING django.server:212 "POST / HTTP/1.1" 403 1382
+2026-04-20 01:13:23 WARNING django.security.csrf:241 Forbidden (CSRF cookie not set.): /
+2026-04-20 01:13:23 WARNING django.server:212 "POST / HTTP/1.1" 403 1382
+2026-04-20 01:13:23 WARNING django.security.csrf:241 Forbidden (CSRF cookie not set.): /
+2026-04-20 01:13:23 WARNING django.server:212 "POST / HTTP/1.1" 403 1382
+2026-04-20 01:13:23 WARNING django.security.csrf:241 Forbidden (CSRF cookie not set.): /
+2026-04-20 01:13:23 WARNING django.server:212 "POST / HTTP/1.1" 403 1382
+2026-04-20 01:13:30 WARNING django.server:212 "GET /info HTTP/1.1" 404 179
+2026-04-20 01:13:30 WARNING django.server:212 "GET /_environment HTTP/1.1" 404 179
+2026-04-20 03:40:54 INFO django.server:212 "GET / HTTP/1.1" 200 11060
+2026-04-20 05:28:14 INFO django.server:212 "GET / HTTP/1.1" 200 11060
+2026-04-20 05:34:13 INFO django.server:212 "GET / HTTP/1.1" 200 11060
+2026-04-20 09:37:10 INFO django.server:212 "GET / HTTP/1.1" 200 11060
+2026-04-20 09:37:11 INFO django.server:212 "GET / HTTP/1.1" 200 11060
+2026-04-20 09:37:12 WARNING django.server:212 "GET /_profiler HTTP/1.1" 404 179
+2026-04-20 13:46:23 WARNING django.security.csrf:241 Forbidden (Origin checking failed - https://lab.starklab.tw does not match any trusted origins.): /
+2026-04-20 13:46:23 WARNING django.server:212 "POST / HTTP/1.1" 403 1019
+2026-04-20 13:46:24 WARNING django.security.csrf:241 Forbidden (Origin checking failed - https://lab.starklab.tw does not match any trusted origins.): /
+2026-04-20 13:46:24 WARNING django.server:212 "POST / HTTP/1.1" 403 1019
+2026-04-20 13:46:25 WARNING django.security.csrf:241 Forbidden (Origin checking failed - https://lab.starklab.tw does not match any trusted origins.): /
+2026-04-20 13:46:25 WARNING django.server:212 "POST / HTTP/1.1" 403 1019
+2026-04-20 13:46:26 WARNING django.security.csrf:241 Forbidden (Origin checking failed - https://lab.starklab.tw does not match any trusted origins.): /
+2026-04-20 13:46:26 WARNING django.server:212 "POST / HTTP/1.1" 403 1019
+2026-04-20 13:46:27 WARNING django.security.csrf:241 Forbidden (Origin checking failed - https://lab.starklab.tw does not match any trusted origins.): /
+2026-04-20 13:46:27 WARNING django.server:212 "POST / HTTP/1.1" 403 1019
+2026-04-20 13:46:28 WARNING django.security.csrf:241 Forbidden (Origin checking failed - https://lab.starklab.tw does not match any trusted origins.): /
+2026-04-20 13:46:28 WARNING django.server:212 "POST / HTTP/1.1" 403 1019
+2026-04-20 13:46:29 WARNING django.security.csrf:241 Forbidden (Origin checking failed - https://lab.starklab.tw does not match any trusted origins.): /
+2026-04-20 13:46:29 WARNING django.server:212 "POST / HTTP/1.1" 403 1019
+2026-04-20 13:46:30 WARNING django.security.csrf:241 Forbidden (Origin checking failed - https://lab.starklab.tw does not match any trusted origins.): /
+2026-04-20 13:46:30 WARNING django.server:212 "POST / HTTP/1.1" 403 1019
+2026-04-20 13:46:31 WARNING django.security.csrf:241 Forbidden (Origin checking failed - https://lab.starklab.tw does not match any trusted origins.): /
+2026-04-20 13:46:31 WARNING django.server:212 "POST / HTTP/1.1" 403 1019

@@ -1,0 +1,16 @@
+2026-04-16 08:48:36 INFO django.server:212 "GET / HTTP/1.1" 200 11060
+2026-04-16 14:48:36 INFO django.utils.autoreload:265 C:\py310\Lib\site-packages\_distutils_hack\__init__.py changed, reloading.
+2026-04-16 14:48:37 INFO django.utils.autoreload:667 Watching for file changes with StatReloader
+2026-04-16 16:04:44 INFO django.utils.autoreload:265 C:\py310\Lib\site-packages\websockets\client.py changed, reloading.
+2026-04-16 16:04:45 INFO django.utils.autoreload:667 Watching for file changes with StatReloader
+2026-04-16 16:04:57 INFO django.utils.autoreload:265 C:\py310\Lib\site-packages\PIL\Image.py changed, reloading.
+2026-04-16 16:04:58 INFO django.utils.autoreload:667 Watching for file changes with StatReloader
+2026-04-16 16:05:19 INFO django.utils.autoreload:265 C:\py310\Lib\site-packages\typing_inspection\__init__.py changed, reloading.
+2026-04-16 16:05:20 INFO django.utils.autoreload:667 Watching for file changes with StatReloader
+2026-04-16 16:05:59 INFO django.utils.autoreload:265 C:\py310\Lib\site-packages\pydantic\_internal\_signature.py changed, reloading.
+2026-04-16 16:06:00 INFO django.utils.autoreload:667 Watching for file changes with StatReloader
+2026-04-16 21:58:34 INFO django.server:212 "GET / HTTP/1.1" 200 11060
+2026-04-16 21:58:35 WARNING django.server:212 "GET /favicon.ico HTTP/1.1" 404 179
+2026-04-16 21:58:35 WARNING django.server:212 "GET /favicon.png HTTP/1.1" 404 179
+2026-04-16 21:59:21 INFO django.server:212 "GET / HTTP/1.1" 200 11060
+2026-04-16 21:59:23 WARNING django.server:212 "GET /favicon.ico HTTP/1.1" 404 179
