@@ -1,0 +1,201 @@
+/**
+ * StarkLab Design Token — 正式版
+ *
+ * 版本：1.0.0
+ * 日期：2026-05-02
+ * 用途：全站 CSS Custom Properties 單一來源（Single Source of Truth）
+ *       由 docs/design/audit/tokens-draft.css 草案轉正式採用。
+ *       本檔案在所有其他 CSS 之前載入，提供 token 變數供全站引用。
+ *
+ * 使用說明：
+ * - 所有 token 命名遵循 BEM-like 語意：--{category}-{variant}
+ * - 舊 token（styleguide.css 過渡期間）透過別名映射保持向後相容
+ * - 標記 [待確認] 的值需設計師確認後才可正式採用
+ */
+
+:root {
+
+  /* ============================================
+   * COLOR TOKENS — 顏色
+   * ============================================ */
+
+  /* Brand Core — 品牌核心色 */
+  --color-brand-primary: #0f87e0;    /* 品牌亮藍（現行 --navy-blue，名稱不準確需更正） */
+  --color-brand-deep: #1a3e6f;       /* [待確認] project 頁深海軍藍；若為刻意設計保留，否則廢棄 */
+  --color-brand-shadow: #191a23;     /* 品牌陰影色（現行 --mirage） */
+
+  /* Neutrals — 中性色 */
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-gray-50: #f3f3f3;          /* 現行 --grey，淺灰背景 */
+  --color-gray-100: #f5f5f5;         /* 表單/表格底色 */
+  --color-gray-200: #e5e5e5;         /* 分隔線、邊框 */
+  --color-gray-300: #c9c9c9;         /* 停用狀態 */
+  --color-gray-500: #777777;         /* 次要文字 */
+  --color-gray-600: #555555;         /* Caption 文字 */
+  --color-gray-700: #363636;         /* 正文文字 */
+  --color-gray-800: #333333;         /* 強調正文 */
+  --color-gray-900: #191a23;         /* 近黑（= brand-shadow） */
+
+  /* Semantic — 語意色（功能色） */
+  --color-success: #27ae60;          /* 成功狀態 */
+  --color-warning: #e67e22;          /* 警告狀態 */
+  --color-error: #e74c3c;            /* 錯誤狀態 */
+  --color-info: #0d6fb7;             /* 資訊藍（Responsee 框架遺留，暫作 info） */
+
+  /* Surface — 介面層 */
+  --color-surface: #ffffff;          /* 卡片/面板背景 */
+  --color-background: #f3f3f3;       /* 頁面背景 */
+  --color-card-dark: #0f87e0;        /* 深色卡片背景（= brand-primary） */
+  --color-card-light: #e8eef5;       /* 淺藍灰卡片背景（project 頁） */
+
+  /* Text — 文字色 */
+  --color-text-primary: #191a23;     /* 主要文字（深色） */
+  --color-text-body: #363636;        /* 正文文字 */
+  --color-text-secondary: #777777;   /* 次要文字 */
+  --color-text-caption: #888888;     /* 標籤/年份等輔助文字 */
+  --color-text-on-dark: #ffffff;     /* 深色背景上的文字 */
+  --color-text-brand: #0f87e0;       /* 品牌色文字 */
+
+
+  /* ============================================
+   * TYPOGRAPHY TOKENS — 字型
+   * ============================================ */
+
+  /* Font Family */
+  --font-family-tc: "Noto Sans TC", Helvetica, sans-serif;   /* 繁體中文主字型 */
+  --font-family-en: "Noto Sans", Helvetica, sans-serif;      /* 英文/數字主字型 */
+  --font-family-display: "Space Grotesk", Helvetica, sans-serif; /* 顯示字型 */
+  --font-family-icon: "mfg";                                 /* 圖示字型（MFG Labs） */
+
+  /* Font Size — 12 個等級 */
+  --font-size-xxs: 12px;    /* Micro — 最小文字 */
+  --font-size-xs: 14px;     /* Caption — 標籤/年份 */
+  --font-size-s: 16px;      /* UI — 按鈕/返回/一般 UI */
+  --font-size-m: 18px;      /* Body — 正文（現行變數保留） */
+  --font-size-l: 20px;      /* Body Lg / Nav — 導覽連結（現行變數保留） */
+  --font-size-xl: 24px;     /* Sub-heading（現行變數保留） */
+  --font-size-xxl: 30px;    /* Card Title（現行變數保留） */
+  --font-size-xxxl: 32px;   /* Section Sub-title（現行變數保留） */
+  --font-size-xxxxl: 36px;  /* Section Title（現行變數保留） */
+  --font-size-xxxxxl: 48px; /* Page Hero（現行變數保留） */
+  --font-size-hero: 60px;   /* Hero Display — [暫無對應 var，新增] */
+  --font-size-display: 96px; /* Super Display — 教授名/專案大標題 */
+
+  /* Font Weight */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;   /* Noto Sans TC 特有 */
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;  /* Noto Sans 英雄標題 */
+
+  /* Line Height */
+  --line-height-tight: 1;
+  --line-height-snug: 1.3;
+  --line-height-normal: 1.4;
+  --line-height-relaxed: 1.6;
+  --line-height-loose: 1.8;
+
+
+  /* ============================================
+   * SPACING TOKENS — 間距（基準單位 = 4px）
+   * ============================================ */
+
+  --spacing-0: 0px;
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-7: 28px;    /* navbar-link-text 行高 */
+  --spacing-8: 32px;
+  --spacing-10: 40px;   /* 常見間距 */
+  --spacing-12: 48px;
+  --spacing-14: 56px;
+  --spacing-15: 60px;   /* 頁面頂部 margin-top，全站標準 */
+  --spacing-16: 64px;
+  --spacing-20: 80px;
+  --spacing-24: 96px;
+  --spacing-page-x: 100px;  /* 頁面水平邊距，全站標準 */
+
+
+  /* ============================================
+   * BORDER RADIUS TOKENS — 圓角
+   * ============================================ */
+
+  --radius-xs: 4px;
+  --radius-sm: 8px;      /* 返回按鈕、卡片圖片 */
+  --radius-md: 12px;     /* Badge、section tag */
+  --radius-lg: 16px;     /* 現代卡片（project page） */
+  --radius-xl: 20px;     /* 圓形圖示容器 */
+  --radius-2xl: 45px;    /* 頁尾、大型資訊框 */
+  --radius-3xl: 65px;    /* 成員卡片、英雄卡片 */
+  --radius-full: 9999px; /* 完全圓形 */
+
+
+  /* ============================================
+   * SHADOW TOKENS — 陰影
+   * ============================================ */
+
+  /* Brand Solid Shadow — StarkLab 視覺特徵：底部實心偏移陰影 */
+  --shadow-brand-sm: 0px 5px 0px var(--color-black);   /* 卡片標準 */
+  --shadow-brand-md: 0px 7px 0px var(--color-black);   /* 卡片 hover / 強調 */
+
+  /* Soft Shadow — 工具頁面柔和陰影 */
+  --shadow-soft-sm: 0 1px 4px rgba(0, 0, 0, 0.06);
+  --shadow-soft-md: 0 4px 12px rgba(0, 0, 0, 0.10);
+
+
+  /* ============================================
+   * TRANSITION TOKENS — 動畫過渡
+   * ============================================ */
+
+  --transition-fast: all 0.20s linear 0s;         /* 全站通用快速過渡 */
+  --transition-normal: all 0.30s ease;             /* 卡片展開/收合 */
+  --transition-slow: all 0.50s cubic-bezier(0.645, 0.045, 0.355, 1) 0s; /* 圖片 zoom */
+
+
+  /* ============================================
+   * Z-INDEX TOKENS — 層級
+   * ============================================ */
+
+  --z-index-base: 0;
+  --z-index-above: 1;
+  --z-index-nav: 2;
+  --z-index-fixed: 10;
+  --z-index-overlay: 20;
+
+
+  /* ============================================
+   * 向後相容舊 token（styleguide.css 過渡期間保留）
+   * 這些別名映射到新 token，待 Batch 3 完成後可移除
+   * ============================================ */
+
+  --black: var(--color-black);
+  --grey: var(--color-gray-50);
+  --mirage: var(--color-brand-shadow);
+  --navy-blue: var(--color-brand-primary);
+  --white: var(--color-white);
+  /* --font-size-l ~ --font-size-xxxxxl 已直接定義於上方，不需別名 */
+  /* --font-size-m 已直接定義於上方，不需別名 */
+  --font-family-noto_sans: var(--font-family-en);
+  --font-family-noto_sans_tc: var(--font-family-tc);
+  --font-family-space_grotesk: var(--font-family-display);
+
+}
+
+/* ============================================
+ * 廢棄值備忘（T2 重構時需替換）
+ * ============================================ */
+/*
+  廢棄 → 替換為
+  #1088E1 → var(--color-brand-primary)   [home page 卡片 number/label]
+  #F3F3F3 → var(--color-gray-50)          [home page card 硬編碼]
+  #191a23（硬編碼）→ var(--color-brand-shadow)
+  16.4px  → var(--font-size-s)            [professor ORCID]
+  22px    → var(--font-size-xl)           [linebot text-3-2]
+  15px    → var(--font-size-s)            [style.css table]
+  83px（padding）→ var(--spacing-page-x)  [linebot frame-27]
+  "Playfair Display" → remove / inherit   [template-style.css heading]
+*/

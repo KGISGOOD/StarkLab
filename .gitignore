@@ -1,0 +1,35 @@
+# Node
+node_modules/
+package-lock.json
+npm-debug.log*
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+.Python
+env/
+venv/
+.env
+
+# Django
+*.sqlite3
+staticfiles/
+media/
+
+# Logs
+labweb/lab/logs/*.log
+labweb/lab/logs/*.log.*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Build
+dist/
+*.js.map

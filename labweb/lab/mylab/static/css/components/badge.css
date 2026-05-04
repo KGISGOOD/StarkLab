@@ -1,0 +1,31 @@
+/**
+ * Badge / Tag Component
+ * 統一各頁面的 badge/label/tag 圓角和間距
+ */
+
+/* Base badge */
+.badge,
+.section-tag {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-md, 12px);
+  padding: 4px 10px;
+  font-size: var(--font-size-xs, 14px);
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+/* Small variant */
+.badge-sm {
+  border-radius: var(--radius-sm, 8px);
+  padding: 3px 7px;
+  font-size: var(--font-size-xxs, 12px);
+}
+
+/* Label（小標籤，用於 member 頁） */
+.label {
+  letter-spacing: 0;
+  line-height: normal;
+  position: relative;
+}
