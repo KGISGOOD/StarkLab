@@ -1,0 +1,46 @@
+/**
+ * Card Component
+ * ⚠️ .expanded class 受 JS 操作保護，禁止改名或移除
+ * Variants: default / expanded / dark (card-1)
+ */
+
+.card,
+.card-1 {
+  align-items: flex-start;
+  background-color: var(--color-gray-50, #f3f3f3);
+  border: 1px solid var(--color-brand-shadow, #191a23);
+  border-radius: 45px;
+  box-shadow: var(--shadow-brand-sm, 0px 5px 0px #191a23);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+  padding: 41px 60px;
+  position: relative;
+  transition: var(--transition-normal, all 0.3s ease);
+  cursor: pointer;
+}
+
+/* Hover state */
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-brand-md, 0px 7px 0px #191a23);
+}
+
+/* Expanded state — ⚠️ JS 依賴 .expanded class，禁止改名 */
+.card.expanded {
+  background-color: var(--color-brand-primary, #0f87e0);
+}
+
+/* Plus icon toggle */
+.plus-icon {
+  height: 58px;
+  width: 58px;
+  cursor: pointer;
+  transition: transform var(--transition-normal, 0.3s ease);
+}
+
+/* ⚠️ .plus-icon.expanded 也是 JS 操作目標 */
+.plus-icon.expanded {
+  background-image: url("../img/minus_icon.svg");
+}

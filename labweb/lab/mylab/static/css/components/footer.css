@@ -1,0 +1,39 @@
+/**
+ * Footer Component
+ * 來源：globals.css .footer
+ * Token：border-radius 使用 --radius-2xl
+ */
+
+.footer {
+  align-items: flex-start;
+  background-color: var(--color-brand-primary, #0f87e0);
+  border-radius: var(--radius-2xl, 45px) var(--radius-2xl, 45px) 0px 0px;
+  display: flex;
+  flex-direction: column;
+  gap: 50px;
+  height: 277px;
+  left: 50px;
+  padding: 40px 60px 50px;
+  position: absolute;
+  top: 0;
+  width: 1278px;
+}
+
+.contact-us {
+  align-items: flex-start;
+  display: inline-flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 27px;
+  position: relative;
+}
+
+.group-33 {
+  align-items: flex-start;
+  cursor: pointer;
+  display: flex;
+  gap: 17px;
+  height: 55px;
+  min-width: 172px;
+  padding: var(--spacing-1, 6px) var(--spacing-1, 3px);
+}

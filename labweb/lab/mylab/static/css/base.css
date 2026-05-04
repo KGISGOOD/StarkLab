@@ -1,0 +1,77 @@
+/**
+ * StarkLab Base CSS — 基礎覆蓋層
+ *
+ * 版本：1.0.0
+ * 日期：2026-05-02
+ * 用途：修正第三方框架衝突 + 全局基礎規則
+ *
+ * 載入順序要求（重要）：
+ * - 本檔案必須在 responsee.css 和 template-style.css 之後載入
+ * - 本檔案依賴 tokens.css 提供的 CSS 變數
+ */
+
+/* Google Fonts — 品牌字型載入 */
+@import url("https://fonts.googleapis.com/css?family=Noto+Sans+TC:500,700,600,400|Noto+Sans:500,700,800,400|Space+Grotesk:500,400");
+
+
+/* ============================================
+ * OVERRIDE LAYER — 修正第三方框架衝突
+ * 此區塊必須在 responsee.css 和 template-style.css 之後載入才生效
+ * ============================================ */
+
+/* 修正衝突 2：responsee.css body { color: #ffffff } 造成淺背景文字不可見 */
+body {
+  color: var(--color-text-primary, #191a23);
+}
+
+/* 修正衝突 6：template-style.css 強制所有標題用 Playfair Display */
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: inherit;
+}
+
+
+/* ============================================
+ * GLOBAL BASE RULES — 全局基礎規則
+ * ============================================ */
+
+/* 全局 box-sizing（globals.css 已有，base.css 明確聲明確保優先） */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+
+/* ============================================
+ * GLOBAL UTILITIES — 從 globals.css 遷移（第 3 批）
+ * globals.css 模板已不再載入，utility 類別集中於此
+ * ============================================ */
+
+.screen a {
+  display: contents;
+  text-decoration: none;
+}
+
+.container-center-horizontal {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  pointer-events: none;
+  width: 100%;
+}
+
+.container-center-horizontal > * {
+  flex-shrink: 0;
+  pointer-events: auto;
+}
+
+.valign-text-middle {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.logo-1 {
+  height: 76px;
+  position: relative;
+  width: 126px;
+}

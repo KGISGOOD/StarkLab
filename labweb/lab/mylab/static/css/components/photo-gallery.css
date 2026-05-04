@@ -1,0 +1,38 @@
+/**
+ * Photo Gallery Component
+ * 來源：stark_lab_project3.css（行 432-460）= stark_lab_project_war.css（行 531-559）
+ * 兩份完全相同，提取後各頁保留 scoped override 即可
+ */
+
+/* 照片容器樣式，使用 Flexbox 並排顯示 */
+.photo-container {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  justify-content: center;
+}
+
+/* 照片區域樣式 */
+.photo-section {
+  text-align: center;
+}
+
+/* 照片的樣式 */
+.photo {
+  width: 400px;
+  height: auto;
+  border-radius: var(--radius-sm, 8px);
+  transition: var(--transition-normal, all 0.3s ease);
+}
+
+/* 照片說明文字樣式 */
+.caption {
+  margin-top: 12px;
+  font-size: var(--font-size-s, 16px);
+  color: var(--color-gray-600, #555);
+}
+
+/* Hover 放大效果 */
+.photo:hover {
+  transform: scale(1.1);
+}

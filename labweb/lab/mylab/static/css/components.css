@@ -4,6 +4,7 @@
  * Copyright 2018, Vision Design - graphic zoo
  * Free to use under the MIT license.
 */
+/* ⚠️ 以下 Tabs 規則已提取至 components/modal.css，此處保留作過渡期相容，第 3 批刪除 */
 /* Tabs */
 .tab-item {
   background: none repeat scroll 0 0 #fff;
@@ -45,6 +46,7 @@ a.tab-label:hover,a.tab-label.active-btn {
     width: 100%;
   }
 }
+/* ℹ️ Custom forms — 尚未提取，暫留 */
 /* Custom forms */
 form.customform input, form.customform select, form.customform textarea, form.customform button {
  font-size:0.9rem;
@@ -142,6 +144,7 @@ a.tooltip-content.tooltip-bottom,.tooltip-content.tooltip-bottom {
   border-bottom: 7px solid #000000;
   top: -5px;
 }
+/* ⚠️ 以下 Button 規則已提取至 components/button.css，此處保留作過渡期相容，第 3 批刪除 */
 /* Buttons */
 .button,a.button,a.button:link,a.button:active,a.button:visited {
   background: #777 none repeat scroll 0 0;

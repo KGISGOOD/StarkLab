@@ -1,0 +1,81 @@
+/**
+ * Button Component
+ * 整合來源：components.css（Responsee button）+ stark_lab_project_linebot.css（.clickable-text）
+ * ⚠️ .disabled-btn 的 opacity: 0.2 !important 必須保留（功能性）
+ * ⚠️ .rounded-full-btn 不可改名（JS 可能有引用）
+ */
+
+/* Base */
+.button,
+a.button,
+a.button:link,
+a.button:active,
+a.button:visited {
+  background: #777 none repeat scroll 0 0;
+  border: 0;
+  color: #fff;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 0.85rem;
+  padding: 0.825rem 1rem;
+  text-align: center;
+  transition: var(--transition-fast, all 0.20s linear 0s);
+}
+
+.button.rounded-btn { border-radius: var(--radius-xs, 4px); }
+.button.rounded-full-btn { border-radius: 100px; }
+.button:hover { box-shadow: 0 0 10px 100px rgba(255,255,255,0.15) inset; }
+
+/* Variants */
+.button.secondary-btn,
+a.button.secondary-btn,
+a.button.secondary-btn:link,
+a.button.secondary-btn:active,
+a.button.secondary-btn:visited { background: #444; }
+
+.button.cancel-btn,
+a.button.cancel-btn,
+a.button.cancel-btn:link,
+a.button.cancel-btn:active,
+a.button.cancel-btn:visited { background: #dc003a; }
+
+.button.submit-btn,
+a.button.submit-btn,
+a.button.submit-btn:link,
+a.button.submit-btn:active,
+a.button.submit-btn:visited { background: #b4bf04; }
+
+.button.reload-btn,
+a.button.reload-btn,
+a.button.reload-btn:link,
+a.button.reload-btn:active,
+a.button.reload-btn:visited { background: #ff9800; }
+
+/* ⚠️ !important 必須保留 */
+.button.disabled-btn {
+  cursor: not-allowed !important;
+  opacity: 0.2;
+}
+
+.button i {
+  background: rgba(0,0,0,0.1);
+  border-radius: 27px;
+  color: #fff !important;
+  display: inline-block;
+  font-size: 0.8rem;
+  height: 27px;
+  line-height: 27px;
+  margin-right: 5px;
+  width: 27px;
+  transition: var(--transition-fast, all 0.20s linear 0s);
+}
+.button:hover > i { background: rgba(0,0,0,0.06); }
+
+/* Clickable Text — 從 stark_lab_project_linebot.css 提取，升至全站共用 */
+.clickable-text {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+.clickable-text:visited { color: #000; }
+.clickable-text:hover { text-decoration: underline; }

@@ -1,0 +1,33 @@
+/**
+ * Navbar Component
+ * Base pattern — 頁面可用 scoped selector 覆蓋
+ * 保護：不可移除 .navbar-link-text（全站 JS 事件綁定）
+ */
+
+.navigation-bar {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  padding: 0px 100px;
+  position: relative;
+  width: 1440px;
+}
+
+.navbar {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 40px;
+  justify-content: center;
+  position: relative;
+}
+
+.navbar-link-text {
+  cursor: pointer;
+  letter-spacing: 0;
+  line-height: 28px;
+  margin-top: -1.00px;
+  position: relative;
+  white-space: nowrap;
+  width: fit-content;
+}

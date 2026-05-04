@@ -21,14 +21,14 @@ from linebot.models import MessageEvent, TextSendMessage, QuickReply, QuickReply
 #line_bot_api = LineBotApi(settings.LINE_CHANNEL_ACCESS_TOKEN)
 #parser = WebhookParser(settings.LINE_CHANNEL_SECRET)
 
-from langchain.chains import LLMChain
-from langchain_core.prompts import (
-    ChatPromptTemplate,
-    HumanMessagePromptTemplate,
-    MessagesPlaceholder,
-)
-from langchain_core.messages import SystemMessage
-from langchain.chains.conversation.memory import ConversationBufferWindowMemory
+# from langchain.chains import LLMChain
+# from langchain_core.prompts import (
+#     ChatPromptTemplate,
+#     HumanMessagePromptTemplate,
+#     MessagesPlaceholder,
+# )
+# from langchain_core.messages import SystemMessage
+# from langchain.chains.conversation.memory import ConversationBufferWindowMemory
 # from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 '''

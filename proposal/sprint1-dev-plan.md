@@ -159,15 +159,24 @@ G2 + G4 全通過 ──────────────────── S
 |---------|---------|-----------|------|---------|--------|------|
 | T1 | CSS / Design Token 盤點 | brand-guardian | — | 4h | P1 | created |
 | T2 | CSS 收斂重構計畫書 | ui-designer | T1 | 6h | P1 | created |
-| T3 | 補做 Sprint 1 提案書（本文件） | product-manager | — | 3h | P0 | in_progress |
-| T4 | 後端 Phase 1 止血 | tech-lead | — | TBD | P0 | pending_lead |
-| T5 | 後端 Phase 2 收斂 | tech-lead | T4 | TBD | P1 | pending_lead |
+| T3 | 補做 Sprint 1 提案書（本文件） | product-manager | — | 3h | P0 | in_review |
+| T4 | 產生 12 頁 baseline 視覺基準截圖 | ui-designer | — | 3h | P1 | done |
+| T5 | 後端 Phase 1 止血 | tech-lead | — | TBD | P0 | pending_lead |
+| T6 | 後端 Phase 2 收斂 | tech-lead | T5 | TBD | P1 | pending_lead |
 
-> **T4/T5 狀態說明**：`pending_lead` = 待 tech-lead 認領並回覆估時。PM 已發送協調請求。
+> **T5/T6 狀態說明**：`pending_lead` = 待 tech-lead 認領並回覆估時。PM 已發送協調請求。
+>
+> **⚠️ 編號修正紀錄（2026-05-03）**：原 dev-plan 草稿誤將後端任務命名為 T4/T5，與已存在的 `.tasks/sprint-1/T4-baseline-screenshots.md`（ui-designer，done）衝突。依 tech-lead 回報，修正為 T5/T6，避免 Gate 紀錄混亂。
 
 ### 任務詳細說明
 
-#### T4：後端 Phase 1 止血
+#### T4：Baseline 視覺基準截圖（已完成）
+- **負責**：ui-designer
+- **狀態**：✅ done（由 design-director 接手執行完成）
+- **交付物**：`docs/design/baseline/desktop/*.png`（14 張）、`docs/design/baseline/mobile/*.png`（14 張）、`scripts/baseline-screenshots.js`、`scripts/visual-diff.js`、`docs/design/README.md`
+- **備註**：詳見 `.tasks/sprint-1/T4-baseline-screenshots.md`
+
+#### T5：後端 Phase 1 止血
 - **負責**：tech-lead
 - **驗收標準**：
   - [ ] `.gitignore` 涵蓋 ngrok.exe、*.db、*.csv、*.xlsx
@@ -177,9 +186,9 @@ G2 + G4 全通過 ──────────────────── S
   - [ ] CSV 路徑全部使用 BASE_DIR / "data" / ...
   - [ ] 修改後現有功能可正常啟動（Waitress dev 環境）
 
-#### T5：後端 Phase 2 收斂
+#### T6：後端 Phase 2 收斂
 - **負責**：tech-lead
-- **前提**：T4 通過 L1 Review
+- **前提**：T5 通過 L1 Review
 - **驗收標準**：
   - [ ] urls.py 死碼清除，project_wra_repoet → redirect
   - [ ] STATICFILES_DIRS 收斂為單一目錄
@@ -194,10 +203,11 @@ G2 + G4 全通過 ──────────────────── S
 
 - [ ] T1 五份盤點交付物完成且可閱讀
 - [ ] T2 三份設計計畫交付物完成
-- [ ] T4 所有 HIGH 安全風險修復，通過 G2 審查
-- [ ] T5 程式碼整理完成，評估報告落檔
+- [x] T4 Baseline 截圖 26 張完成（已 done）
+- [ ] T5 所有 HIGH 安全風險修復，通過 G2 審查
+- [ ] T6 程式碼整理完成，評估報告落檔
 - [ ] T3 正式提案書與 dev-plan 落檔
-- [ ] tech-lead 已回覆認領 T4/T5 並提供估時
+- [ ] tech-lead 已回覆認領 T5/T6 並提供估時
 - [ ] 第 10 節所有記錄填寫完整
 
 ---
@@ -218,10 +228,11 @@ G2 + G4 全通過 ──────────────────── S
 | 任務 | 開始條件 | 預估完成 |
 |------|---------|---------|
 | T3（提案書） | 立即 | 2026-05-02 |
+| T4（Baseline 截圖） | — | 2026-05-03（已完成） |
 | T1（CSS 盤點） | G0 通過後 | G0+1d |
-| T4（Phase 1） | G0 + tech-lead 認領 | G0+2d |
+| T5（Phase 1 止血） | G0 + tech-lead 認領 | G0+2d |
 | T2（重構計畫） | T1 完成 | T1+1d |
-| T5（Phase 2） | T4 完成 | T4+2d |
+| T6（Phase 2 收斂） | T5 完成 | T5+2d |
 
 ---
 
@@ -236,8 +247,9 @@ G2 + G4 全通過 ──────────────────── S
 | T1 | 2026-05-03 | 🔍 待審查 | 5 份盤點交付物完成：colors.md（39色→建議合併18）、typography.md（12級）、spacing.md、conflicts.md（10項衝突含3 CRITICAL）、tokens-draft.css |
 | T2 | | | |
 | T3 | 2026-05-02 | 🔍 待審查 | proposal/sprint1-proposal.md、sprint1-dev-plan.md、docs/architecture/2026-05-02-audit.md 完成 |
-| T4 | | | |
+| T4 | 2026-05-03 | ✅ 完成 | 28 張 baseline 截圖（desktop×14 + mobile×14）、腳本、README；self-diff 0%。詳見 .tasks/sprint-1/T4-baseline-screenshots.md |
 | T5 | | | |
+| T6 | | | |
 
 ### Review 紀錄
 
@@ -245,8 +257,9 @@ G2 + G4 全通過 ──────────────────── S
 |------------|------|------|---------------|
 | CSS 盤點 Review（T1） | | | |
 | CSS 計畫書 Review（T2） | | | |
-| 後端 Phase 1 Review（T4） | | | |
-| 後端 Phase 2 Review（T5） | | | |
+| Baseline 截圖 Review（T4） | 2026-05-03 | 通過 | design-director 接手完成；self-diff 0% |
+| 後端 Phase 1 Review（T5） | | | |
+| 後端 Phase 2 Review（T6） | | | |
 
 ### Gate 紀錄
 

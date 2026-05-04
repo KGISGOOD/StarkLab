@@ -1,0 +1,79 @@
+/**
+ * Modal / Tab / Tooltip Component
+ * 來源：components.css（Responsee）
+ */
+
+/* ===== TABS ===== */
+.tab-item {
+  background: none repeat scroll 0 0 #fff;
+  display: none;
+  padding: 1.25rem 0;
+}
+.tab-item.tab-active { display: block; }
+.tab-content > .tab-label { display: none; }
+.tab-nav > .tab-label { float: left; }
+
+a.tab-label,
+a.tab-label:link,
+a.tab-label:visited,
+a.tab-label:hover {
+  background: none repeat scroll 0 0 #262626;
+  color: #fff;
+  margin-right: 1px;
+  padding: 0.625rem 1.25rem;
+  transition: var(--transition-fast, all 0.20s linear 0s);
+}
+a.tab-label:hover,
+a.tab-label.active-btn { background: none repeat scroll 0 0 #999; }
+.tab-label.active-btn { cursor: default; }
+.tab-content { text-align: left; }
+
+@media screen and (max-width: 768px) {
+  .tab-nav > .tab-label {
+    margin: 0.5px 0;
+    width: 100%;
+  }
+}
+
+/* ===== TOOLTIP ===== */
+a.tooltip-container,
+.tooltip-container {
+  border-bottom: 1px dotted;
+  cursor: help;
+  font-weight: 600;
+}
+
+a .tooltip-content,
+.tooltip-content {
+  background: #152732;
+  color: #fff !important;
+  border-radius: 3px;
+  display: none;
+  font-size: 0.8rem;
+  font-weight: normal;
+  line-height: 1.3rem;
+  margin-top: -1.25rem;
+  max-width: 300px;
+  padding: 0.625rem;
+  position: absolute;
+  z-index: var(--z-index-overlay, 20);
+}
+.tooltip-content::after {
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 7px solid #000;
+  bottom: -5px;
+  content: "";
+  height: 0;
+  left: 50%;
+  margin-left: -5px;
+  position: absolute;
+  width: 0;
+}
+a.tooltip-content.tooltip-bottom,
+.tooltip-content.tooltip-bottom { margin-top: 1.25rem; }
+.tooltip-content.tooltip-bottom::after {
+  border-top: 0;
+  border-bottom: 7px solid #000;
+  top: -5px;
+}
