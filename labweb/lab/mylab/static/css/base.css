@@ -75,3 +75,161 @@ h1, h2, h3, h4, h5, h6,
   position: relative;
   width: 126px;
 }
+
+
+/* ============================================
+ * TYPOGRAPHY UTILITIES — 從 styleguide.css 遷移
+ * 原 styleguide.css 刪除後，這些 utility class 集中於此
+ * 所有模板均載入 base.css，故此處定義可全站共用
+ * ============================================ */
+
+.notosanstc-semi-bold-black-20px {
+  color: var(--black);
+  font-family: var(--font-family-noto_sans_tc);
+  font-size: var(--font-size-l);
+  font-style: normal;
+  font-weight: 600;
+}
+
+.spacegrotesk-medium-black-20px {
+  color: var(--black);
+  font-family: var(--font-family-space_grotesk);
+  font-size: var(--font-size-l);
+  font-style: normal;
+  font-weight: 500;
+}
+
+.spacegrotesk-normal-black-18px {
+  color: var(--black);
+  font-family: var(--font-family-space_grotesk);
+  font-size: var(--font-size-m);
+  font-style: normal;
+  font-weight: 400;
+}
+
+.notosanstc-normal-black-18px {
+  color: var(--black);
+  font-family: var(--font-family-noto_sans_tc);
+  font-size: var(--font-size-m);
+  font-style: normal;
+  font-weight: 400;
+}
+
+.notosanstc-normal-black-24px {
+  color: var(--black);
+  font-family: var(--font-family-noto_sans_tc);
+  font-size: var(--font-size-xl);
+  font-style: normal;
+  font-weight: 400;
+}
+
+.notosanstc-medium-white-30px {
+  color: var(--white);
+  font-family: var(--font-family-noto_sans_tc);
+  font-size: var(--font-size-xxl);
+  font-style: normal;
+  font-weight: 500;
+}
+
+.notosanstc-bold-navy-blue-20px {
+  color: var(--navy-blue);
+  font-family: var(--font-family-noto_sans_tc);
+  font-size: var(--font-size-l);
+  font-style: normal;
+  font-weight: 700;
+}
+
+.notosanstc-bold-navy-blue-36px {
+  color: var(--navy-blue);
+  font-family: var(--font-family-noto_sans_tc);
+  font-size: var(--font-size-xxxxl);
+  font-style: normal;
+  font-weight: 700;
+}
+
+.notosanstc-normal-white-18px {
+  color: var(--white);
+  font-family: var(--font-family-noto_sans_tc);
+  font-size: var(--font-size-m);
+  font-style: normal;
+  font-weight: 400;
+}
+
+.notosans-bold-navy-blue-20px {
+  color: var(--navy-blue);
+  font-family: var(--font-family-noto_sans);
+  font-size: var(--font-size-l);
+  font-style: normal;
+  font-weight: 700;
+}
+
+.notosans-normal-white-18px {
+  color: var(--white);
+  font-family: var(--font-family-noto_sans);
+  font-size: var(--font-size-m);
+  font-style: normal;
+  font-weight: 400;
+}
+
+.notosanstc-bold-white-20px {
+  color: var(--white);
+  font-family: var(--font-family-noto_sans_tc);
+  font-size: var(--font-size-l);
+  font-style: normal;
+  font-weight: 700;
+}
+
+.spacegrotesk-medium-white-36px {
+  color: var(--white);
+  font-family: var(--font-family-space_grotesk);
+  font-size: var(--font-size-xxxxl);
+  font-style: normal;
+  font-weight: 500;
+}
+
+.notosans-bold-white-32px {
+  color: var(--white);
+  font-family: var(--font-family-noto_sans);
+  font-size: var(--font-size-xxxl);
+  font-style: normal;
+  font-weight: 700;
+}
+
+.notosans-bold-navy-blue-60px {
+  color: var(--navy-blue);
+  font-family: var(--font-family-noto_sans);
+  font-size: 60px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.notosanstc-bold-navy-blue-30px {
+  color: var(--navy-blue);
+  font-family: var(--font-family-noto_sans_tc);
+  font-size: var(--font-size-xxl);
+  font-style: normal;
+  font-weight: 700;
+}
+
+/* 補充：member / project 頁用到的額外 class */
+.notosanstc-normal {
+  font-family: var(--font-family-noto_sans_tc);
+  font-style: normal;
+  font-weight: 400;
+}
+
+.spacegrotesk-medium-white-20px {
+  color: var(--white);
+  font-family: var(--font-family-space_grotesk);
+  font-size: var(--font-size-l);
+  font-style: normal;
+  font-weight: 500;
+}
+
+.notosanstc-medium-navy-blue-20px {
+  color: var(--navy-blue);
+  font-family: var(--font-family-noto_sans_tc);
+  font-size: var(--font-size-l);
+  font-style: normal;
+  font-weight: 500;
+}
