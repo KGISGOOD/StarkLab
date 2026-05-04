@@ -131,7 +131,8 @@
   display: inline-flex;
   flex-direction: column;
   gap: 30px;
-  margin-top: 500px;
+  /* margin-top: 500px; — 原 Anima 固定高度設計值，height:auto 後顯得太大 */
+  margin-top: 80px;
   padding: 0px 100px;
   position: relative;
 }

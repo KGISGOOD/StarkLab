@@ -106,7 +106,9 @@
   font-weight: 500;
   left: 0;
   letter-spacing: 0;
-  line-height: normal;
+  line-height: 1;     /* 精確控制行高，避免 h1 預設 line-height 撐大佔位 */
+  margin: 0;          /* 消除 h1 預設 margin，防止與 assistant-professor 重疊 */
+  padding: 0;
   position: absolute;
   top: 0;
 }

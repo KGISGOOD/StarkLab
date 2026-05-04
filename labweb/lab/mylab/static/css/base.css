@@ -13,6 +13,20 @@
 /* Google Fonts — 品牌字型載入 */
 @import url("https://fonts.googleapis.com/css?family=Noto+Sans+TC:500,700,600,400|Noto+Sans:500,700,800,400|Space+Grotesk:500,400");
 
+/* Meyer CSS Reset — 原 globals.css 有引入，確保 h1/h2/p 等無預設 margin/padding */
+/* 只重設會影響定位的常見元素，避免破壞第三方框架 */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  padding: 0;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+p {
+  margin: 0;
+  padding: 0;
+}
+
 
 /* ============================================
  * OVERRIDE LAYER — 修正第三方框架衝突
@@ -74,6 +88,29 @@ h1, h2, h3, h4, h5, h6,
   height: 76px;
   position: relative;
   width: 126px;
+}
+
+/* ============================================
+ * GLOBAL IMAGE UTILITIES — 從 globals.css 遷移（漏補項）
+ * 這些 class 是首頁專案區塊圖片的尺寸定義
+ * ============================================ */
+
+/* 首頁 Project 區塊：ETF 卡片縮圖 */
+.rectangle-79 {
+  height: 244px;
+  width: 244px;
+}
+
+/* 首頁 Project 區塊：AI 學習歷程平台縮圖 */
+.x1-2 {
+  height: 245px;
+  width: 240px;
+}
+
+/* 首頁 Project 區塊：連結按鈕箭頭 icon */
+.arrow-3 {
+  height: 20px;
+  width: 19px;
 }
 
 
