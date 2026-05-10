@@ -1,0 +1,118 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=yes">
+    <link rel="shortcut icon" type="image/png" href="https://animaproject.s3.amazonaws.com/home/favicon.png" />
+    <meta name="og:type" content="website" />
+    <meta name="twitter:card" content="photo" />
+    <title>AI 學習歷程平台</title>
+    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'css/pages/project-linebot.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components/navbar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components/footer.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components/button.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  </head>
+  <body style="margin: 0; background: #ffffff">
+    <input type="hidden" id="anPageName" name="page" value="stark_lab_project_ai_learning" />
+    <div class="container-center-horizontal">
+      <div class="stark_lab_project_linebot screen">
+
+        <!-- 導覽列 -->
+        <div class="overlap-group3">
+          <div class="navigation-bar">
+            <img class="logo-1" src="{% static 'img/------logo-1@2x.png' %}" alt="logo 1" />
+            <div class="navbar notosanstc-semi-bold-black-20px">
+              <a href="/"><div class="navbar-link-text notosanstc-semi-bold-black-20px">首頁</div></a>
+              <a href="/project/"><div class="navbar-link-text notosanstc-semi-bold-black-20px">研究專案</div></a>
+              <a href="/member/"><div class="navbar-link-text notosanstc-semi-bold-black-20px">成員介紹</div></a>
+              <a href="/professor/"><div class="navbar-link-text notosanstc-semi-bold-black-20px">論文研究</div></a>
+            </div>
+          </div>
+          <img class="line-30" src="{% static 'img/line-30.svg' %}" alt="Line 30" />
+        </div>
+
+        <!-- 回上一頁 -->
+        <div class="overlap-group4">
+          <div class="group-31"><img class="arrow-2" src="{% static 'img/arrow-2.svg' %}" alt="Arrow 2" /></div>
+          <div class="text-40">回上一頁</div>
+          <a href="/project/"><div class="rectangle-83"></div></a>
+        </div>
+
+        <!-- 專案標題橫幅 -->
+        <div class="overlap-group5">
+          <div class="overlap-group">
+            <div class="xxx-xxx-xxx-xxx">作者：邱嘉豪 實驗室</div>
+            <div class="content"></div>
+          </div>
+          <h1 class="line-bot valign-text-middle">AI<br />學習歷程平台</h1>
+          <img class="x2-1" src="{% static 'img/---1-2@2x.png' %}" alt="AI 學習歷程平台" />
+        </div>
+
+        <!-- 專案介紹 -->
+        <div class="frame-27">
+          <div class="overlap-group-1"><div class="text spacegrotesk-medium-white-36px">專案介紹</div></div>
+          <div class="group-15">
+            <img class="line-26" src="{% static 'img/line-26.svg' %}" alt="Line 26" />
+            <div class="text-29">
+              AI 學習歷程平台旨在蒐集並分析學生在 AI 時代下的學習與使用行為，系統性地記錄學生於考試、作業及課堂活動中使用 AI 工具的過程與決策脈絡。透過大量行為數據的積累與挖掘，我們深入理解學生如何與 AI 協作、哪些情境下依賴度較高，以及不同學習策略對學習成效的影響。<br /><br />
+              平台的核心目標不僅止於監測，更著眼於「賦能」——基於數據洞察，研發能幫助學生更有效率地運用 AI 輔助學習的個人化方法與教學建議，讓 AI 成為提升思考深度與學習品質的夥伴，而非取代獨立思考的捷徑。我們相信，在 AI 普及的浪潮中，培養「正確使用 AI 的能力」將是下一代最重要的核心素養。
+            </div>
+          </div>
+        </div>
+
+        <!-- 相關連結 -->
+        <div class="group-25">
+          <div class="overlap-group1"><div class="text spacegrotesk-medium-white-36px">相關連結</div></div>
+        </div>
+
+        <div class="overlap-group2">
+          <div class="line-container">
+            <img class="line" src="{% static 'img/line-27.svg' %}" alt="Line 27" />
+            <img class="line-28" src="{% static 'img/line-28.svg' %}" alt="Line 28" />
+          </div>
+
+          <a href="https://edu.starklab.tw/" target="_blank" rel="noopener">
+            <div class="group-47">
+              <div class="text-36 notosanstc-bold-navy-blue-36px">前往平台</div>
+              <div class="text-3-2 notosanstc-normal-black">
+                edu.starklab.tw<br />
+                AI 學習歷程平台入口
+              </div>
+              <div class="link-1 link-4">
+                <div class="icon"><img class="arrow-1" src="{% static 'img/arrow-1-1.svg' %}" alt="Arrow 1" /></div>
+                <div class="label notosanstc-bold-navy-blue-20px">點我前往</div>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <!-- 頁尾 -->
+        <div class="group-36">
+          <div class="footer">
+            <div class="navigation-and-contacts">
+              <div class="frame-26">
+                <div class="contact-us">
+                  <div class="heading">
+                    <div class="label-1"><div class="label-2 notosans-bold-navy-blue-20px">Contact us:</div></div>
+                  </div>
+                  <div class="info">
+                    <div class="email-d04921004ntuedutw notosans-normal-white-18px">Email: D04921004@ntu.edu.tw</div>
+                    <p class="address-100 notosanstc-normal-white-18px">
+                      Address: 100台北市中正區貴陽街一段56號 No. 56, Sec. 1, Guiyang St., Zhongzheng Dist., Taipei City<br /><br />
+                      ©2025 Soochow University Starklab . All Rights Reserved.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <img class="group-30" src="{% static 'img/group-30-2@2x.png' %}" alt="Group 30" />
+        </div>
+
+      </div>
+    </div>
+  </body>
+</html>
