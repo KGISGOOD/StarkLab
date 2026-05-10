@@ -56,6 +56,9 @@ def project_wra_repoet(request):
 def project_financial(request):
     return render(request, 'stark_lab_project_financial.html')
 
+def project_ai_learning(request):
+    return render(request, 'stark_lab_project_ai_learning.html')
+
 
 
 def financial_1(request):

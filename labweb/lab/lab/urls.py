@@ -22,6 +22,8 @@ urlpatterns = [
     path("project_ETFbot/", views.project_ETFbot, name="project_ETFbot"),
     #新增基金優化機器人
     path('project_financial/', views.project_financial, name='project_financial'),
+    #新增AI學習歷程平台
+    path('project_ai_learning/', views.project_ai_learning, name='project_ai_learning'),
     path('financial_1/', views.financial_1, name='financial_1'),
     path('financial_2/', views.financial_2, name='financial_2'),
     path('financial_3/', views.financial_3, name='financial_3'),
